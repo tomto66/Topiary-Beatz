@@ -37,6 +37,7 @@ TopiaryBeatsHeaderComponent::TopiaryBeatsHeaderComponent()
 
 TopiaryBeatsHeaderComponent::~TopiaryBeatsHeaderComponent()
 { 	
+	beatsModel->removeListener((ActionListener*)this);
 }
 
 void TopiaryBeatsHeaderComponent::setModel(TopiaryBeatsModel* m)

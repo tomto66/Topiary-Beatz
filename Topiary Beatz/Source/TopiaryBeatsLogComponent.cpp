@@ -40,7 +40,7 @@ TopiaryBeatsLogComponent::TopiaryBeatsLogComponent()
 
 TopiaryBeatsLogComponent::~TopiaryBeatsLogComponent()
 {
-	
+	beatsModel->removeListener((ActionListener*)this);
 } //~TopiaryBeatsLogComponent
 
 /////////////////////////////////////////////////////////////////////////

@@ -50,14 +50,14 @@ public:
 	////// Logger 
 	String* getBeatsLog();
 	void beatsLog(String s);
-	bool isLogDirty();
+	//bool isLogDirty();
 
 	////// Transport
 
 	//bool isTransportDirty();
 	void setBPM(int bpm);
 	void setNumeratorDenominator(int n, int d);
-	void getTransportState(int& b, int& n, int& d, int& bs, bool& o, bool &waitFFN, bool clearDirty);
+	void getTransportState(int& b, int& n, int& d, int& bs, bool& o, bool &waitFFN);
 	void setOverrideHostTransport(bool o);
 	void setRunState(int n); 
 	void processTransportControls(int buttonEnabled); // // buttonEnabled; 0=Stop; 1=start; 2=rec
@@ -65,7 +65,7 @@ public:
 
 	////// Variations
 
-	bool isVariationsDirty();
+	//bool isVariationsDirty();
 	void setVariation(int i);
 	void getVariation(int& running, int& selected);
 
@@ -108,8 +108,8 @@ public:
 	int getSwitchVariation();
 	void setVariationStartQ(int q);
 	int getVariationStartQ();
-	void setRunStartQ(int q);
-	int getRunStartQ();
+	//void setRunStartQ(int q);
+	//int getRunStartQ();
 	void setRunStopQ(int q);
 	int getRunStopQ();
 	String getName();
@@ -117,8 +117,8 @@ public:
 
 	void getTime(int& b, int& m);
 
-	bool isMasterTablesDirty();
-	void clearMasterTablesDirty();
+	//bool isMasterTablesDirty();
+	//void clearMasterTablesDirty();
 
 	////////// Broadcasters & Listeners
 
@@ -200,7 +200,7 @@ private:
 	int lastTickOff;					// last generated off note in ticks within the pattern
 	
 	int variationStartQ = 100;			// when to switch variations
-	int runStartQ = 100;				// when to start running relative to transport
+	//int runStartQ = 100;				// when to start running relative to transport
 	int runStopQ = 100;					// when to stop running
 	bool WFFN = false;					// start at first note in if true; otherwize immediate
 	int switchVariation =  1;			// when new pattern starts, it always starts at beginning - enumerator
@@ -218,10 +218,10 @@ private:
 	
 	/////////// Dirty variables
 
-	bool variationsDirty = false;
-	bool transportDirty = false;
-	bool logDirty = false;
-	bool masterTablesDirty = false; // so next paint can update the tables
+	//bool variationsDirty = false;
+	//bool transportDirty = false;
+	//bool logDirty = false;
+	//bool masterTablesDirty = false; // so next paint can update the tables
 	
 	/////////////////////////////////////////////////////////////////////////
 
@@ -581,7 +581,7 @@ private:
 		addIntToModel(parameters, denominator ,"denominator");
 		addIntToModel(parameters, variationSelected, "variationSelected");
 		addIntToModel(parameters, switchVariation, "switchVariation");
-		addIntToModel(parameters, runStartQ, "runStartQ");
+		//addIntToModel(parameters, runStartQ, "runStartQ");
 		addIntToModel(parameters, runStopQ, "runStopQ");
 		addIntToModel(parameters, variationStartQ, "variationStartQ");
 		addBoolToModel(parameters, WFFN, "WFFN");
@@ -636,7 +636,7 @@ private:
 					}
 
 					if (parameterName.compare("switchVariation") == 0) switchVariation = parameter->getIntAttribute("Value");
-					if (parameterName.compare("runStartQ") == 0) runStartQ = parameter->getIntAttribute("Value");
+					//if (parameterName.compare("runStartQ") == 0) runStartQ = parameter->getIntAttribute("Value");
 					if (parameterName.compare("runStopQ") == 0) runStopQ = parameter->getIntAttribute("Value");
 					if (parameterName.compare("variationStartQ") == 0) variationStartQ = parameter->getIntAttribute("Value");
 					if (parameterName.compare("name") == 0) name = parameter->getStringAttribute("Value");
@@ -707,12 +707,13 @@ private:
 
 	    // now delete the no-longer-needed "Parameters" child
 		model->deleteAllChildElementsWithTagName("Parameters");
-		variationsDirty = true;
+		//variationsDirty = true;
 		//transportDirty = true;
 		broadcaster.sendActionMessage("transport");
-		logDirty = true;
+		//logDirty = true;
 		broadcaster.sendActionMessage("log");
-		masterTablesDirty = true;
+		broadcaster.sendActionMessage("masterTables");
+		//masterTablesDirty = true;
 
 		setRunState(Topiary::Stopped);
 

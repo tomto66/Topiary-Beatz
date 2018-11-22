@@ -10,7 +10,7 @@
 #include"../../Topiary/TopiaryTable.h"  
 #include"TopiaryBeatsModel.h"
 
-class TopiaryBeatsMasterComponent : public Component
+class TopiaryBeatsMasterComponent : public Component, ActionListener
 {
 public:
 	TopiaryBeatsMasterComponent();
@@ -23,7 +23,7 @@ public:
 private:
 	TopiaryBeatsModel* beatsModel;
 	TopiaryLookAndFeel topiaryLookAndFeel;
-
+	void actionListenerCallback(const String &message);
 	// patterns stuff
 	TopiaryTable patternsTable;
 	XmlElement *patternListHeader = nullptr;
@@ -58,7 +58,7 @@ private:
 	TopiaryButton notePassThroughButton;
 	ComboBox switchVariationCombo;
 	ComboBox quantizeVariationStartCombo;
-	ComboBox quantizeRunStartCombo;
+	//ComboBox quantizeRunStartCombo;
 	ComboBox quantizeRunStopCombo;
 	TextButton saveButton;
 	TextButton loadButton;
@@ -107,7 +107,7 @@ private:
 		beatsModel->setWFFN(WFFNButton.getToggleState());
 		beatsModel->setNotePassThrough(notePassThroughButton.getToggleState());
 		beatsModel->setVariationStartQ(quantizeVariationStartCombo.getSelectedId());
-		beatsModel->setRunStartQ(quantizeRunStartCombo.getSelectedId());
+		//beatsModel->setRunStartQ(quantizeRunStartCombo.getSelectedId());
 		beatsModel->setRunStopQ(quantizeRunStopCombo.getSelectedId());
 		beatsModel->setName(nameEditor.getText());
 		beatsModel->setSwitchVariation(switchVariationCombo.getSelectedId());
@@ -118,31 +118,31 @@ private:
 
 
 	void getSettings()
-	{  // called when settings changes
+	{  
+		// called when settings change
 		
 		WFFNButton.setToggleState(beatsModel->getWFFN(), dontSendNotification);
 		notePassThroughButton.setToggleState(beatsModel->getNotePassThrough(), dontSendNotification);
 		quantizeVariationStartCombo.setSelectedId(beatsModel->getVariationStartQ(), dontSendNotification);
-		quantizeRunStartCombo.setSelectedId(beatsModel->getRunStartQ(), dontSendNotification);
+		//quantizeRunStartCombo.setSelectedId(beatsModel->getRunStartQ(), dontSendNotification);
 		quantizeRunStopCombo.setSelectedId(beatsModel->getRunStopQ(), dontSendNotification);
 		switchVariationCombo.setSelectedId(beatsModel->getSwitchVariation(), dontSendNotification);
-		nameEditor.setText(beatsModel->getName(), dontSendNotification);
-		//allwaysRestartButton.setToggleState(beatsModel->getAlwaysRestart(), dontSendNotification);
-
+		auto name = beatsModel->getName();
+		nameEditor.setText(name, dontSendNotification);
+		
 		// disable when host overridden
-		
-			int b, n, d, bs;
-			bool override, wf;
-			beatsModel->getTransportState(b, n, d, bs, override, wf, false);
-			if (override)
-			{
-				quantizeRunStartCombo.setEnabled(false);
-			}
-			else
-			{	
-				quantizeRunStartCombo.setEnabled(true);
-			}
-		
+		int b, n, d, bs;
+		bool override, wf;
+		beatsModel->getTransportState(b, n, d, bs, override, wf);
+		/*
+		if (override)
+		{
+			quantizeRunStartCombo.setEnabled(false);
+		}
+		else
+		{	
+			quantizeRunStartCombo.setEnabled(true);
+		}*/
 
 	} // getSettings
 	

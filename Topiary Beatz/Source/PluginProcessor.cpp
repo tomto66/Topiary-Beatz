@@ -180,7 +180,7 @@ void TopiaryBeatsAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiB
 
 	int BPM, numerator, denominator, runState;
 	bool override, waitFFN;		
-	beatsModel.getTransportState(BPM, numerator, denominator, runState, override, waitFFN, false);
+	beatsModel.getTransportState(BPM, numerator, denominator, runState, override, waitFFN);
 	
 	AudioPlayHead::CurrentPositionInfo lastPosInfo;
 	auto playHed = getPlayHead();
@@ -249,7 +249,7 @@ void TopiaryBeatsAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiB
 			if (msg.isController())
 			{
 				auto controller = msg.getControllerNumber();
-				//auto value = msg.getControllerValue();
+				// auto value = msg.getControllerValue();
 				// Logger::outputDebugString(String("Controller ") + String(controller) + String(" / ") + String(value) );
 				// see if this is a known controller; if so react to it, e.g. change variation
 				if ((controller > 21) && (controller < 30))

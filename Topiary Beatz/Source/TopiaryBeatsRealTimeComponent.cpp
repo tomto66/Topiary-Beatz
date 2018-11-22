@@ -39,6 +39,7 @@ TopiaryBeatsRealtimeComponent::TopiaryBeatsRealtimeComponent()
 
 TopiaryBeatsRealtimeComponent::~TopiaryBeatsRealtimeComponent()
 {
+	beatsModel->removeListener((ActionListener*)this);
 } // ~TopiaryBeatsRealtimeComponent
 
 /////////////////////////////////////////////////////////////////////////

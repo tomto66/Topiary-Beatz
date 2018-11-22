@@ -56,6 +56,7 @@ TopiaryBeatsTabbedComponent::TopiaryBeatsTabbedComponent() : beatsTabs(TabbedBut
 
 TopiaryBeatsTabbedComponent::~TopiaryBeatsTabbedComponent()
 {
+	beatsModel->removeListener((ActionListener*)this);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -93,7 +94,7 @@ void TopiaryBeatsTabbedComponent::actionListenerCallback(const String &message)
 		int b, n, d, runState;
 		bool o, w;
 
-		beatsModel->getTransportState(b, n, d, runState, o, w, false);
+		beatsModel->getTransportState(b, n, d, runState, o, w);
 		if ((runState == Topiary::Running) || (runState == Topiary::Armed) || (runState == Topiary::Ending))
 		{
 			masterComponent.setEnabled(false);

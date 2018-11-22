@@ -277,8 +277,8 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	};
 
 	addAndMakeVisible(nameEditor);
-	nameEditor.setSize(200, buttonH);
-	nameEditor.setEnabled(true);
+	nameEditor.setSize(210, buttonH);
+	
 	nameEditor.onReturnKey = [this]
 	{
 		setSettings();
@@ -309,6 +309,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 
 TopiaryBeatsMasterComponent::~TopiaryBeatsMasterComponent()
 {
+	beatsModel->removeListener((ActionListener*)this);
 } // ~TopiaryBeatsMasterComponent
 
 /////////////////////////////////////////////////////////////////////////
@@ -322,6 +323,7 @@ void TopiaryBeatsMasterComponent::setModel(TopiaryBeatsModel* m)
 	getSettings();
 	patternsTable.updateContent();
 	poolTable.updateContent();
+	beatsModel->setListener((ActionListener*)this);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -359,7 +361,7 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 
 	//// Settings
 
-	getSettings(); // because e.g. transport may have changed and combos need to be enabled/disabled
+	//getSettings(); // because e.g. transport may have changed and combos need to be enabled/disabled
 
 	g.drawText("Settings", 10, 290, 800, labelOffset, juce::Justification::centredLeft);
 	g.drawRoundedRectangle((float)lineSize + 10, (float)305, (float)975, (float)60, (float)4, (float)lineSize);
@@ -384,10 +386,7 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 	nameEditor.setBounds(20, 340, 210, buttonH);
 	saveButton.setBounds(250, 340,100,buttonH);   
 	loadButton.setBounds(360, 340, 100, buttonH);
-	
-	
-	
-	
+	/*
 	if (beatsModel->isMasterTablesDirty()) {
 		// trigger update of pooltable 
 		patternsTable.updateContent();
@@ -396,10 +395,26 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 		poolTable.selectRow(0);
 		setButtonStates();
 		beatsModel->clearMasterTablesDirty();
-	}
+	}*/
 } // paint
 
 void TopiaryBeatsMasterComponent::resized()
 {
-}
+} // resized
 
+///////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
+{
+	if (message.compare("masterTables") == 0)
+	{
+		// trigger update of pooltable 
+		patternsTable.updateContent();
+		patternsTable.selectRow(0);
+		poolTable.updateContent();
+		poolTable.selectRow(0);
+		setButtonStates();
+	}
+	if (message.compare("transport") == 0)
+		getSettings();
+} // actionListenerCallback

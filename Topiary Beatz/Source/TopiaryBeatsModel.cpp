@@ -588,7 +588,7 @@ void TopiaryBeatsModel::setGMDrumMapLabels()
 
 String* TopiaryBeatsModel::getBeatsLog()
 {
-	logDirty = false;
+	//logDirty = false;
 	return &logString;
 }
 
@@ -600,14 +600,15 @@ void TopiaryBeatsModel::beatsLog(String s)
 	char pre[20];
 	sprintf(pre,"%02d:%02d:%02d:%03d : ", t.getHours(), t.getMinutes(), t.getSeconds(), t.getMilliseconds());
 	logString.append(String(pre) +  s + newLine, 250);
-	logDirty = true;
+	//logDirty = true;
 	broadcaster.sendActionMessage("log");
 }
 
+/*
 bool TopiaryBeatsModel::isLogDirty()
 {
 	return logDirty;
-}
+} */
 
 ///////////////////////////////////////////////////////////////////////
 // TimeSignatures
@@ -642,7 +643,7 @@ void TopiaryBeatsModel::setOverrideHostTransport(bool o)
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::getTransportState (int& b, int& n, int& d, int& bs, bool& override, bool &waitFFN, bool clearDirty)
+void TopiaryBeatsModel::getTransportState (int& b, int& n, int& d, int& bs, bool& override, bool &waitFFN)
  // all transport variables, inc signature, BPM etc
 {
 	b = BPM;
@@ -651,7 +652,7 @@ void TopiaryBeatsModel::getTransportState (int& b, int& n, int& d, int& bs, bool
 	bs = runState;
 	waitFFN = WFFN;
 	override = overrideHostTransport;
-	if (clearDirty) transportDirty = false;
+	//if (clearDirty) transportDirty = false;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -865,14 +866,14 @@ void TopiaryBeatsModel::setVariation(int n)
 		if (runState == Topiary::Stopped)
 			variationRunning = n;
 		beatsLog(String("Variation ") + String(n) + String(" selected."));
-		variationsDirty = true;
+		//variationsDirty = true;
 		broadcaster.sendActionMessage("variations");
 	}
 	
 } // setVariation
 
 ///////////////////////////////////////////////////////////////////////
-
+/*
 bool TopiaryBeatsModel::isVariationsDirty()
 {
 	return variationsDirty;
@@ -889,6 +890,7 @@ void TopiaryBeatsModel::clearMasterTablesDirty()
 {
 	masterTablesDirty = false;
 } // tablesDirty
+*/
 
 ///////////////////////////////////////////////////////////////////////
 // GENERATOR STUFF
@@ -1460,18 +1462,20 @@ int TopiaryBeatsModel::getVariationStartQ()
 } // getVariationStartQ
 
 ///////////////////////////////////////////////////////////////////////
-
+/*
 void TopiaryBeatsModel::setRunStartQ(int q)
 {
 	runStartQ = q;
 } // setRunStartQ
-
+*/
 ///////////////////////////////////////////////////////////////////////
 
+/*
 int TopiaryBeatsModel::getRunStartQ()
 {
 	return runStartQ;
 } // getRunStartQ
+*/
 
 ///////////////////////////////////////////////////////////////////////
 

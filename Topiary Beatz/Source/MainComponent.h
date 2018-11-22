@@ -22,7 +22,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../Topiary/Topiary.h"
 #include "TopiaryBeatsComponent.h"
-
+/*
 class MainComponent   : public Component
 {
 public:
@@ -36,4 +36,4 @@ public:
 private:
    
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
-};
+};*/

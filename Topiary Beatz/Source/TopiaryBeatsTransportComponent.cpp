@@ -67,7 +67,7 @@ void TopiaryBeatsTransportComponent::checkModel()
 	int transportState;
 	bool override;
 	bool waitFFN;
-	beatsModel->getTransportState(BPM, n, d, transportState, override, waitFFN, true);
+	beatsModel->getTransportState(BPM, n, d, transportState, override, waitFFN);
 	updateState(override, BPM, n, d, transportState);
 		
 	

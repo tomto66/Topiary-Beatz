@@ -20,12 +20,10 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include "MainComponent.h"
 #include "TopiaryBeatsComponent.h"
-
+/*
 //==============================================================================
 MainComponent::MainComponent() 
 {
-	//setSize(Topiary::WIDTH, Topiary::HEIGTH);
-	//addAndMakeVisible(topiaryBeatsComponent);
 }
 
 MainComponent::~MainComponent()
@@ -41,4 +39,4 @@ void MainComponent::paint (Graphics& g)
 void MainComponent::resized()
 {   
 }
-	
+*/	
