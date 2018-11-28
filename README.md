@@ -13,5 +13,10 @@ Careful: binary data is provided in the Topiary/JuceLibraryCode folder - make su
 
 ## Compatibility / Testing
 
-* Tested/Compiled with Juce 5.3 / Visual Studio 2017 / VST2
+* Tested/Compiled with Juce 5.3 / Visual Studio 2017 / VST2 / Windows10/X64
 * Tested with no issues in Cantabile 3
+
+## Installing binaries
+
+* Plugin is found under Topiary Beats / binaries.  Feel free to rename it.
+* Install in your VST2 plugin folder.  You hostg may need to rescan that folder.
