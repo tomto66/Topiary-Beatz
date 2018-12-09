@@ -20,3 +20,7 @@ Careful: binary data is provided in the Topiary/JuceLibraryCode folder - make su
 
 * Plugin is found under Topiary Beats / binaries.  Feel free to rename it.
 * Install in your VST2 plugin folder.  You hostg may need to rescan that folder.
+
+## Manual
+
+Here: https://topiaryplugins.wordpress.com/
