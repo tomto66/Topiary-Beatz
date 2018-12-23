@@ -14,7 +14,7 @@ Careful: binary data is provided in the Topiary/JuceLibraryCode folder - make su
 ## Compatibility / Testing
 
 * Tested/Compiled with Juce 5.3 / Visual Studio 2017 / VST2 / Windows10/X64
-* Tested with no issues in Cantabile 3
+* Tested with no issues in Cantabile 3 and Cubase LE
 
 ## Installing binaries
 
