@@ -115,8 +115,8 @@ void TopiaryLookAndFeel::drawTopiaryButtonBackground(Graphics& g,
 void TopiaryLookAndFeel::drawRotarySlider(Graphics& g, int x, int y, int width, int height, float sliderPos,
 	const float rotaryStartAngle, const float rotaryEndAngle, Slider& slider)
 {
-	auto outline = TopiaryColour::orange;
-	auto fill = TopiaryColour::brightBlue;
+	auto fill = TopiaryColour::orange;
+	auto outline = TopiaryColour::brightBlue;
 
 	auto bounds = Rectangle<int>(x, y, width, height).toFloat().reduced(10);
 
@@ -164,15 +164,6 @@ void TopiaryLookAndFeel::drawRotarySlider(Graphics& g, int x, int y, int width, 
 	g.fillEllipse(Rectangle<float>(thumbWidth, thumbWidth).withCentre(thumbPoint));
 } // drawRotarySlider
 
-//////////////////////////////////////////////////////////////////////////
-
-int topiaryStoi(const String& s)
-{
-	auto c = static_cast<const char*> (s.toUTF8());
-	int i = 0;
-	sscanf((char*)c, "%d", &i);
-	return i;
-} // topiaryStoi
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -200,7 +191,7 @@ String validateNote(String newNote)
 		return "C2";
 
 	note = (char) toupper(note);
-	if ((note < 'A') || (note > 'G'))
+	if (((int)note < (int)'A') || ((int)note > (int)'G'))
 		return "C2";
 
 	if (sharp == '!')
@@ -234,7 +225,7 @@ int validNoteNumber(String inNote)
 		sscanf((char*)c, "%1c%1c%d", &note, &sharp, &octave);
 	}
 
-	int number = (int) note - 'A';
+	int number = (int)note - 'C'; // C0 is note 0
 	if (sharp == '#') number++;
 
 	number = number + (12 * octave);
@@ -245,6 +236,7 @@ int validNoteNumber(String inNote)
 	return number;
 }  // validNoteNumber
 
+//////////////////////////////////////////////////////////////////////////
 
 void TopiaryButton::paintButton(Graphics& g, bool isMouseOverButton, bool isButtonDown)
 {
@@ -257,14 +249,19 @@ void TopiaryButton::paintButton(Graphics& g, bool isMouseOverButton, bool isButt
 	lf.drawButtonText(g, *this, isMouseOverButton, isButtonDown);
 }
 
+//////////////////////////////////////////////////////////////////////////
+
 TopiaryButton::TopiaryButton()
 {
 }
+
+//////////////////////////////////////////////////////////////////////////
 
 TopiaryButton::~TopiaryButton()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////
 
 
 

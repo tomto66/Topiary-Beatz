@@ -28,6 +28,7 @@ const int TopiaryBeatsComponent::heigth = 500;
 TopiaryBeatsComponent::TopiaryBeatsComponent()
 {   // don't do too much - model needs to be set first !!
 	//getLookAndFeel().setColour(Component:: , Topiary::SLIDER_TRACE_COLOUR);
+	//jassert(false);
 }
 
 void TopiaryBeatsComponent::setModel(TopiaryBeatsModel* model)

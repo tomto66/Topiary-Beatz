@@ -37,16 +37,22 @@ TopiaryBeatsTabbedComponent::TopiaryBeatsTabbedComponent() : beatsTabs(TabbedBut
 	setSize(TopiaryBeatsComponent::width, height);
 
 	masterComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
-	beatsTabs.addTab("MASTER", TopiaryColour::background, &masterComponent, true);
-	
-	//variationComponent.setSize(Topiary::WIDTH, tabHeight);
-	//beatsTabs.addTab("VARIATIONS", Topiary::BACKGROUND_COLOUR, &variationComponent, true);
+	beatsTabs.addTab("Master", TopiaryColour::background, &masterComponent, true);
+
+	patternComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
+	beatsTabs.addTab("Patterns", TopiaryColour::background, &patternComponent, true);
+
+	variationComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
+	beatsTabs.addTab("Variations", TopiaryColour::background, &variationComponent, true);
 	
 	realtimeComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
-	beatsTabs.addTab("REALTIME", TopiaryColour::background, &realtimeComponent, true);
-	
+	beatsTabs.addTab("Realtime", TopiaryColour::background, &realtimeComponent, true);
+
+	automationComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
+	beatsTabs.addTab("Automation", TopiaryColour::background, &automationComponent, true);
+
 	logComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
-	beatsTabs.addTab("LOG", TopiaryColour::background, &logComponent, true);
+	beatsTabs.addTab("Log", TopiaryColour::background, &logComponent, true);
 	
 	setSize(TopiaryBeatsComponent::width, TopiaryBeatsComponent::heigth - TopiaryBeatsComponent::headerHeigth);
 
@@ -67,6 +73,9 @@ void TopiaryBeatsTabbedComponent::setModel(TopiaryBeatsModel* model)
 	masterComponent.setModel(beatsModel);
 	logComponent.setModel(beatsModel);
 	realtimeComponent.setModel(beatsModel);
+	variationComponent.setModel(beatsModel);
+	automationComponent.setModel(beatsModel);
+	patternComponent.setModel(beatsModel);
 	beatsModel->setListener((ActionListener*)this);
 }
 
@@ -89,7 +98,7 @@ void TopiaryBeatsTabbedComponent::resized()
 
 void TopiaryBeatsTabbedComponent::actionListenerCallback(const String &message)
 {
-	if (message.compare("transport") == 0)
+	if (message.compare(MsgTransport) == 0)
 	{
 		int b, n, d, runState;
 		bool o, w;
@@ -98,10 +107,14 @@ void TopiaryBeatsTabbedComponent::actionListenerCallback(const String &message)
 		if ((runState == Topiary::Running) || (runState == Topiary::Armed) || (runState == Topiary::Ending))
 		{
 			masterComponent.setEnabled(false);
+			variationComponent.setEnabled(false);
+			automationComponent.setEnabled(false);
 		}
 		else
 		{
 			masterComponent.setEnabled(true);
+			variationComponent.setEnabled(true);
+			automationComponent.setEnabled(true);
 		}
 	}
 } // actionListenerCallback

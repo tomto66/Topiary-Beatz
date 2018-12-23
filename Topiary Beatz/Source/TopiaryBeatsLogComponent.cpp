@@ -33,6 +33,61 @@ TopiaryBeatsLogComponent::TopiaryBeatsLogComponent()
 	logEditor.setReadOnly(true);
 	logEditor.setSize(w, h);
 
+	addAndMakeVisible(midiInButton);
+	midiInButton.setButtonText("MIDI In");
+	midiInButton.setSize(bW, bH);
+	midiInButton.setClickingTogglesState(true);
+	midiInButton.onClick = [this] {
+		processLogButtons();
+	};
+
+	addAndMakeVisible(midiOutButton);
+	midiOutButton.setButtonText("MIDI Out");
+	midiOutButton.setSize(bW, bH);
+	midiOutButton.setClickingTogglesState(true);
+	midiOutButton.onClick = [this] {
+		processLogButtons();
+	};
+
+	addAndMakeVisible(infoButton);
+	infoButton.setButtonText("Info");
+	infoButton.setSize(bW, bH);
+	infoButton.setClickingTogglesState(true);
+	infoButton.onClick = [this] {
+		processLogButtons();
+	};
+
+	addAndMakeVisible(transportButton);
+	transportButton.setButtonText("Transport");
+	transportButton.setSize(bW, bH);
+	transportButton.setClickingTogglesState(true);
+	transportButton.onClick = [this] {
+		processLogButtons();
+	};
+	
+	addAndMakeVisible(variationsButton);
+	variationsButton.setButtonText("Variations");
+	variationsButton.setSize(bW, bH);
+	variationsButton.setClickingTogglesState(true);
+	variationsButton.onClick = [this] {
+		processLogButtons();
+	};
+
+	addAndMakeVisible(debugButton);
+	debugButton.setButtonText("Debug");
+	debugButton.setSize(bW, bH);
+	debugButton.setClickingTogglesState(true);
+	debugButton.onClick = [this] {
+		processLogButtons();
+	};
+	
+	addAndMakeVisible(clearButton);
+	clearButton.setButtonText("Clear");
+	clearButton.setSize(bW, bH);
+	clearButton.onClick = [this] {
+		beatsModel->clearBeatsLog();
+	};
+
 } // TopiaryBeatsLogComponent
 
 /////////////////////////////////////////////////////////////////////////
@@ -50,8 +105,9 @@ void TopiaryBeatsLogComponent::setModel(TopiaryBeatsModel* m)
 	beatsModel = m;
 	beatsModel->setListener((ActionListener*)this);
 	logEditor.setText(*(beatsModel->getBeatsLog())); // init the log window
+	actionListenerCallback(MsgLog);
 
-} // setMdel
+} // setModel
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +120,14 @@ void TopiaryBeatsLogComponent::paint(Graphics& g)
 	g.setColour(TopiaryColour::foreground);
 	g.setFont(12.0f);
 
-	
+	clearButton.setBounds(w + 30, 10, bW, bH);
+	midiInButton.setBounds(w + 30, 40, bW, bH);
+	midiOutButton.setBounds(w + 30, 70, bW, bH);
+	debugButton.setBounds(w + 30, 100, bW, bH);
+	variationsButton.setBounds(w + 30, 130, bW, bH);
+	transportButton.setBounds(w + 30, 160, bW, bH);
+	infoButton.setBounds(w + 30, 190, bW, bH);
+
 } // paint
 
 /////////////////////////////////////////////////////////////////////////
@@ -77,7 +140,7 @@ void TopiaryBeatsLogComponent::resized()
 
 void TopiaryBeatsLogComponent::actionListenerCallback(const String &message)
 {
-	if (message.compare("log") == 0)
+	if (message.compare(MsgLog) == 0)
 	{
 		int a = beatsModel->getBeatsLog()->length();
 		int b = logEditor.getText().length();
@@ -86,6 +149,15 @@ void TopiaryBeatsLogComponent::actionListenerCallback(const String &message)
 		{
 			logEditor.setText(*(beatsModel->getBeatsLog()));
 			logEditor.moveCaretToEnd(); // keep scroll at bottom
+			bool warning, midiIn, midiOut, debug, transport, variations, info;
+			beatsModel->getBeatsLogSettings(warning, midiIn, midiOut, debug, transport, variations, info);
+			
+			midiInButton.setToggleState(midiIn, dontSendNotification);
+			midiOutButton.setToggleState(midiOut, dontSendNotification);
+			debugButton.setToggleState(debug, dontSendNotification);
+			transportButton.setToggleState(transport, dontSendNotification);
+			variationsButton.setToggleState(variations, dontSendNotification);
+			infoButton.setToggleState(info, dontSendNotification);
 		}
 	}
 } // actionListenerCallback

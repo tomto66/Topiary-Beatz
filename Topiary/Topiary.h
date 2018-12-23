@@ -22,11 +22,8 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 
 #define UNUSED(x) x;
 
-
-int topiaryStoi(const String& s);
 String validateNote(String newNote);
 int validNoteNumber(String note);
-
 
 class TopiaryButton : public TextButton
 {
@@ -46,8 +43,10 @@ class Topiary
 	
 	enum VariationButtonIds
 	{
-		VariationButtons = 1001
+		VariationButtons = 1001,
+		VariationSwitchButtons = 1002
 	};
+
 	enum TransportButtonIds
 	{
 		TransportButtons = 1007
@@ -88,6 +87,18 @@ class Topiary
 		SwitchWithinMeasure = 3,	// when we switch variation, the pattern starts in same tick of same beat in the ongoing variation, but in the frist measure of the new one
 		SwitchWithinPattern = 4		// when we switch variation, the pattern starts intelligently - if number of measures are equal it will be in same tick, beat, measure as the ongoing one
 									// if #measures are different, we start intelligently, e.g. in measure 8 of 8 (ongoing) --> measure 2 of 2 (do patterncursors (ongoing) MODULO the ticklen of the new variation!
+	};
+
+	enum LogType : int
+	{
+		Debug = 0,		// low lever info for debugging
+		Warning = 1,	// things that go wrong, user error
+		MidiIn = 2,		// monitor incoming midi
+		MidiOut = 3,	// monitor outgoing midi
+		Transport = 4,	// msgs for transport events/buttons
+		Variations = 5,	// msgs vor variations events/buttons
+		Info = 6,		// general information e.g. "New pattern loaded with x notes"
+		License = 7		// License info
 	};
 
 	static const int TICKS_PER_QUARTER = 240;

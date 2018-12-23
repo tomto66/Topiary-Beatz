@@ -19,45 +19,32 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 
 #pragma once
-
 #include"TopiaryBeatsModel.h"
-class TopiaryBeatsLogComponent : public Component, ActionListener
+
+
+class TopiaryBeatsAutomationComponent : public Component, ActionListener
 {
 public:
-	TopiaryBeatsLogComponent();
-	~TopiaryBeatsLogComponent();
+	TopiaryBeatsAutomationComponent();
+	~TopiaryBeatsAutomationComponent();
 
 	void paint(Graphics&) override;
 	void resized() override;
 	void setModel(TopiaryBeatsModel* m);
 	void actionListenerCallback(const String &message) override;
+	void getVariationControl();
+	void setVariationControl();
 
 private:
 	TopiaryBeatsModel* beatsModel;
-	TextEditor logEditor;
-	int h = 360;
-	int w = 750;
 
-	TopiaryButton midiInButton;
-	TopiaryButton midiOutButton;
-	TopiaryButton infoButton;
-	TopiaryButton transportButton;
-	TopiaryButton variationsButton;
-	TopiaryButton debugButton;
-	TextButton clearButton;
+	TopiaryButton notesButton;
+	TopiaryButton ccButton;
+	TextEditor variationChannelEditor;
+	TextEditor variationControlEditor[8];
 
-
-	static const int bW = 120; //  button sizes
-	static const int bH = 20;
-
-	void processLogButtons()
-	{
-		
-		beatsModel->setBeatsLogSettings( true, midiInButton.getToggleState(), midiOutButton.getToggleState(), 
-								debugButton.getToggleState(), transportButton.getToggleState(), variationsButton.getToggleState(), infoButton.getToggleState());
-	}
-
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsLogComponent)
+	
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsAutomationComponent)
 };
 
 /////////////////////////////////////////////////////////////////////

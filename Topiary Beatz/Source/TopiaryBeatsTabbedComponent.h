@@ -25,6 +25,8 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #include "TopiaryBeatsVariationComponent.h"
 #include "TopiaryBeatsRealTimeComponent.h"
 #include "TopiaryBeatsComponent.h"
+#include "TopiaryBeatsAutomationComponent.h"
+#include "TopiaryBeatsPatternComponent.h"
 
 class TopiaryBeatsTabbedComponent:  public Component, ActionListener
 {
@@ -43,6 +45,8 @@ private:
 	TopiaryBeatsVariationComponent variationComponent;
 	TopiaryBeatsLogComponent logComponent;
 	TopiaryBeatsRealtimeComponent realtimeComponent;
+	TopiaryBeatsAutomationComponent automationComponent;
+	TopiaryBeatsPatternComponent patternComponent;
 
 	int tabHeight;
 	int height;

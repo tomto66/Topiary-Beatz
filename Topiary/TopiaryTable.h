@@ -62,6 +62,8 @@ public:
 
 	void setHeader();
 
+	void setBroadcaster(ActionBroadcaster *b, String msg);
+
 	//void paint(Graphics&) override;
 
 private:
@@ -72,6 +74,8 @@ private:
 	XmlElement* dataList = nullptr;
 	int numRows = 0;
 	bool headerSet = false;
+	ActionBroadcaster* broadcaster = nullptr;
+	String broadcastMessage = "";
 
 	class EditableTextCustomComponent : public Label
 	{

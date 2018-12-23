@@ -30,6 +30,7 @@ public:
 	void setModel(TopiaryBeatsModel *m);
 	void checkModel();
 	void updateToggleState(TextButton*) override;
+	void getEnabled();     // get enablement data from model and enable/disable buttons
 
 private:
 	TopiaryBeatsModel* beatsModel;

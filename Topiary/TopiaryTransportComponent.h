@@ -66,9 +66,9 @@ private:
 		if (stopButton.getToggleState())  buttonEnabled = 0;
 		if (startButton.getToggleState()) buttonEnabled = 1;
 		if (recButton.getToggleState())   buttonEnabled = 2;
-		int n = topiaryStoi(numeratorEditor.getText());
-		int d = topiaryStoi(denominatorEditor.getText());
-		int b = topiaryStoi(bpmEditor.getText());
+		int n = numeratorEditor.getText().getIntValue();
+		int d = denominatorEditor.getText().getIntValue();
+		int b = bpmEditor.getText().getIntValue();
 		if (buttonEnabled != -1)
 			processUIChanges(overrideButton.getToggleState(), n, d, b, buttonEnabled); // virtual function because it needs the model!
 		// no elses, screwed up when there was no button selected (yet) - can happen when toggling !!! spent hours figuring this out!

@@ -47,9 +47,9 @@ private:
 		int m, b;
 		
 		beatsModel->getTime(m, b);
-		if (m != topiaryStoi(measuresEditor.getText()))
+		if (m != measuresEditor.getText().getIntValue())
 			measuresEditor.setText(String(m));
-		if (b != topiaryStoi(beatsEditor.getText()))
+		if (b != beatsEditor.getText().getIntValue())
 			beatsEditor.setText(String(b));
 
 	} // getTime

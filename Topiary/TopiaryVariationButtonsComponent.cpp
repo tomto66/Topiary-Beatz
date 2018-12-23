@@ -110,3 +110,8 @@ void TopiaryVariationButtonsComponent::selectButton(int running, int selected)
 	variationButton[running - 1]->setToggleState(true, dontSendNotification);  // probably called because the model changed!
 }
 
+void TopiaryVariationButtonsComponent::enableButton(int i, bool enable)
+{
+	variationButton[i]->setEnabled(enable);
+}
+

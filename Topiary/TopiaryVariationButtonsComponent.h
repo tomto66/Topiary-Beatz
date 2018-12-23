@@ -30,6 +30,7 @@ public:
 	void resized() override;
 	virtual void updateToggleState(TextButton*);
 	void selectButton(int running, int selected);
+	void enableButton(int i, bool enable);
 
 private:
 	TopiaryLookAndFeel topiaryLookAndFeel;

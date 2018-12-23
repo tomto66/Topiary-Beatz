@@ -24,17 +24,17 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 TopiaryBeatsAudioProcessor::TopiaryBeatsAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynthvv
-                       .withInput  ("Input",  AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", AudioChannelSet::stereo(), true)
-                     #endif  
-                       )
+	: AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynthvv
+		.withInput("Input", AudioChannelSet::stereo(), true)
+#endif
+		.withOutput("Output", AudioChannelSet::stereo(), true)
+#endif  
+	)
 #endif
 {
-	
+
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -46,148 +46,152 @@ TopiaryBeatsAudioProcessor::~TopiaryBeatsAudioProcessor()
 //==============================================================================
 const String TopiaryBeatsAudioProcessor::getName() const
 {
-    return JucePlugin_Name;
+	return JucePlugin_Name;
 } // TopiaryBeatsAudioProcessor
 
 /////////////////////////////////////////////////////////////////////////
 
 bool TopiaryBeatsAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
-    return true;
-   #else
-    return false;
-   #endif
+#if JucePlugin_WantsMidiInput
+	return true;
+#else
+	return false;
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 bool TopiaryBeatsAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
-    return true;
-   #else
-    return false;
-   #endif
+#if JucePlugin_ProducesMidiOutput
+	return true;
+#else
+	return false;
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 bool TopiaryBeatsAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
-    return false;
-   #else
-    return false;
-   #endif
+#if JucePlugin_IsMidiEffect
+	return false;
+#else
+	return false;
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 double TopiaryBeatsAudioProcessor::getTailLengthSeconds() const
 {
-    return 0.0;
+	return 0.0;
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 int TopiaryBeatsAudioProcessor::getNumPrograms()
 {
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
+	return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
+				// so this should be at least 1, even if you're not really implementing programs.
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 int TopiaryBeatsAudioProcessor::getCurrentProgram()
 {
-    return 0;
+	return 0;
 } // getCurrentProgram
 
 /////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsAudioProcessor::setCurrentProgram (int index)
+void TopiaryBeatsAudioProcessor::setCurrentProgram(int index)
 {
-	 UNUSED(index)
+	UNUSED(index)
 } // setCurrentProgram
 
 /////////////////////////////////////////////////////////////////////////
 
-const String TopiaryBeatsAudioProcessor::getProgramName (int index)
+const String TopiaryBeatsAudioProcessor::getProgramName(int index)
 {
 	UNUSED(index)
-    return {};
+		return {};
 } // getProgramName
 
 /////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsAudioProcessor::changeProgramName (int index, const String& newName)
+void TopiaryBeatsAudioProcessor::changeProgramName(int index, const String& newName)
 {
 	UNUSED(newName)
-	UNUSED(index)
+		UNUSED(index)
 } // changeProgramName
 
 /////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
-{ // if there is no audio (which there isn't here, this will never get called!!
-  ignoreUnused(samplesPerBlock);
-  beatsModel.setSampleRate(sampleRate);  
-  beatsModel.setBlockSize(samplesPerBlock);
-  
+void TopiaryBeatsAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
+{ 
+	ignoreUnused(samplesPerBlock);
+	beatsModel.setSampleRate(sampleRate);
+	beatsModel.setBlockSize(samplesPerBlock);
+	//setLatencySamples(samplesPerBlock / 10); debug for testing - works equally fine
 }  // prepareToPlay
 
 /////////////////////////////////////////////////////////////////////////
 
 void TopiaryBeatsAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
+	// When playback stops, you can use this as an opportunity to free up any
+	// spare memory, etc.
 } // releaseResources
 
 /////////////////////////////////////////////////////////////////////////
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool TopiaryBeatsAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool TopiaryBeatsAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    ignoreUnused (layouts);
-    return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
-        return false;
+#if JucePlugin_IsMidiEffect
+	ignoreUnused(layouts);
+	return true;
+#else
+	// This is the place where you check if the layout is supported.
+	// In this template code we only support mono or stereo.
+	if (layouts.getMainOutputChannelSet() != AudioChannelSet::mono()
+		&& layouts.getMainOutputChannelSet() != AudioChannelSet::stereo())
+		return false;
 
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
-    if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
-        return false;
-   #endif
+	// This checks if the input layout matches the output layout
+#if ! JucePlugin_IsSynth
+	if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
+		return false;
+#endif
 
-    return true;
-  #endif
+	return true;
+#endif
 } // isBusesLayoutSupported
 #endif
 
 /////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+void TopiaryBeatsAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
+
 	// the audio buffer in a midi effect will have zero channels!
 	jassert(buffer.getNumChannels() == 0);
 
+	beatsModel.setBlockSize(buffer.getNumSamples());
+	buffer.clear();
+
 	int BPM, numerator, denominator, runState;
-	bool override, waitFFN;		
+	bool override, waitFFN;
 	beatsModel.getTransportState(BPM, numerator, denominator, runState, override, waitFFN);
-	
+
 	AudioPlayHead::CurrentPositionInfo lastPosInfo;
 	auto playHed = getPlayHead();
 	if (playHed != nullptr)
 	{
 		playHed->getCurrentPosition(lastPosInfo);
-	
+
 		if (lastPosInfo.isPlaying && (runState != Topiary::Running)) // Armed as well to take into account??? Don't think so
 		{
 			if (!override)
@@ -195,12 +199,12 @@ void TopiaryBeatsAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiB
 				// just arm it - if we get a note it will switch to playing if WFFN; else if will auto-switch before generating MIDI
 				beatsModel.setRunState(Topiary::Armed);
 				runState = Topiary::Armed;
-			} 
+			}
 		} // detect we are playing depending on override
-		else if (!override) 
+		else if (!override)
 		{ // all other stuff we pick up from host transport
 			if (!lastPosInfo.isPlaying && (runState == Topiary::Running))
-			{   
+			{
 				// we'll set model to Stopping; it will then decide to really stop when needed
 				beatsModel.setRunState(Topiary::Ending);
 				runState = Topiary::Ending;
@@ -215,102 +219,108 @@ void TopiaryBeatsAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiB
 			}
 		}
 	}
-	else beatsModel.beatsLog("ERROR>>>> No playhead provided!");
-	
+	else beatsModel.beatsLog("ERROR>>>> No playhead provided!", Topiary::LogType::Warning);
+
 	if (!waitFFN && (runState == Topiary::Armed))
 	{
 		//beatsModel.setRunState(TopiaryBeatsModel::Running); is in tellModel
 		tellModelToRun();
 		runState = Topiary::Running;
 	}
-	
-	MidiBuffer processedMidi;   // midibuffer object to hold what we generate
-								// at the end of the processorblock we will swap &midiMessages (that came in) by processedMidi (what goes out)
+
+	MidiBuffer processedMidi;   	// midibuffer object to hold what we generate
+					// at the end of the processorblock we will swap &midiMessages (that came in) by processedMidi (what goes out)
 	MidiMessage msg;
-	
+	bool logMidiIn, logMidiOut;	
+	beatsModel.getMidiLogSettings(logMidiIn, logMidiOut);
+	bool notePassThrough = beatsModel.getNotePassThrough();
+
 	int ignore;  // for the samplePosition in getnextEvent - we ignore that c'se we process immeditately
-	for (MidiBuffer::Iterator it(midiMessages); it.getNextEvent(msg, ignore);)                          
+	for (MidiBuffer::Iterator it(midiMessages); it.getNextEvent(msg, ignore);)
 	{
-		if (msg.isNoteOn()) 
+		if (msg.isNoteOn())
 		{
 			Logger::outputDebugString("Note on");
-			Logger::outputDebugString(String("WaitFFN ")+String((int)waitFFN));
-			Logger::outputDebugString(String("RunState ")+String(runState));
+			Logger::outputDebugString(String("WaitFFN ") + String((int)waitFFN));
+			Logger::outputDebugString(String("RunState ") + String(runState));
 
 			// if we are ready to play and waiting for first note in, start playing
-			if (waitFFN  && (runState == Topiary::Armed))
+			if (waitFFN && (runState == Topiary::Armed))
 			{
 				tellModelToRun();
 				runState = Topiary::Running;
 			}
+
+			beatsModel.processAutomation(msg);
 		}
-		else 
+		else
 		{
 			if (msg.isController())
 			{
-				auto controller = msg.getControllerNumber();
-				// auto value = msg.getControllerValue();
-				// Logger::outputDebugString(String("Controller ") + String(controller) + String(" / ") + String(value) );
-				// see if this is a known controller; if so react to it, e.g. change variation
-				if ((controller > 21) && (controller < 30))
-				{   // hardcoded for now; listen to CC 22-29 for variation change
-					int variation = controller - 21;
-					beatsModel.setVariation(variation);
-				}
+				beatsModel.processAutomation(msg);
 			}
-			else 
+			else
 			{
 				if (msg.isMidiMachineControlMessage() && override)
 				{   // only respond to this if overridden
-						auto command = msg.getMidiMachineControlCommand();
-						switch (command) 
+					auto command = msg.getMidiMachineControlCommand();
+					switch (command)
+					{
+					case juce::MidiMessage::mmc_stop:
+						beatsModel.setRunState(Topiary::Ending);
+						runState = Topiary::Ending;
+						break;
+					case juce::MidiMessage::mmc_play:
+						if (waitFFN)
 						{
-						case juce::MidiMessage::mmc_stop:
-							beatsModel.setRunState(Topiary::Ending);	
-							runState = Topiary::Ending;
-							break;
-						case juce::MidiMessage::mmc_play:
-							if (waitFFN)
-							{
-								beatsModel.setRunState(Topiary::Armed);
-								runState = Topiary::Armed;
-							}
-							else
-							{
-								beatsModel.setRunState(Topiary::Running);
-								runState = Topiary::Running;
-							}
-							break;
-						case juce::MidiMessage::mmc_deferredplay:
-							break;
-						case juce::MidiMessage::mmc_fastforward:
-							break;
-						case juce::MidiMessage::mmc_rewind:
-							break;
-						case juce::MidiMessage::mmc_recordStart:
-							beatsModel.beatsLog("Host sent RECORD NOTE DONE YET");
-							break;
-						case juce::MidiMessage::mmc_recordStop:
-							break;
-						case juce::MidiMessage::mmc_pause:
-							break;
-						default:
-							break;
-						} // switch MMC command				
+							beatsModel.setRunState(Topiary::Armed);
+							runState = Topiary::Armed;
+						}
+						else
+						{
+							beatsModel.setRunState(Topiary::Running);
+							runState = Topiary::Running;
+						}
+						break;
+					case juce::MidiMessage::mmc_deferredplay:
+						break;
+					case juce::MidiMessage::mmc_fastforward:
+						break;
+					case juce::MidiMessage::mmc_rewind:
+						break;
+					case juce::MidiMessage::mmc_recordStart:
+						beatsModel.beatsLog("Host sent RECORD NOTE DONE YET", Topiary::LogType::Warning);
+						break;
+					case juce::MidiMessage::mmc_recordStop:
+						break;
+					case juce::MidiMessage::mmc_pause:
+						break;
+					default:
+						break;
+					} // switch MMC command				
 				} // incoming MCC commands
 			}
-			if (beatsModel.getNotePassThrough())
-			{   
-				// pass through anything that came in
-				processedMidi.addEvent(msg, 1);
-			}
-		}	
+			
+		}
+
+		if (notePassThrough)
+		{
+			// pass through anything that came in
+			processedMidi.addEvent(msg, (int)msg.getTimeStamp());
+			if (logMidiOut) 
+				beatsModel.logMidi(false, msg);
+			
+		}
+
+		if (logMidiIn)
+			beatsModel.logMidi(true, msg);
+
 	} // for loop over incoming midiBuffer 
-	
+
 	////////////////////////////////////
 	// start generating new Midi data
 	////////////////////////////////////
-	
+
 	//Logger::outputDebugString(String(">>>>>>>>>>>>>>>>>>>Processor ready to check switchVariations"));
 
 	if ((runState == Topiary::Running) || (runState == Topiary::Armed))
@@ -325,7 +335,7 @@ void TopiaryBeatsAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiB
 			if (!beatsModel.switchingVariations())
 			{
 				// meaning we just did the switch
-				// do remaining notes off
+				// do any remaining notes off
 				// but only if we are really running (not in case of still Armed)
 				if (wasRunning)
 					beatsModel.endNotesOn(&processedMidi);
@@ -338,48 +348,48 @@ void TopiaryBeatsAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiB
 		if (beatsModel.processEnding())
 		{
 			beatsModel.endNotesOn(&processedMidi);
-			runState = Topiary::Stopped; // already set to Stopped in the model so no need to do that again
+			runState = Topiary::Stopped; // already set to Stopped in the model by processEnding if true; so no need to do that again
 		}
 	}
 
 	//Logger::outputDebugString(String(">>>>>>>>>>>>>>>>>>>Processor ready to run Running ") + String((int)runState));
 
-	if ((runState == Topiary::Running ) || (runState == Topiary::Ending))
+	if ((runState == Topiary::Running) || (runState == Topiary::Ending))
 	{
 		beatsModel.generateMidi(&processedMidi);
 	}
-	
+
 	midiMessages.swapWith(processedMidi);
-	
+
 } // processBlock
 
 /////////////////////////////////////////////////////////////////////////
 
 bool TopiaryBeatsAudioProcessor::hasEditor() const
 {
-    return true; 
+	return true;
 } // hasEditor
 
 AudioProcessorEditor* TopiaryBeatsAudioProcessor::createEditor()
 {
-    return new TopiaryBeatsAudioProcessorEditor (*this);
+	return new TopiaryBeatsAudioProcessorEditor(*this);
 }  // createEditor
 
 /////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsAudioProcessor::getStateInformation (MemoryBlock& destData)
+void TopiaryBeatsAudioProcessor::getStateInformation(MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
-	
+	// You should use this method to store your parameters in the memory block.
+	// You could do that either as raw data, or use the XML or ValueTree classes
+	// as intermediaries to make it easy to save and load complex data.
+
 	beatsModel.saveStateToMemoryBlock(destData);
 } // getStateInformation
 
-void TopiaryBeatsAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void TopiaryBeatsAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+	// You should use this method to restore your parameters from this memory block,
+	// whose contents will have been created by the getStateInformation() call.
 	beatsModel.restoreStateFromMemoryBlock(data, sizeInBytes);
 } // setStateInformation
 
@@ -395,5 +405,5 @@ TopiaryBeatsModel* TopiaryBeatsAudioProcessor::getModel()
 
 AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new TopiaryBeatsAudioProcessor();
+	return new TopiaryBeatsAudioProcessor();
 }  // createPluginFilter

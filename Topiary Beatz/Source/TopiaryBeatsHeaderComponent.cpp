@@ -31,6 +31,13 @@ TopiaryBeatsHeaderComponent::TopiaryBeatsHeaderComponent()
 	setSize(TopiaryBeatsComponent::width, TopiaryBeatsComponent::headerHeigth);
 	addAndMakeVisible(transportComponent);
 	addAndMakeVisible(variationButtonsComponent);
+	addAndMakeVisible(warningEditor);
+	warningEditor.setReadOnly(true);
+	warningEditor.setColour(TextEditor::backgroundColourId, TopiaryColour::orange);
+	warningEditor.setColour(TextEditor::textColourId, Colours::lightyellow  );
+	warningEditor.setColour(TextEditor::outlineColourId, TopiaryColour::orange);
+		
+
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -48,7 +55,7 @@ void TopiaryBeatsHeaderComponent::setModel(TopiaryBeatsModel* m)
 	beatsModel->setListener((ActionListener*)this);
 	variationButtonsComponent.checkModel();
 	transportComponent.checkModel();
-	
+	warningEditor.setVisible(false);
 }
 /////////////////////////////////////////////////////////////////////////
 
@@ -67,14 +74,30 @@ void TopiaryBeatsHeaderComponent::paint(Graphics& g) {
 	
 	variationButtonsComponent.setBounds(640,30 ,350,45);
 	transportComponent.setBounds(295, 30, 350,45);
+
+	warningEditor.setBounds(645, 5, 330, 18);
+	warningEditor.setText(beatsModel->getLastWarning());
+
 }
 
 void TopiaryBeatsHeaderComponent::actionListenerCallback(const String &message)
 {
-	if (message.compare("variations") == 0)
-		variationButtonsComponent.checkModel();
-	else if (message.compare("transport") == 0)
-		transportComponent.checkModel();
+	
+	if (message.compare(MsgWarning) == 0)
+	{
+		warningEditor.setVisible(true);
+	}
+	else
+	{
+		if (message.compare(MsgVariationSelected) == 0)
+			variationButtonsComponent.checkModel();
+		if (message.compare(MsgTransport) == 0)
+			transportComponent.checkModel();
+		if (message.compare(MsgVariationEnables) == 0)
+			variationButtonsComponent.getEnabled();
+		if (message.compare(MsgLog) == 0)
+			warningEditor.setVisible(false);
+	}
 }
 
 

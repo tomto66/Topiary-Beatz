@@ -38,6 +38,8 @@ private:
 	TopiaryBeatsTransportComponent transportComponent;
 	TopiaryBeatsVariationButtonsComponent variationButtonsComponent;
 	TopiaryBeatsModel* beatsModel;
+	TextEditor warningEditor;
+
 	
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsHeaderComponent)

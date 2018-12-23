@@ -49,27 +49,12 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	addAndMakeVisible(insertPatternButton);
 	insertPatternButton.setButtonText("Load MIDI file");
 	insertPatternButton.onClick = [this] {
-		FileChooser myChooser("Please select MIDI file to load...",
-			File::getSpecialLocation(File::userHomeDirectory),
-			"*.mid");
-
 		auto selection = patternsTable.getSelectedRow();
-		if (selection < 0) {
-			// msg select a pattern to load into!
-			return;
-		}
-		if (myChooser.browseForFileToOpen())
-		{
-			auto f = myChooser.getResult();
-			beatsModel->insertPatternFromFile(f, selection);
-			patternsTable.updateContent();
-			poolTable.updateContent();
-			return;
-		}
-		else
-		{ // file not found or not opened
-		}
-		setButtonStates();
+		jassert(selection >= 0);
+
+		beatsModel->insertPatternFromFile(selection);
+		
+		beatsModel->sendActionMessage(MsgMasterTables); // tables resort the data!
 	};
 
 	// Duplicate Pattern button
@@ -84,14 +69,13 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	deletePatternButton.onClick = [this] {
 
 		auto selection = patternsTable.getSelectedRow();
-		if (selection < 0)
-		{
-			/// set message "No pattern selected; select a pattern first
-		}
-		else beatsModel->deletePattern(selection);
-		patternsTable.updateContent();
-		patternsTable.selectRow(0);   // select the first row
-		setButtonStates();
+		jassert(selection > 0);
+		
+		beatsModel->deletePattern(selection);
+		//patternsTable.updateContent();
+		//patternsTable.selectRow(0);   // select the first row
+		//setButtonStates();
+		beatsModel->sendActionMessage(MsgMasterTables); // tables resort the data!
 	};
 
 
@@ -101,9 +85,11 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	newPatternButton.setButtonText("Add pattern");
 	newPatternButton.onClick = [this] {
 		beatsModel->addPattern();
-		patternsTable.updateContent();
+		//patternsTable.updateContent();
+		//patternsTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
+		//setButtonStates();
+		beatsModel->sendActionMessage(MsgMasterTables); // tables resort the data!
 		patternsTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
-		setButtonStates();
 	};
 
 
@@ -122,14 +108,14 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	deletePoolButton.onClick = [this] {
 
 		auto selection = poolTable.getSelectedRow();
-		if (selection < 0)
-		{
-			/// set message "No pattern selected; select a pattern first
-		}
-		else beatsModel->deletePool(selection);
-		poolTable.updateContent();
+		jassert(selection > 1);
+		
+		beatsModel->deletePool(selection);
+		//poolTable.updateContent();
+		//poolTable.selectRow(0);   // select the first row
+		//setButtonStates();
+		beatsModel->sendActionMessage(MsgMasterTables); // tables resort the data!
 		poolTable.selectRow(0);   // select the first row
-		setButtonStates();
 	};
 
 
@@ -139,9 +125,11 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	newPoolButton.setButtonText("Add note");
 	newPoolButton.onClick = [this] {
 		beatsModel->addPool();
-		poolTable.updateContent();
+		//poolTable.updateContent();
+		//poolTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
+		//setButtonStates();
+		beatsModel->sendActionMessage(MsgMasterTables); // tables resort the data!
 		poolTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
-		setButtonStates();
 	};
 	setButtonStates();
 
@@ -192,26 +180,6 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	{
 		setSettings();
 	};
-
-	/* quantizeRunStartCombo
-
-	quantizeRunStartCombo.setSize(100, buttonH);
-	addAndMakeVisible(quantizeRunStartCombo);
-	quantizeRunStartCombo.setSize(100, buttonH);
-	quantizeRunStartCombo.addItem("Immediate", 100);
-	quantizeRunStartCombo.addItem("Measure", 1);
-	quantizeRunStartCombo.addItem("1/2", 2);
-	//quantizeRunStartCombo.addItem("1/3", 4);
-	quantizeRunStartCombo.addItem("1/4", 5);
-	//quantizeRunStartCombo.addItem("1/8", 6);
-	//quantizeRunStartCombo.addItem("1/16", 7);
-	//quantizeRunStartCombo.addItem("1/32", 8);
-
-	quantizeRunStartCombo.onChange = [this]
-	{
-		setSettings();
-	};
-	*/
 
 	// quantizeRunStop
 
@@ -318,12 +286,20 @@ void TopiaryBeatsMasterComponent::setModel(TopiaryBeatsModel* m)
 {
 	beatsModel = m;
 	beatsModel->getMasterModel(&patternListHeader, &patternListData, &poolListHeader, &poolListData);
+
 	patternsTable.setDataLists(patternListHeader, patternListData);
+	patternsTable.setBroadcaster(beatsModel->getBroadcaster(), MsgMasterTables);
+
 	poolTable.setDataLists(poolListHeader, poolListData);
-	getSettings();
-	patternsTable.updateContent();
-	poolTable.updateContent();
+
+
+
 	beatsModel->setListener((ActionListener*)this);
+
+	// trick to call the model and read 
+	actionListenerCallback(MsgMasterTables);
+	actionListenerCallback(MsgTransport);
+
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -334,7 +310,6 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 	int labelOffset = 15;
 	
 	g.fillAll(TopiaryColour::background);
-	//g.fillAll(Colours::darkblue);
 	g.setColour(TopiaryColour::foreground);
 	g.setFont(12.0f);
 
@@ -355,13 +330,11 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 	g.drawRoundedRectangle((float)lineSize + 440, (float)labelOffset + 10, (float)545, (float)patternTH + (2 * lineSize + 5), (float)4, (float)lineSize);
 	poolTable.setBounds(455, 30, poolTW - 5, poolTH);
 
-	newPoolButton.setBounds(patternButtonOffsetX + 540, 70, buttonW, buttonH);
-	deletePoolButton.setBounds(patternButtonOffsetX + 540, 100, buttonW, buttonH);
-	GMDrumMapButton.setBounds(patternButtonOffsetX + 540, 130, buttonW, buttonH);
-
+	newPoolButton.setBounds(patternButtonOffsetX + 400, 70, buttonW, buttonH);
+	deletePoolButton.setBounds(patternButtonOffsetX + 400, 100, buttonW, buttonH);
+	GMDrumMapButton.setBounds(patternButtonOffsetX + 400, 130, buttonW, buttonH);
+	
 	//// Settings
-
-	//getSettings(); // because e.g. transport may have changed and combos need to be enabled/disabled
 
 	g.drawText("Settings", 10, 290, 800, labelOffset, juce::Justification::centredLeft);
 	g.drawRoundedRectangle((float)lineSize + 10, (float)305, (float)975, (float)60, (float)4, (float)lineSize);
@@ -386,16 +359,7 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 	nameEditor.setBounds(20, 340, 210, buttonH);
 	saveButton.setBounds(250, 340,100,buttonH);   
 	loadButton.setBounds(360, 340, 100, buttonH);
-	/*
-	if (beatsModel->isMasterTablesDirty()) {
-		// trigger update of pooltable 
-		patternsTable.updateContent();
-		patternsTable.selectRow(0);
-		poolTable.updateContent();
-		poolTable.selectRow(0);
-		setButtonStates();
-		beatsModel->clearMasterTablesDirty();
-	}*/
+	
 } // paint
 
 void TopiaryBeatsMasterComponent::resized()
@@ -406,15 +370,24 @@ void TopiaryBeatsMasterComponent::resized()
 
 void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
 {
-	if (message.compare("masterTables") == 0)
+	if (message.compare(MsgMasterTables) == 0)
 	{
-		// trigger update of pooltable 
+		// trigger update of pooltable & masterTable
+		int remember = patternsTable.getSelectedRow();
 		patternsTable.updateContent();
-		patternsTable.selectRow(0);
+		
+		if ((remember <= patternsTable.getNumRows()) && (remember >= 0))
+		{
+			patternsTable.selectRow(0);  // needed otherwise the number of measures is not correctly updated (strange)
+			patternsTable.selectRow(remember);
+		}
+		else
+			patternsTable.selectRow(0);
+
 		poolTable.updateContent();
 		poolTable.selectRow(0);
 		setButtonStates();
 	}
-	if (message.compare("transport") == 0)
+	if (message.compare(MsgTransport) == 0)
 		getSettings();
 } // actionListenerCallback

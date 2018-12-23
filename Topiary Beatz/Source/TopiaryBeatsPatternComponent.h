@@ -21,11 +21,14 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include"TopiaryBeatsModel.h"
-class TopiaryBeatsLogComponent : public Component, ActionListener
+#include "../../Topiary/Topiary.h"
+#include"../../Topiary/TopiaryTable.h"  
+
+class TopiaryBeatsPatternComponent : public Component, ActionListener
 {
 public:
-	TopiaryBeatsLogComponent();
-	~TopiaryBeatsLogComponent();
+	TopiaryBeatsPatternComponent();
+	~TopiaryBeatsPatternComponent();
 
 	void paint(Graphics&) override;
 	void resized() override;
@@ -34,30 +37,22 @@ public:
 
 private:
 	TopiaryBeatsModel* beatsModel;
-	TextEditor logEditor;
-	int h = 360;
-	int w = 750;
+	TopiaryTable patternTable;
+	int patternTW = 380;
+	int patternTH = 360;
+	XmlElement *patternListHeader = nullptr;
+	XmlElement *patternListData = nullptr;
+	
+	ComboBox patternCombo;
 
-	TopiaryButton midiInButton;
-	TopiaryButton midiOutButton;
-	TopiaryButton infoButton;
-	TopiaryButton transportButton;
-	TopiaryButton variationsButton;
-	TopiaryButton debugButton;
-	TextButton clearButton;
-
-
-	static const int bW = 120; //  button sizes
-	static const int bH = 20;
-
-	void processLogButtons()
+	void processPatternCombo() // call when pattern combobox changed
 	{
-		
-		beatsModel->setBeatsLogSettings( true, midiInButton.getToggleState(), midiOutButton.getToggleState(), 
-								debugButton.getToggleState(), transportButton.getToggleState(), variationsButton.getToggleState(), infoButton.getToggleState());
-	}
+		beatsModel->getPatternModel(patternCombo.getSelectedId()-1, &patternListHeader, &patternListData);  // @ initialization this will simply be an empty pattern
+		patternTable.setDataLists(patternListHeader, patternListData);
+		patternTable.updateContent();
+	} // processPatternCombo
 
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsLogComponent)
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsPatternComponent)
 };
 
 /////////////////////////////////////////////////////////////////////

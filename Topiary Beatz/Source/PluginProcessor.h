@@ -1,12 +1,21 @@
+//////////////////////////////////////////////////////////////////////////////
 /*
-  ==============================================================================
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
 
-    This file was auto-generated!
+Topiary Beats is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    It contains the basic framework code for a JUCE plugin processor.
+Topiary Beats is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
 
-  ==============================================================================
+You should have received a copy of the GNU General Public License
+along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
+/////////////////////////////////////////////////////////////////////////////
 
 #pragma once
 
@@ -61,12 +70,12 @@ public:
 private:
 	TopiaryBeatsModel beatsModel;	// do this first!!!
 	
-	void tellModelToRun()
+	int tellModelToRun()
 	{ // do all that is needed to tell the model to really start running at (sample) time t
 		beatsModel.setRunState(Topiary::Running);
 		beatsModel.setSampleRate(getSampleRate());	// see if prepareToPlay is called, if so no need to keep checking this
 		beatsModel.setStartTimes();	// and do some housekeeping like set the parents to the correct variation
-		
+		return beatsModel.getRunState();  // because if there are no variations selected, it shouldn't run!!!
 	} // tellModelToRun
 	
 

@@ -49,32 +49,35 @@ void TopiaryTable::setDataLists(XmlElement *h, XmlElement *d)
 {
 		columnList = h;
 		dataList = d;
-		numRows = dataList->getNumChildElements();
+		if (dataList != nullptr) 
+			numRows = dataList->getNumChildElements();
+		else
+			numRows = 0; // this might be the case when initializing
+
 		addAndMakeVisible(tableComponent);
 
 		if ((columnList != nullptr) && !headerSet) // if the column has already been set, we are probably loading a new preset; ignore 
 		{
 			forEachXmlChildElement(*columnList, columnXml)
 			{  
-				auto name = columnXml->getStringAttribute("name");
-				String myXmlDoc = columnXml->createDocument(String());
-				Logger::writeToLog(myXmlDoc);
-				if (name.compare("Type") !=0) { // type is for internal use, not to show in the header
-					tableComponent.getHeader().addColumn(columnXml->getStringAttribute("name"),
-					columnXml->getIntAttribute("columnId"),
-					columnXml->getIntAttribute("width"),
-					50,
-					400,
-					TableHeaderComponent::defaultFlags);
-				}
+				// type is for internal use, not to show in the header
+				tableComponent.getHeader().addColumn(columnXml->getStringAttribute("name"),
+														columnXml->getIntAttribute("columnId"),
+														columnXml->getIntAttribute("width"),
+														10,
+														400,
+														//TableHeaderComponent::defaultFlags);
+														TableHeaderComponent::visible + TableHeaderComponent::sortable);
+						
 			}
 			headerSet = true;
 		}
 		
 		tableComponent.getHeader().setSortColumnId(1, true);
-		//table.getHeader().setColumnVisible(8, false);
-
+		
 		tableComponent.setMultipleSelectionEnabled(false);
+		if (numRows > 0) selectRow(1);
+		//tableComponent.getHeader().setStretchToFitActive(true);
 	} // setDataLists
 
 
@@ -235,7 +238,7 @@ String TopiaryTable::setText(const int columnNumber, const int rowNumber, const 
 	if (type.compare("int") == 0)
 	{
 		// see if valid integer; if not make it 1 or minimum
-		int i = topiaryStoi(newText);
+		int i = newText.getIntValue();
 
 		// if valid integer, see if it's beween the bounds
 		int min = columnDefinition->getIntAttribute("min");
@@ -250,14 +253,23 @@ String TopiaryTable::setText(const int columnNumber, const int rowNumber, const 
 	}
 	else {
 		if (type.compare("note") == 0)
+		{
 			validatedText = validateNote(newText);
+			int noteNumber = validNoteNumber(validatedText);
+			dataList->getChildElement(rowNumber)->setAttribute("NoteNumber", noteNumber);
+		}
 		else
 			validatedText = newText;
 	}
 	dataList->getChildElement(rowNumber)->setAttribute(columnName, validatedText);
 
-	int noteNumber = validNoteNumber(validatedText);
-	dataList->getChildElement(rowNumber)->setAttribute("NoteNumber", noteNumber);
+	//int noteNumber = validNoteNumber(validatedText);
+	//dataList->getChildElement(rowNumber)->setAttribute("NoteNumber", noteNumber);
+
+	if (broadcaster != nullptr)
+	{
+		broadcaster->sendActionMessage(broadcastMessage);
+	}
 
 	return validatedText;
 } // setText
@@ -266,18 +278,25 @@ String TopiaryTable::setText(const int columnNumber, const int rowNumber, const 
 
 void TopiaryTable::updateContent()
 {
-	numRows = dataList->getNumChildElements();
+	if (dataList != nullptr)
+		numRows = dataList->getNumChildElements();
+	else
+		numRows = 0;
 	tableComponent.updateContent();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 
 void TopiaryTable::resized() 
-	{
-		tableComponent.setBoundsInset(BorderSize<int>(8));
-	}
+{
+	tableComponent.setBoundsInset(BorderSize<int>(8));
+} // resized
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-
+void TopiaryTable::setBroadcaster(ActionBroadcaster *b, String msg) 
+{
+	broadcaster = b;
+	broadcastMessage = msg;
+}
 

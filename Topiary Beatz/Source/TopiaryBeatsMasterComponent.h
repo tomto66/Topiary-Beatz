@@ -1,14 +1,29 @@
-/////////////////////////////////////////////////////////////////////////
-// TopiaryBeatsMasterComponent.h
-// 30Sep18 Tom Tollenaere - Created
-//
-// Header for TopiaryBeatsMasterComponent
+/////////////////////////////////////////////////////////////////////////////
+/*
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+
+Topiary Beats is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Topiary Beats is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
+*/
 /////////////////////////////////////////////////////////////////////////////
 
 
 #pragma once
 #include"../../Topiary/TopiaryTable.h"  
 #include"TopiaryBeatsModel.h"
+
+class TopiaryBeatsMasterComponent;
+
 
 class TopiaryBeatsMasterComponent : public Component, ActionListener
 {
@@ -49,8 +64,13 @@ private:
 	TextButton deletePoolButton;
 	TextButton newPoolButton;
 
-	int poolTW = 350;
+	int poolTW = 225;
 	int poolTH = 240;
+
+	/*
+	TopiaryBeatsPoolTimingComponent poolStart[4];
+	TopiaryBeatsPoolTimingComponent poolStop[4];
+	*/
 
 	// settings stuff
 
@@ -58,7 +78,6 @@ private:
 	TopiaryButton notePassThroughButton;
 	ComboBox switchVariationCombo;
 	ComboBox quantizeVariationStartCombo;
-	//ComboBox quantizeRunStartCombo;
 	ComboBox quantizeRunStopCombo;
 	TextButton saveButton;
 	TextButton loadButton;
@@ -134,16 +153,7 @@ private:
 		int b, n, d, bs;
 		bool override, wf;
 		beatsModel->getTransportState(b, n, d, bs, override, wf);
-		/*
-		if (override)
-		{
-			quantizeRunStartCombo.setEnabled(false);
-		}
-		else
-		{	
-			quantizeRunStartCombo.setEnabled(true);
-		}*/
-
+		
 	} // getSettings
 	
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsMasterComponent)

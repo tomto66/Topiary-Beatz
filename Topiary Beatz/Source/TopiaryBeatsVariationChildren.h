@@ -17,21 +17,104 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-#include"../../Topiary/TopiaryTable.h"  // temp for testing
 #include"TopiaryBeatsModel.h"
+
+class TopiaryBeatsVariationComponent;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// EnablePoolComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class EnablePoolComponent : public Component
+{
+
+public:
+	TopiaryButton enableButton1, enableButton2, enableButton3, enableButton4;
+	EnablePoolComponent();
+	~EnablePoolComponent();
+	void resized();
+	void paint(Graphics& g) override;
+	void setParent(TopiaryBeatsVariationComponent* p);
+	int width = 140;
+	int heigth = 120;
+
+private:
+	TopiaryBeatsVariationComponent* parent;
+	static const int eW = 120; //  enable button
+	static const int eH = 20;
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EnablePoolComponent)
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// PoolTimingComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class PoolTimingComponent : public Component
+{
+public:
+	PoolTimingComponent();
+	~PoolTimingComponent();
+	void paint(Graphics&) override;
+	void resized() override;
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+	TextEditor measureEditor;
+	TextEditor beatEditor;
+	TextEditor tickEditor;
+	
+	String label; // label to use
+	int width = 170;
+	int heigth = 20;
+private:
+	TopiaryBeatsVariationComponent* parent;
+	int eh = 20;  // height of the editors
+	int mw = 25;
+	int bw = 25;
+	int tw = 30;
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PoolTimingComponent)
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// PoolLengthComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class PoolLengthComponent : public Component
+{
+public:
+	PoolLengthComponent();
+	~PoolLengthComponent();
+	void paint(Graphics&) override;
+	void resized() override;
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+	PoolTimingComponent poolStart[4];
+	PoolTimingComponent poolStop[4];
+	
+	int width = 168;
+	int heigth = 215;
+
+private:
+	TopiaryBeatsVariationComponent* parent;
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PoolLengthComponent)
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// RandomNoteComponent
+////////////////////////////////////////////////////////////////////////////////
 
 class RandomNoteComponent : public Component
 {
 public:
-	TopiaryLookAndFeel rndLookAndFeel;
-	TextButton pool1Button;
-	TextButton pool2Button;
-	TextButton pool3Button;
-	TextButton pool4Button;
 
-	TextButton onButton;
+	TopiaryLookAndFeel rndLookAndFeel;
+	TopiaryButton pool1Button;
+	TopiaryButton pool2Button;
+	TopiaryButton pool3Button;
+	TopiaryButton pool4Button;
+
+	TopiaryButton onButton;
 	Slider	percentSlider;
 
 	int width = 65;
@@ -41,9 +124,11 @@ public:
 	~RandomNoteComponent();
 	void resized();
 	void paint(Graphics& g) override;
+	void setParent(TopiaryBeatsVariationComponent* p);
 
 private:
 
+	TopiaryBeatsVariationComponent* parent;
 	
 	static const int buttonH = 20;
 	static const int pbuttonH = 12;
@@ -56,40 +141,68 @@ private:
 
 }; // RandomNoteComponent
 
-/////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+// VariationDefinitionComponent
+////////////////////////////////////////////////////////////////////////////////
 
 class VariationDefinitionComponent : public Component
 {
 public:
-	TopiaryLookAndFeel vdLookAndFeel;
-	
+
 	ComboBox variationCombo;
 	TextEditor nameEditor;
+	TopiaryButton enableButton;
+	ComboBox patternCombo;
 
-	TextEditor fromBeatEditor;
-	TextEditor toBeatEditor;
-	TextEditor fromMeasureEditor;
-	TextEditor toMeasureEditor;
-	TextEditor fromTickEditor;
-	TextEditor toTickEditor;
-
-	int width = 400;
-	int heigth = 100;
+	int width = 140;
+	int heigth = 140;
 
 	VariationDefinitionComponent();
 	~VariationDefinitionComponent();
+	void setParent(TopiaryBeatsVariationComponent* p);
 
 	void resized();
 	void paint(Graphics& g) override;
 
 private:
 
-	static const int eW = 120; // editor & combo
-	static const int eH = 14; 
-	static const int beW = 50; // measures, beats and ticks
-	static const int meW = 50;
-	static const int teW = 50;
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int eW = 120; // editor & combo & enable button
+	static const int eH = 20; 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VariationDefinitionComponent)
 
 }; // VariationDefinitionComponent
+
+////////////////////////////////////////////////////////////////////////////////
+// PoolChannelComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class PoolChannelComponent : public Component
+{
+public:
+
+	TextEditor poolChannelEditor1, poolChannelEditor2, poolChannelEditor3, poolChannelEditor4;
+	
+
+	int width = 140;
+	int heigth = 48;
+
+	PoolChannelComponent();
+	~PoolChannelComponent();
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+	void resized();
+	void paint(Graphics& g) override;
+
+private:
+
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int eW = 26; // editor & combo & enable button
+	static const int eH = 20;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PoolChannelComponent)
+
+}; // PoolChannelComponent

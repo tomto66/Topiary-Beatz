@@ -36,6 +36,7 @@ TopiaryBeatsVariationButtonsComponent::~TopiaryBeatsVariationButtonsComponent()
 void TopiaryBeatsVariationButtonsComponent::setModel(TopiaryBeatsModel *m)
 {
 	beatsModel = m;
+	getEnabled();  // see if there are disabled variationbuttons
 } // setModel
 
 /////////////////////////////////////////////////////////////////////////////
@@ -43,7 +44,7 @@ void TopiaryBeatsVariationButtonsComponent::setModel(TopiaryBeatsModel *m)
 void TopiaryBeatsVariationButtonsComponent::updateToggleState(TextButton* button)
 {
 	String buttonText = button->getButtonText();
-	beatsModel->setVariation(topiaryStoi(buttonText));
+	beatsModel->setVariation(buttonText.getIntValue()-1);
 } // updateToggleState
 
 /////////////////////////////////////////////////////////////////////////////
@@ -60,3 +61,16 @@ void TopiaryBeatsVariationButtonsComponent::checkModel()
 			selectButton(selected,running);
 	
 } // checkModel
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationButtonsComponent::getEnabled()
+{
+	bool enables[8];
+	beatsModel->getVariationEnables(enables);
+		for (int i = 0; i < 8; i++)
+			enableButton(i, enables[i]);
+
+} // getEnabled
+
+/////////////////////////////////////////////////////////////////////////////

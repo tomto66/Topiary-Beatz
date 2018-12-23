@@ -31,8 +31,6 @@ TopiaryBeatsRealtimeComponent::TopiaryBeatsRealtimeComponent()
 	addAndMakeVisible(beatsEditor);
 	beatsEditor.setEnabled(false);
 	
-	//startTimer(10);
-
 } // TopiaryBeatsRealTimeComponent() 
 
 /////////////////////////////////////////////////////////////////////////
@@ -86,7 +84,7 @@ void TopiaryBeatsRealtimeComponent::resized()
 
 void TopiaryBeatsRealtimeComponent::actionListenerCallback(const String &message)
 {
-	if (message.compare("timing")==0) {
+	if (message.compare(MsgTiming)==0) {
 		getTime();
 	}
 
