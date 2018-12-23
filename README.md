@@ -1,4 +1,4 @@
-# Topiary Beatz
+# Topiary Beatz 0.8.0
 
 Topiary Beatz is a plugin for beats & drums.
 
@@ -24,3 +24,7 @@ Careful: binary data is provided in the Topiary/JuceLibraryCode folder - make su
 ## Manual
 
 Here: https://topiaryplugins.wordpress.com/
+
+## Release Notes
+
+Here: https://topiaryplugins.wordpress.com/2018/12/23/topiary-beats-v-0-8-0/
