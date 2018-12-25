@@ -219,8 +219,8 @@ private:
 
 	/////////// Variations
 
-	int variationSelected = 1;
-	int variationRunning = 1; // this may differ from variationSelected during switch trigger time !!!
+	int variationSelected = 0;
+	int variationRunning = 0; // this may differ from variationSelected during switch trigger time !!!
 
 	Variation variation[8];  // struct to hold variation detail
 
@@ -1088,12 +1088,12 @@ private:
 
 	void generatePool(int v, int p, XmlElement *newPatternOn, int poolNote[128])
 	{
-		// i is index of pattern to use!
-		// v is variation
+		
+		// v is variation to generate
 		// p is poolnumber
 
 		XmlElement* newChild = nullptr;
-		XmlElement* patternOn = patternData[v].noteData;
+		XmlElement* patternOn = patternData[variation[v].patternToUse].noteData; ///
 		int patLenInTicks = variation[v].lenInTicks;
 
 		XmlElement* patternChild;

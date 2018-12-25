@@ -70,12 +70,12 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	logString = "";
 	beatsLog(String("Topiary Beats V ") + String(xstr(JucePlugin_Version)) + String(" (c) Tom Tollenaere 2018."), Topiary::LogType::License);
 	beatsLog(String(""), Topiary::LogType::License);
-	beatsLog(String("Topiary Beats is free software : you can redistribute it and/or modify"), Topiary::LogType::License);
+	beatsLog(String("Topiary Beatz is free software : you can redistribute it and/or modify"), Topiary::LogType::License);
 	beatsLog(String("it under the terms of the GNU General Public License as published by"), Topiary::LogType::License);
 	beatsLog(String("the Free Software Foundation, either version 3 of the License, or"), Topiary::LogType::License);
 	beatsLog(String("(at your option) any later version."), Topiary::LogType::License);
 	beatsLog(String(""), Topiary::LogType::License);
-	beatsLog(String("Topiary Beats is distributed in the hope that it will be useful,"), Topiary::LogType::License);
+	beatsLog(String("Topiary Beatz is distributed in the hope that it will be useful,"), Topiary::LogType::License);
 	beatsLog(String("but WITHOUT ANY WARRANTY; without even the implied warranty of"), Topiary::LogType::License);
 	beatsLog(String("MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the"), Topiary::LogType::License);
 	beatsLog(String("GNU General Public License for more details."), Topiary::LogType::License);
@@ -1097,13 +1097,25 @@ void TopiaryBeatsModel::setRunState(int n)
 			else
 			{
 				// make sure there are variations enbabled
+				// and that we selected an enabled variation
 				bool varEnabled = false;
+				int enabledVariation = -1;
 				for (int i = 0; i < 8; i++)
 				{
-					if (variation[i].enabled) varEnabled = true;
+					if (variation[i].enabled) {
+						varEnabled = true;
+						if (enabledVariation == -1) enabledVariation = i;
+					}
 				}
 				if (varEnabled)
 				{
+					if (!variation[variationSelected].enabled)
+					{
+						// if the currently selected variation is disabledm switch to one the has been selected!
+						variationRunning = enabledVariation;
+						variationSelected = enabledVariation;
+					}
+
 					beatsLog("Armed, waiting for first note.", Topiary::LogType::Transport);
 					broadcaster.sendActionMessage(MsgTransport);
 				}
@@ -1145,7 +1157,7 @@ void TopiaryBeatsModel::processTransportControls(int buttonEnabled)  // buttonEn
 		if ((runState != Topiary::Running) && (runState != Topiary::Armed))
 		{
 			setRunState(Topiary::Armed);  // if override then either processblock will switch it to Running asap, or processblock will set it to Running at first note 
-			// else do nothing otherwise it would restart!	
+										  // else do nothing otherwise it would restart!
 			broadcaster.sendActionMessage(MsgTransport);
 		}
 	}
@@ -1271,11 +1283,11 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer)
 	/*************************************************************************************************************************************************
 	Uses a lot of model variables!  Summary of what is needed for what here
 
-	variation[variationRunning - 1].patternOn;
-	variation[variationRunning - 1].patternOff;
-	variation[variationRunning - 1].currentPatternChild;
-	variation[variationRunning - 1].currentPatternChildOff;
-	variation[variationRunning - 1].lenInTicks;
+	variation[variationRunning].patternOn;
+	variation[variationRunning].patternOff;
+	variation[variationRunning].currentPatternChild;
+	variation[variationRunning].currentPatternChildOff;
+	variation[variationRunning].lenInTicks;
 	variation[variationRunning].lenInMeasures;   DO WE NEED THIS, THINK NOT!
 
 	int64 blockCursor;					// sampletime of start of current block
@@ -1332,11 +1344,11 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer)
 	XmlElement* noteChildOff;
 	int parentLength; // in ticks
 
-	parentOn = variation[variationRunning - 1].patternOn;
-	parentOff = variation[variationRunning - 1].patternOff;
-	noteChildOn = variation[variationRunning - 1].currentPatternChild;
-	noteChildOff = variation[variationRunning - 1].currentPatternChildOff;
-	parentLength = variation[variationRunning - 1].lenInTicks;
+	parentOn = variation[variationRunning].patternOn;
+	parentOff = variation[variationRunning].patternOff;
+	noteChildOn = variation[variationRunning].currentPatternChild;
+	noteChildOff = variation[variationRunning].currentPatternChildOff;
+	parentLength = variation[variationRunning].lenInTicks;
 
 	//jassert(false);
 
@@ -1563,7 +1575,7 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer)
 bool TopiaryBeatsModel::processVariationSwitch() // called just before generateMidi - to see if a variation is changed, and if so whether to switch now (and make the switch)
 {
 	// next block goes from blockCursor to blockCursor+blockSize;
-	// generation is at patternCursorOn within the pattern - which is variationRunning-1, not (yet) variationSelected-1
+	// generation is at patternCursorOn within the pattern - which is variationRunning, not (yet) variationSelected
 	// and both cursors go from 0 to the tickLength of that pattern
 	// we also know that we are currently at rtCursor, and given rtCursor and patternCursorOn we can calculate when the current pattern started in realtime 
 

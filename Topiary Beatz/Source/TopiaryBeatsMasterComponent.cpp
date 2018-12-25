@@ -69,7 +69,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	deletePatternButton.onClick = [this] {
 
 		auto selection = patternsTable.getSelectedRow();
-		jassert(selection > 0);
+		jassert(selection >= 0);
 		
 		beatsModel->deletePattern(selection);
 		//patternsTable.updateContent();
