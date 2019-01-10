@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,12 +16,13 @@ You should have received a copy of the GNU General Public License
 along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
-
 #pragma once
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "../../Topiary/TopiaryVariationButtonsComponent.h"
-#include "TopiaryBeatsModel.h"
+#include"TopiaryBeatsModel.h"
+#define TOPIARYMODEL TopiaryBeatsModel
+#define TOPIARYVARIATIONBUTTONSCOMPONENT TopiaryBeatsVariationButtonsComponent
+#include "../../Topiary/Source/TopiaryVariationButtonsComponent.h"
 
+/*
 class TopiaryBeatsVariationButtonsComponent : public TopiaryVariationButtonsComponent
 {
 public:
@@ -38,3 +39,4 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsVariationButtonsComponent)
 
 };
+*/

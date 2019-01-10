@@ -1,0 +1,908 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<TopiaryBeatsModel Version="0.8.0">
+  <PatternHeader>
+    <COLUMN columnId="1" name="ID" width="20" type="int"/>
+    <COLUMN columnId="2" name="Measure" width="80" type="int"/>
+    <COLUMN columnId="3" name="Beat" width="80" type="int"/>
+    <COLUMN columnId="4" name="Tick" width="80" type="int"/>
+    <COLUMN columnId="5" name="Note" width="80" type="int"/>
+    <COLUMN columnId="6" name="Length" width="80" type="int"/>
+    <COLUMN columnId="7" name="Velocity" width="80" type="int"/>
+    <COLUMN columnId="8" name="Timestamp" width="80" type="int"/>
+  </PatternHeader>
+  <PatternListHeader>
+    <COLUMN columnId="1" name="ID" width="20" type="int" min="1" max="100"/>
+    <COLUMN columnId="2" name="Name" width="140" type="char"/>
+    <COLUMN columnId="3" name="Measures" width="70" type="int" min="1" max="100"
+            editable="false"/>
+  </PatternListHeader>
+  <PatternListData>
+    <PatternData REALID="1" ID="1" Name="080 Ballad 01 D.mid" Measures="2" LenInTicks="0"/>
+    <PatternData REALID="2" ID="2" Name="080 Ballad 01 F4.mid" Measures="2" LenInTicks="0"/>
+    <PatternData REALID="3" ID="3" Name="080 Ballad 01.mid" Measures="2" LenInTicks="0"/>
+    <PatternData REALID="5" ID="4" Name="midipattern.mid" Measures="8" LenInTicks="0"/>
+    <PatternData REALID="6" ID="5" Name="080 Ballad 01 D.mid" Measures="2" LenInTicks="0"/>
+    <PatternData REALID="7" ID="6" Name="080 Ballad 01 D.mid" Measures="2" LenInTicks="0"/>
+  </PatternListData>
+  <PoolListData>
+    <PoolData REALID="1" Note="C2" Label="Bass Drum " Pool="1" Channel="0"
+              NoteNumber="36" ID="1"/>
+    <PoolData REALID="2" Note="D2" Label="Acoustic Snare" Pool="1" Channel="10"
+              NoteNumber="38" ID="2"/>
+    <PoolData REALID="4" Note="F2" Label="Low Floor Tom" Pool="1" Channel="10"
+              NoteNumber="41" ID="3"/>
+    <PoolData REALID="3" Note="F#2" Label="Closed Hi Hat" Pool="1" Channel="10"
+              NoteNumber="42" ID="4"/>
+    <PoolData REALID="5" Note="G2" Label="Closed Hi Hat" Pool="1" Channel="10"
+              NoteNumber="43" ID="5"/>
+    <PoolData REALID="6" Note="G#2" Label="Pedal Hi Hat" Pool="1" Channel="10"
+              NoteNumber="44" ID="6"/>
+    <PoolData REALID="7" Note="A#2" Label="Open Hi Hat" Pool="1" Channel="10"
+              NoteNumber="46" ID="7"/>
+    <PoolData REALID="8" Note="B2" Label="Low-mid Tom" Pool="1" Channel="10"
+              NoteNumber="47" ID="8"/>
+    <PoolData REALID="1" Note="C#3" Label="Crash Cymbal 1" Pool="1" Channel="10"
+              NoteNumber="49" ID="9"/>
+  </PoolListData>
+  <PoolListHeader>
+    <COLUMN columnId="1" name="ID" width="20" type="int"/>
+    <COLUMN columnId="2" name="Note" width="40" type="note"/>
+    <COLUMN columnId="3" name="Label" width="100" type="char"/>
+    <COLUMN columnId="4" name="Pool" width="40" type="int" min="1" max="4"/>
+    <COLUMN columnId="5" name="Channel" width="100" type="int" min="1" max="12"/>
+  </PoolListHeader>
+  <Pattern Index="0">
+    <DATA ID="1" REALID="1" Note="36" Velocity="88" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="31"/>
+    <DATA ID="2" REALID="2" Note="42" Velocity="91" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="3" REALID="3" Note="38" Velocity="26" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="4" REALID="4" Note="38" Velocity="35" Timestamp="65" Measure="0"
+          Beat="0" Tick="65" Length="32"/>
+    <DATA ID="5" REALID="5" Note="42" Velocity="45" Timestamp="127" Measure="0"
+          Beat="0" Tick="127" Length="32"/>
+    <DATA ID="6" REALID="6" Note="36" Velocity="65" Timestamp="187" Measure="0"
+          Beat="0" Tick="187" Length="32"/>
+    <DATA ID="7" REALID="7" Note="42" Velocity="64" Timestamp="242" Measure="0"
+          Beat="1" Tick="2" Length="32"/>
+    <DATA ID="8" REALID="8" Note="38" Velocity="112" Timestamp="246" Measure="0"
+          Beat="1" Tick="6" Length="33"/>
+    <DATA ID="9" REALID="9" Note="36" Velocity="66" Timestamp="364" Measure="0"
+          Beat="1" Tick="124" Length="32"/>
+    <DATA ID="10" REALID="10" Note="42" Velocity="42" Timestamp="370" Measure="0"
+          Beat="1" Tick="130" Length="32"/>
+    <DATA ID="11" REALID="11" Note="36" Velocity="81" Timestamp="483" Measure="0"
+          Beat="2" Tick="3" Length="31"/>
+    <DATA ID="12" REALID="12" Note="42" Velocity="62" Timestamp="483" Measure="0"
+          Beat="2" Tick="3" Length="32"/>
+    <DATA ID="13" REALID="13" Note="42" Velocity="63" Timestamp="724" Measure="0"
+          Beat="3" Tick="4" Length="32"/>
+    <DATA ID="14" REALID="14" Note="38" Velocity="111" Timestamp="726"
+          Measure="0" Beat="3" Tick="6" Length="32"/>
+    <DATA ID="15" REALID="15" Note="42" Velocity="36" Timestamp="845" Measure="0"
+          Beat="3" Tick="125" Length="31"/>
+    <DATA ID="16" REALID="16" Note="38" Velocity="36" Timestamp="904" Measure="0"
+          Beat="3" Tick="184" Length="22"/>
+    <DATA ID="17" REALID="17" Note="38" Velocity="31" Timestamp="928" Measure="0"
+          Beat="3" Tick="208" Length="26"/>
+    <DATA ID="18" REALID="18" Note="38" Velocity="29" Timestamp="959" Measure="0"
+          Beat="3" Tick="239" Length="31"/>
+    <DATA ID="19" REALID="19" Note="42" Velocity="60" Timestamp="963" Measure="1"
+          Beat="0" Tick="3" Length="31"/>
+    <DATA ID="20" REALID="20" Note="36" Velocity="87" Timestamp="964" Measure="1"
+          Beat="0" Tick="4" Length="32"/>
+    <DATA ID="21" REALID="21" Note="38" Velocity="34" Timestamp="1030"
+          Measure="1" Beat="0" Tick="70" Length="32"/>
+    <DATA ID="22" REALID="22" Note="42" Velocity="41" Timestamp="1084"
+          Measure="1" Beat="0" Tick="124" Length="32"/>
+    <DATA ID="23" REALID="23" Note="36" Velocity="71" Timestamp="1144"
+          Measure="1" Beat="0" Tick="184" Length="32"/>
+    <DATA ID="24" REALID="24" Note="38" Velocity="104" Timestamp="1204"
+          Measure="1" Beat="1" Tick="4" Length="32"/>
+    <DATA ID="25" REALID="25" Note="42" Velocity="64" Timestamp="1205"
+          Measure="1" Beat="1" Tick="5" Length="31"/>
+    <DATA ID="26" REALID="26" Note="36" Velocity="67" Timestamp="1323"
+          Measure="1" Beat="1" Tick="123" Length="32"/>
+    <DATA ID="27" REALID="27" Note="42" Velocity="38" Timestamp="1330"
+          Measure="1" Beat="1" Tick="130" Length="32"/>
+    <DATA ID="28" REALID="28" Note="36" Velocity="81" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="29" REALID="29" Note="42" Velocity="59" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="30" REALID="30" Note="42" Velocity="67" Timestamp="1681"
+          Measure="1" Beat="3" Tick="1" Length="32"/>
+    <DATA ID="31" REALID="31" Note="38" Velocity="117" Timestamp="1683"
+          Measure="1" Beat="3" Tick="3" Length="31"/>
+    <DATA ID="32" REALID="32" Note="38" Velocity="109" Timestamp="1745"
+          Measure="1" Beat="3" Tick="65" Length="32"/>
+    <DATA ID="33" REALID="33" Note="42" Velocity="36" Timestamp="1820"
+          Measure="1" Beat="3" Tick="140" Length="32"/>
+    <DATA ID="34" REALID="34" Note="38" Velocity="115" Timestamp="1868"
+          Measure="1" Beat="3" Tick="188" Length="26"/>
+  </Pattern>
+  <PatternOff Index="0">
+    <OFFDATA ID="1" REALID="1" Note="36" Timestamp="31"/>
+    <OFFDATA ID="2" REALID="2" Note="42" Timestamp="32"/>
+    <OFFDATA ID="3" REALID="3" Note="38" Timestamp="32"/>
+    <OFFDATA ID="4" REALID="4" Note="38" Timestamp="97"/>
+    <OFFDATA ID="5" REALID="5" Note="42" Timestamp="159"/>
+    <OFFDATA ID="6" REALID="6" Note="36" Timestamp="219"/>
+    <OFFDATA ID="7" REALID="7" Note="42" Timestamp="274"/>
+    <OFFDATA ID="8" REALID="8" Note="38" Timestamp="279"/>
+    <OFFDATA ID="9" REALID="9" Note="36" Timestamp="396"/>
+    <OFFDATA ID="10" REALID="10" Note="42" Timestamp="402"/>
+    <OFFDATA ID="11" REALID="11" Note="36" Timestamp="514"/>
+    <OFFDATA ID="12" REALID="12" Note="42" Timestamp="515"/>
+    <OFFDATA ID="13" REALID="13" Note="42" Timestamp="756"/>
+    <OFFDATA ID="14" REALID="14" Note="38" Timestamp="758"/>
+    <OFFDATA ID="15" REALID="15" Note="42" Timestamp="876"/>
+    <OFFDATA ID="16" REALID="16" Note="38" Timestamp="926"/>
+    <OFFDATA ID="17" REALID="17" Note="38" Timestamp="954"/>
+    <OFFDATA ID="18" REALID="18" Note="38" Timestamp="990"/>
+    <OFFDATA ID="19" REALID="19" Note="42" Timestamp="994"/>
+    <OFFDATA ID="20" REALID="20" Note="36" Timestamp="996"/>
+    <OFFDATA ID="21" REALID="21" Note="38" Timestamp="1062"/>
+    <OFFDATA ID="22" REALID="22" Note="42" Timestamp="1116"/>
+    <OFFDATA ID="23" REALID="23" Note="36" Timestamp="1176"/>
+    <OFFDATA ID="24" REALID="24" Note="38" Timestamp="1236"/>
+    <OFFDATA ID="25" REALID="25" Note="42" Timestamp="1236"/>
+    <OFFDATA ID="26" REALID="26" Note="36" Timestamp="1355"/>
+    <OFFDATA ID="27" REALID="27" Note="42" Timestamp="1362"/>
+    <OFFDATA ID="28" REALID="28" Note="36" Timestamp="1483"/>
+    <OFFDATA ID="29" REALID="29" Note="42" Timestamp="1483"/>
+    <OFFDATA ID="30" REALID="30" Note="42" Timestamp="1713"/>
+    <OFFDATA ID="31" REALID="31" Note="38" Timestamp="1714"/>
+    <OFFDATA ID="32" REALID="32" Note="38" Timestamp="1777"/>
+    <OFFDATA ID="33" REALID="33" Note="42" Timestamp="1852"/>
+    <OFFDATA ID="34" REALID="34" Note="38" Timestamp="1894"/>
+  </PatternOff>
+  <ShadowPatternOff Index="0"/>
+  <ShadowPatternOn Index="0"/>
+  <Pattern Index="1">
+    <DATA ID="1" REALID="1" Note="36" Velocity="88" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="31"/>
+    <DATA ID="2" REALID="2" Note="42" Velocity="95" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="3" REALID="3" Note="38" Velocity="26" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="4" REALID="4" Note="38" Velocity="32" Timestamp="69" Measure="0"
+          Beat="0" Tick="69" Length="32"/>
+    <DATA ID="5" REALID="5" Note="42" Velocity="51" Timestamp="125" Measure="0"
+          Beat="0" Tick="125" Length="32"/>
+    <DATA ID="6" REALID="6" Note="36" Velocity="65" Timestamp="183" Measure="0"
+          Beat="0" Tick="183" Length="32"/>
+    <DATA ID="7" REALID="7" Note="42" Velocity="74" Timestamp="249" Measure="0"
+          Beat="1" Tick="9" Length="32"/>
+    <DATA ID="8" REALID="8" Note="38" Velocity="108" Timestamp="249" Measure="0"
+          Beat="1" Tick="9" Length="33"/>
+    <DATA ID="9" REALID="9" Note="36" Velocity="64" Timestamp="364" Measure="0"
+          Beat="1" Tick="124" Length="32"/>
+    <DATA ID="10" REALID="10" Note="42" Velocity="46" Timestamp="368" Measure="0"
+          Beat="1" Tick="128" Length="32"/>
+    <DATA ID="11" REALID="11" Note="46" Velocity="75" Timestamp="482" Measure="0"
+          Beat="2" Tick="2" Length="32"/>
+    <DATA ID="12" REALID="12" Note="36" Velocity="84" Timestamp="485" Measure="0"
+          Beat="2" Tick="5" Length="31"/>
+    <DATA ID="13" REALID="13" Note="44" Velocity="107" Timestamp="721"
+          Measure="0" Beat="3" Tick="1" Length="32"/>
+    <DATA ID="14" REALID="14" Note="42" Velocity="70" Timestamp="725" Measure="0"
+          Beat="3" Tick="5" Length="32"/>
+    <DATA ID="15" REALID="15" Note="38" Velocity="109" Timestamp="726"
+          Measure="0" Beat="3" Tick="6" Length="32"/>
+    <DATA ID="16" REALID="16" Note="42" Velocity="43" Timestamp="845" Measure="0"
+          Beat="3" Tick="125" Length="31"/>
+    <DATA ID="17" REALID="17" Note="38" Velocity="35" Timestamp="904" Measure="0"
+          Beat="3" Tick="184" Length="22"/>
+    <DATA ID="18" REALID="18" Note="38" Velocity="31" Timestamp="928" Measure="0"
+          Beat="3" Tick="208" Length="30"/>
+    <DATA ID="19" REALID="19" Note="36" Velocity="92" Timestamp="962" Measure="1"
+          Beat="0" Tick="2" Length="32"/>
+    <DATA ID="20" REALID="20" Note="38" Velocity="31" Timestamp="963" Measure="1"
+          Beat="0" Tick="3" Length="31"/>
+    <DATA ID="21" REALID="21" Note="42" Velocity="77" Timestamp="966" Measure="1"
+          Beat="0" Tick="6" Length="31"/>
+    <DATA ID="22" REALID="22" Note="42" Velocity="72" Timestamp="1085"
+          Measure="1" Beat="0" Tick="125" Length="32"/>
+    <DATA ID="23" REALID="23" Note="36" Velocity="89" Timestamp="1149"
+          Measure="1" Beat="0" Tick="189" Length="32"/>
+    <DATA ID="24" REALID="24" Note="38" Velocity="121" Timestamp="1208"
+          Measure="1" Beat="1" Tick="8" Length="32"/>
+    <DATA ID="25" REALID="25" Note="38" Velocity="120" Timestamp="1261"
+          Measure="1" Beat="1" Tick="61" Length="33"/>
+    <DATA ID="26" REALID="26" Note="47" Velocity="85" Timestamp="1378"
+          Measure="1" Beat="1" Tick="178" Length="33"/>
+    <DATA ID="27" REALID="27" Note="47" Velocity="117" Timestamp="1436"
+          Measure="1" Beat="1" Tick="236" Length="32"/>
+    <DATA ID="28" REALID="28" Note="38" Velocity="123" Timestamp="1566"
+          Measure="1" Beat="2" Tick="126" Length="32"/>
+    <DATA ID="29" REALID="29" Note="38" Velocity="123" Timestamp="1621"
+          Measure="1" Beat="2" Tick="181" Length="33"/>
+    <DATA ID="30" REALID="30" Note="47" Velocity="114" Timestamp="1738"
+          Measure="1" Beat="3" Tick="58" Length="32"/>
+    <DATA ID="31" REALID="31" Note="43" Velocity="89" Timestamp="1798"
+          Measure="1" Beat="3" Tick="118" Length="32"/>
+    <DATA ID="32" REALID="32" Note="41" Velocity="86" Timestamp="1858"
+          Measure="1" Beat="3" Tick="178" Length="33"/>
+  </Pattern>
+  <PatternOff Index="1">
+    <OFFDATA ID="1" REALID="1" Note="36" Timestamp="31"/>
+    <OFFDATA ID="2" REALID="2" Note="42" Timestamp="32"/>
+    <OFFDATA ID="3" REALID="3" Note="38" Timestamp="32"/>
+    <OFFDATA ID="4" REALID="4" Note="38" Timestamp="101"/>
+    <OFFDATA ID="5" REALID="5" Note="42" Timestamp="157"/>
+    <OFFDATA ID="6" REALID="6" Note="36" Timestamp="215"/>
+    <OFFDATA ID="7" REALID="7" Note="42" Timestamp="281"/>
+    <OFFDATA ID="8" REALID="8" Note="38" Timestamp="282"/>
+    <OFFDATA ID="9" REALID="9" Note="36" Timestamp="396"/>
+    <OFFDATA ID="10" REALID="10" Note="42" Timestamp="400"/>
+    <OFFDATA ID="11" REALID="11" Note="46" Timestamp="514"/>
+    <OFFDATA ID="12" REALID="12" Note="36" Timestamp="516"/>
+    <OFFDATA ID="13" REALID="13" Note="44" Timestamp="753"/>
+    <OFFDATA ID="14" REALID="14" Note="42" Timestamp="757"/>
+    <OFFDATA ID="15" REALID="15" Note="38" Timestamp="758"/>
+    <OFFDATA ID="16" REALID="16" Note="42" Timestamp="876"/>
+    <OFFDATA ID="17" REALID="17" Note="38" Timestamp="926"/>
+    <OFFDATA ID="18" REALID="18" Note="38" Timestamp="958"/>
+    <OFFDATA ID="19" REALID="19" Note="36" Timestamp="994"/>
+    <OFFDATA ID="20" REALID="20" Note="38" Timestamp="994"/>
+    <OFFDATA ID="21" REALID="21" Note="42" Timestamp="997"/>
+    <OFFDATA ID="22" REALID="22" Note="42" Timestamp="1117"/>
+    <OFFDATA ID="23" REALID="23" Note="36" Timestamp="1181"/>
+    <OFFDATA ID="24" REALID="24" Note="38" Timestamp="1240"/>
+    <OFFDATA ID="25" REALID="25" Note="38" Timestamp="1294"/>
+    <OFFDATA ID="26" REALID="26" Note="47" Timestamp="1411"/>
+    <OFFDATA ID="27" REALID="27" Note="47" Timestamp="1468"/>
+    <OFFDATA ID="28" REALID="28" Note="38" Timestamp="1598"/>
+    <OFFDATA ID="29" REALID="29" Note="38" Timestamp="1654"/>
+    <OFFDATA ID="30" REALID="30" Note="47" Timestamp="1770"/>
+    <OFFDATA ID="31" REALID="31" Note="43" Timestamp="1830"/>
+    <OFFDATA ID="32" REALID="32" Note="41" Timestamp="1891"/>
+  </PatternOff>
+  <ShadowPatternOff Index="1"/>
+  <ShadowPatternOn Index="1"/>
+  <Pattern Index="2">
+    <DATA ID="1" REALID="1" Note="36" Velocity="90" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="31"/>
+    <DATA ID="2" REALID="2" Note="42" Velocity="89" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="3" REALID="3" Note="38" Velocity="26" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="4" REALID="4" Note="38" Velocity="32" Timestamp="69" Measure="0"
+          Beat="0" Tick="69" Length="32"/>
+    <DATA ID="5" REALID="5" Note="42" Velocity="45" Timestamp="127" Measure="0"
+          Beat="0" Tick="127" Length="32"/>
+    <DATA ID="6" REALID="6" Note="36" Velocity="65" Timestamp="187" Measure="0"
+          Beat="0" Tick="187" Length="32"/>
+    <DATA ID="7" REALID="7" Note="38" Velocity="110" Timestamp="249" Measure="0"
+          Beat="1" Tick="9" Length="33"/>
+    <DATA ID="8" REALID="8" Note="42" Velocity="66" Timestamp="250" Measure="0"
+          Beat="1" Tick="10" Length="32"/>
+    <DATA ID="9" REALID="9" Note="36" Velocity="64" Timestamp="363" Measure="0"
+          Beat="1" Tick="123" Length="32"/>
+    <DATA ID="10" REALID="10" Note="42" Velocity="42" Timestamp="370" Measure="0"
+          Beat="1" Tick="130" Length="32"/>
+    <DATA ID="11" REALID="11" Note="42" Velocity="62" Timestamp="483" Measure="0"
+          Beat="2" Tick="3" Length="32"/>
+    <DATA ID="12" REALID="12" Note="36" Velocity="80" Timestamp="485" Measure="0"
+          Beat="2" Tick="5" Length="31"/>
+    <DATA ID="13" REALID="13" Note="42" Velocity="63" Timestamp="724" Measure="0"
+          Beat="3" Tick="4" Length="32"/>
+    <DATA ID="14" REALID="14" Note="38" Velocity="103" Timestamp="726"
+          Measure="0" Beat="3" Tick="6" Length="32"/>
+    <DATA ID="15" REALID="15" Note="42" Velocity="33" Timestamp="848" Measure="0"
+          Beat="3" Tick="128" Length="31"/>
+    <DATA ID="16" REALID="16" Note="38" Velocity="29" Timestamp="906" Measure="0"
+          Beat="3" Tick="186" Length="22"/>
+    <DATA ID="17" REALID="17" Note="38" Velocity="30" Timestamp="928" Measure="0"
+          Beat="3" Tick="208" Length="12"/>
+    <DATA ID="18" REALID="18" Note="38" Velocity="29" Timestamp="959" Measure="0"
+          Beat="3" Tick="239" Length="31"/>
+    <DATA ID="19" REALID="19" Note="36" Velocity="85" Timestamp="963" Measure="1"
+          Beat="0" Tick="3" Length="32"/>
+    <DATA ID="20" REALID="20" Note="42" Velocity="57" Timestamp="968" Measure="1"
+          Beat="0" Tick="8" Length="31"/>
+    <DATA ID="21" REALID="21" Note="38" Velocity="34" Timestamp="1030"
+          Measure="1" Beat="0" Tick="70" Length="32"/>
+    <DATA ID="22" REALID="22" Note="42" Velocity="41" Timestamp="1084"
+          Measure="1" Beat="0" Tick="124" Length="32"/>
+    <DATA ID="23" REALID="23" Note="36" Velocity="69" Timestamp="1143"
+          Measure="1" Beat="0" Tick="183" Length="32"/>
+    <DATA ID="24" REALID="24" Note="38" Velocity="109" Timestamp="1204"
+          Measure="1" Beat="1" Tick="4" Length="32"/>
+    <DATA ID="25" REALID="25" Note="42" Velocity="64" Timestamp="1205"
+          Measure="1" Beat="1" Tick="5" Length="31"/>
+    <DATA ID="26" REALID="26" Note="36" Velocity="67" Timestamp="1323"
+          Measure="1" Beat="1" Tick="123" Length="32"/>
+    <DATA ID="27" REALID="27" Note="42" Velocity="38" Timestamp="1330"
+          Measure="1" Beat="1" Tick="130" Length="32"/>
+    <DATA ID="28" REALID="28" Note="36" Velocity="81" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="29" REALID="29" Note="42" Velocity="59" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="30" REALID="30" Note="38" Velocity="106" Timestamp="1687"
+          Measure="1" Beat="3" Tick="7" Length="31"/>
+    <DATA ID="31" REALID="31" Note="42" Velocity="61" Timestamp="1691"
+          Measure="1" Beat="3" Tick="11" Length="32"/>
+    <DATA ID="32" REALID="32" Note="42" Velocity="36" Timestamp="1820"
+          Measure="1" Beat="3" Tick="140" Length="32"/>
+    <DATA ID="33" REALID="33" Note="38" Velocity="21" Timestamp="1879"
+          Measure="1" Beat="3" Tick="199" Length="21"/>
+    <DATA ID="34" REALID="34" Note="38" Velocity="18" Timestamp="1900"
+          Measure="1" Beat="3" Tick="220" Length="20"/>
+  </Pattern>
+  <PatternOff Index="2">
+    <OFFDATA ID="1" REALID="1" Note="36" Timestamp="31"/>
+    <OFFDATA ID="2" REALID="2" Note="42" Timestamp="32"/>
+    <OFFDATA ID="3" REALID="3" Note="38" Timestamp="32"/>
+    <OFFDATA ID="4" REALID="4" Note="38" Timestamp="101"/>
+    <OFFDATA ID="5" REALID="5" Note="42" Timestamp="159"/>
+    <OFFDATA ID="6" REALID="6" Note="36" Timestamp="219"/>
+    <OFFDATA ID="7" REALID="7" Note="38" Timestamp="282"/>
+    <OFFDATA ID="8" REALID="8" Note="42" Timestamp="282"/>
+    <OFFDATA ID="9" REALID="9" Note="36" Timestamp="395"/>
+    <OFFDATA ID="10" REALID="10" Note="42" Timestamp="402"/>
+    <OFFDATA ID="11" REALID="11" Note="42" Timestamp="515"/>
+    <OFFDATA ID="12" REALID="12" Note="36" Timestamp="516"/>
+    <OFFDATA ID="13" REALID="13" Note="42" Timestamp="756"/>
+    <OFFDATA ID="14" REALID="14" Note="38" Timestamp="758"/>
+    <OFFDATA ID="15" REALID="15" Note="42" Timestamp="879"/>
+    <OFFDATA ID="16" REALID="16" Note="38" Timestamp="928"/>
+    <OFFDATA ID="17" REALID="17" Note="38" Timestamp="940"/>
+    <OFFDATA ID="18" REALID="18" Note="38" Timestamp="990"/>
+    <OFFDATA ID="19" REALID="19" Note="36" Timestamp="995"/>
+    <OFFDATA ID="20" REALID="20" Note="42" Timestamp="999"/>
+    <OFFDATA ID="21" REALID="21" Note="38" Timestamp="1062"/>
+    <OFFDATA ID="22" REALID="22" Note="42" Timestamp="1116"/>
+    <OFFDATA ID="23" REALID="23" Note="36" Timestamp="1175"/>
+    <OFFDATA ID="24" REALID="24" Note="38" Timestamp="1236"/>
+    <OFFDATA ID="25" REALID="25" Note="42" Timestamp="1236"/>
+    <OFFDATA ID="26" REALID="26" Note="36" Timestamp="1355"/>
+    <OFFDATA ID="27" REALID="27" Note="42" Timestamp="1362"/>
+    <OFFDATA ID="28" REALID="28" Note="36" Timestamp="1483"/>
+    <OFFDATA ID="29" REALID="29" Note="42" Timestamp="1483"/>
+    <OFFDATA ID="30" REALID="30" Note="38" Timestamp="1718"/>
+    <OFFDATA ID="31" REALID="31" Note="42" Timestamp="1723"/>
+    <OFFDATA ID="32" REALID="32" Note="42" Timestamp="1852"/>
+    <OFFDATA ID="33" REALID="33" Note="38" Timestamp="1900"/>
+    <OFFDATA ID="34" REALID="34" Note="38" Timestamp="1920"/>
+  </PatternOff>
+  <ShadowPatternOff Index="2"/>
+  <ShadowPatternOn Index="2"/>
+  <Pattern Index="3">
+    <DATA ID="1" REALID="1" Note="49" Velocity="126" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="30"/>
+    <DATA ID="2" REALID="2" Note="36" Velocity="114" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="30"/>
+    <DATA ID="3" REALID="3" Note="38" Velocity="118" Timestamp="244" Measure="0"
+          Beat="1" Tick="4" Length="30"/>
+    <DATA ID="4" REALID="4" Note="42" Velocity="60" Timestamp="247" Measure="0"
+          Beat="1" Tick="7" Length="30"/>
+    <DATA ID="5" REALID="5" Note="36" Velocity="94" Timestamp="396" Measure="0"
+          Beat="1" Tick="156" Length="30"/>
+    <DATA ID="6" REALID="6" Note="42" Velocity="54" Timestamp="485" Measure="0"
+          Beat="2" Tick="5" Length="30"/>
+    <DATA ID="7" REALID="7" Note="36" Velocity="90" Timestamp="636" Measure="0"
+          Beat="2" Tick="156" Length="30"/>
+    <DATA ID="8" REALID="8" Note="38" Velocity="113" Timestamp="724" Measure="0"
+          Beat="3" Tick="4" Length="30"/>
+    <DATA ID="9" REALID="9" Note="42" Velocity="56" Timestamp="725" Measure="0"
+          Beat="3" Tick="5" Length="30"/>
+    <DATA ID="10" REALID="10" Note="42" Velocity="49" Timestamp="964" Measure="1"
+          Beat="0" Tick="4" Length="30"/>
+    <DATA ID="11" REALID="11" Note="36" Velocity="107" Timestamp="964"
+          Measure="1" Beat="0" Tick="4" Length="30"/>
+    <DATA ID="12" REALID="12" Note="38" Velocity="114" Timestamp="1207"
+          Measure="1" Beat="1" Tick="7" Length="30"/>
+    <DATA ID="13" REALID="13" Note="42" Velocity="82" Timestamp="1208"
+          Measure="1" Beat="1" Tick="8" Length="30"/>
+    <DATA ID="14" REALID="14" Note="36" Velocity="95" Timestamp="1365"
+          Measure="1" Beat="1" Tick="165" Length="30"/>
+    <DATA ID="15" REALID="15" Note="42" Velocity="82" Timestamp="1448"
+          Measure="1" Beat="2" Tick="8" Length="30"/>
+    <DATA ID="16" REALID="16" Note="38" Velocity="49" Timestamp="1521"
+          Measure="1" Beat="2" Tick="81" Length="30"/>
+    <DATA ID="17" REALID="17" Note="36" Velocity="93" Timestamp="1598"
+          Measure="1" Beat="2" Tick="158" Length="30"/>
+    <DATA ID="18" REALID="18" Note="38" Velocity="119" Timestamp="1684"
+          Measure="1" Beat="3" Tick="4" Length="30"/>
+    <DATA ID="19" REALID="19" Note="42" Velocity="76" Timestamp="1687"
+          Measure="1" Beat="3" Tick="7" Length="30"/>
+    <DATA ID="20" REALID="20" Note="36" Velocity="88" Timestamp="1835"
+          Measure="1" Beat="3" Tick="155" Length="30"/>
+    <DATA ID="21" REALID="21" Note="36" Velocity="104" Timestamp="1921"
+          Measure="2" Beat="0" Tick="1" Length="30"/>
+    <DATA ID="22" REALID="22" Note="42" Velocity="88" Timestamp="1925"
+          Measure="2" Beat="0" Tick="5" Length="30"/>
+    <DATA ID="23" REALID="23" Note="38" Velocity="110" Timestamp="2163"
+          Measure="2" Beat="1" Tick="3" Length="30"/>
+    <DATA ID="24" REALID="24" Note="42" Velocity="83" Timestamp="2164"
+          Measure="2" Beat="1" Tick="4" Length="30"/>
+    <DATA ID="25" REALID="25" Note="36" Velocity="90" Timestamp="2317"
+          Measure="2" Beat="1" Tick="157" Length="30"/>
+    <DATA ID="26" REALID="26" Note="42" Velocity="47" Timestamp="2408"
+          Measure="2" Beat="2" Tick="8" Length="30"/>
+    <DATA ID="27" REALID="27" Note="36" Velocity="90" Timestamp="2562"
+          Measure="2" Beat="2" Tick="162" Length="30"/>
+    <DATA ID="28" REALID="28" Note="38" Velocity="114" Timestamp="2646"
+          Measure="2" Beat="3" Tick="6" Length="30"/>
+    <DATA ID="29" REALID="29" Note="42" Velocity="77" Timestamp="2648"
+          Measure="2" Beat="3" Tick="8" Length="30"/>
+    <DATA ID="30" REALID="30" Note="36" Velocity="105" Timestamp="2884"
+          Measure="3" Beat="0" Tick="4" Length="30"/>
+    <DATA ID="31" REALID="31" Note="42" Velocity="63" Timestamp="2888"
+          Measure="3" Beat="0" Tick="8" Length="30"/>
+    <DATA ID="32" REALID="32" Note="38" Velocity="111" Timestamp="3124"
+          Measure="3" Beat="1" Tick="4" Length="30"/>
+    <DATA ID="33" REALID="33" Note="42" Velocity="82" Timestamp="3129"
+          Measure="3" Beat="1" Tick="9" Length="30"/>
+    <DATA ID="34" REALID="34" Note="36" Velocity="94" Timestamp="3274"
+          Measure="3" Beat="1" Tick="154" Length="30"/>
+    <DATA ID="35" REALID="35" Note="42" Velocity="83" Timestamp="3367"
+          Measure="3" Beat="2" Tick="7" Length="30"/>
+    <DATA ID="36" REALID="36" Note="38" Velocity="46" Timestamp="3437"
+          Measure="3" Beat="2" Tick="77" Length="30"/>
+    <DATA ID="37" REALID="37" Note="36" Velocity="94" Timestamp="3519"
+          Measure="3" Beat="2" Tick="159" Length="30"/>
+    <DATA ID="38" REALID="38" Note="38" Velocity="118" Timestamp="3603"
+          Measure="3" Beat="3" Tick="3" Length="30"/>
+    <DATA ID="39" REALID="39" Note="42" Velocity="74" Timestamp="3606"
+          Measure="3" Beat="3" Tick="6" Length="30"/>
+    <DATA ID="40" REALID="40" Note="36" Velocity="90" Timestamp="3758"
+          Measure="3" Beat="3" Tick="158" Length="30"/>
+    <DATA ID="41" REALID="41" Note="36" Velocity="105" Timestamp="3844"
+          Measure="4" Beat="0" Tick="4" Length="30"/>
+    <DATA ID="42" REALID="42" Note="42" Velocity="81" Timestamp="3847"
+          Measure="4" Beat="0" Tick="7" Length="30"/>
+    <DATA ID="43" REALID="43" Note="38" Velocity="117" Timestamp="4084"
+          Measure="4" Beat="1" Tick="4" Length="30"/>
+    <DATA ID="44" REALID="44" Note="42" Velocity="56" Timestamp="4088"
+          Measure="4" Beat="1" Tick="8" Length="30"/>
+    <DATA ID="45" REALID="45" Note="36" Velocity="90" Timestamp="4238"
+          Measure="4" Beat="1" Tick="158" Length="30"/>
+    <DATA ID="46" REALID="46" Note="42" Velocity="80" Timestamp="4333"
+          Measure="4" Beat="2" Tick="13" Length="30"/>
+    <DATA ID="47" REALID="47" Note="36" Velocity="88" Timestamp="4476"
+          Measure="4" Beat="2" Tick="156" Length="30"/>
+    <DATA ID="48" REALID="48" Note="38" Velocity="115" Timestamp="4563"
+          Measure="4" Beat="3" Tick="3" Length="30"/>
+    <DATA ID="49" REALID="49" Note="42" Velocity="55" Timestamp="4566"
+          Measure="4" Beat="3" Tick="6" Length="30"/>
+    <DATA ID="50" REALID="50" Note="36" Velocity="105" Timestamp="4805"
+          Measure="5" Beat="0" Tick="5" Length="30"/>
+    <DATA ID="51" REALID="51" Note="42" Velocity="46" Timestamp="4808"
+          Measure="5" Beat="0" Tick="8" Length="30"/>
+    <DATA ID="52" REALID="52" Note="38" Velocity="119" Timestamp="5047"
+          Measure="5" Beat="1" Tick="7" Length="30"/>
+    <DATA ID="53" REALID="53" Note="42" Velocity="71" Timestamp="5050"
+          Measure="5" Beat="1" Tick="10" Length="30"/>
+    <DATA ID="54" REALID="54" Note="36" Velocity="99" Timestamp="5205"
+          Measure="5" Beat="1" Tick="165" Length="30"/>
+    <DATA ID="55" REALID="55" Note="42" Velocity="83" Timestamp="5289"
+          Measure="5" Beat="2" Tick="9" Length="30"/>
+    <DATA ID="56" REALID="56" Note="38" Velocity="54" Timestamp="5360"
+          Measure="5" Beat="2" Tick="80" Length="30"/>
+    <DATA ID="57" REALID="57" Note="36" Velocity="95" Timestamp="5438"
+          Measure="5" Beat="2" Tick="158" Length="30"/>
+    <DATA ID="58" REALID="58" Note="38" Velocity="113" Timestamp="5523"
+          Measure="5" Beat="3" Tick="3" Length="30"/>
+    <DATA ID="59" REALID="59" Note="42" Velocity="59" Timestamp="5527"
+          Measure="5" Beat="3" Tick="7" Length="30"/>
+    <DATA ID="60" REALID="60" Note="36" Velocity="92" Timestamp="5676"
+          Measure="5" Beat="3" Tick="156" Length="30"/>
+    <DATA ID="61" REALID="61" Note="36" Velocity="111" Timestamp="5763"
+          Measure="6" Beat="0" Tick="3" Length="30"/>
+    <DATA ID="62" REALID="62" Note="42" Velocity="53" Timestamp="5768"
+          Measure="6" Beat="0" Tick="8" Length="30"/>
+    <DATA ID="63" REALID="63" Note="38" Velocity="111" Timestamp="6003"
+          Measure="6" Beat="1" Tick="3" Length="30"/>
+    <DATA ID="64" REALID="64" Note="42" Velocity="51" Timestamp="6007"
+          Measure="6" Beat="1" Tick="7" Length="30"/>
+    <DATA ID="65" REALID="65" Note="36" Velocity="90" Timestamp="6163"
+          Measure="6" Beat="1" Tick="163" Length="30"/>
+    <DATA ID="66" REALID="66" Note="42" Velocity="78" Timestamp="6247"
+          Measure="6" Beat="2" Tick="7" Length="30"/>
+    <DATA ID="67" REALID="67" Note="36" Velocity="91" Timestamp="6398"
+          Measure="6" Beat="2" Tick="158" Length="30"/>
+    <DATA ID="68" REALID="68" Note="38" Velocity="116" Timestamp="6485"
+          Measure="6" Beat="3" Tick="5" Length="30"/>
+    <DATA ID="69" REALID="69" Note="42" Velocity="64" Timestamp="6489"
+          Measure="6" Beat="3" Tick="9" Length="30"/>
+    <DATA ID="70" REALID="70" Note="36" Velocity="108" Timestamp="6728"
+          Measure="7" Beat="0" Tick="8" Length="30"/>
+    <DATA ID="71" REALID="71" Note="42" Velocity="72" Timestamp="6730"
+          Measure="7" Beat="0" Tick="10" Length="30"/>
+    <DATA ID="72" REALID="72" Note="38" Velocity="114" Timestamp="6966"
+          Measure="7" Beat="1" Tick="6" Length="30"/>
+    <DATA ID="73" REALID="73" Note="42" Velocity="68" Timestamp="6972"
+          Measure="7" Beat="1" Tick="12" Length="30"/>
+    <DATA ID="74" REALID="74" Note="36" Velocity="94" Timestamp="7119"
+          Measure="7" Beat="1" Tick="159" Length="30"/>
+    <DATA ID="75" REALID="75" Note="42" Velocity="81" Timestamp="7206"
+          Measure="7" Beat="2" Tick="6" Length="30"/>
+    <DATA ID="76" REALID="76" Note="38" Velocity="50" Timestamp="7280"
+          Measure="7" Beat="2" Tick="80" Length="30"/>
+    <DATA ID="77" REALID="77" Note="36" Velocity="89" Timestamp="7357"
+          Measure="7" Beat="2" Tick="157" Length="30"/>
+    <DATA ID="78" REALID="78" Note="38" Velocity="118" Timestamp="7441"
+          Measure="7" Beat="3" Tick="1" Length="30"/>
+    <DATA ID="79" REALID="79" Note="42" Velocity="64" Timestamp="7444"
+          Measure="7" Beat="3" Tick="4" Length="30"/>
+    <DATA ID="80" REALID="80" Note="36" Velocity="93" Timestamp="7597"
+          Measure="7" Beat="3" Tick="157" Length="30"/>
+  </Pattern>
+  <PatternOff Index="3">
+    <OFFDATA ID="1" REALID="1" Note="49" Timestamp="30"/>
+    <OFFDATA ID="2" REALID="2" Note="36" Timestamp="30"/>
+    <OFFDATA ID="3" REALID="3" Note="38" Timestamp="274"/>
+    <OFFDATA ID="4" REALID="4" Note="42" Timestamp="277"/>
+    <OFFDATA ID="5" REALID="5" Note="36" Timestamp="426"/>
+    <OFFDATA ID="6" REALID="6" Note="42" Timestamp="515"/>
+    <OFFDATA ID="7" REALID="7" Note="36" Timestamp="666"/>
+    <OFFDATA ID="8" REALID="8" Note="38" Timestamp="754"/>
+    <OFFDATA ID="9" REALID="9" Note="42" Timestamp="755"/>
+    <OFFDATA ID="10" REALID="10" Note="42" Timestamp="994"/>
+    <OFFDATA ID="11" REALID="11" Note="36" Timestamp="994"/>
+    <OFFDATA ID="12" REALID="12" Note="38" Timestamp="1237"/>
+    <OFFDATA ID="13" REALID="13" Note="42" Timestamp="1238"/>
+    <OFFDATA ID="14" REALID="14" Note="36" Timestamp="1395"/>
+    <OFFDATA ID="15" REALID="15" Note="42" Timestamp="1478"/>
+    <OFFDATA ID="16" REALID="16" Note="38" Timestamp="1551"/>
+    <OFFDATA ID="17" REALID="17" Note="36" Timestamp="1628"/>
+    <OFFDATA ID="18" REALID="18" Note="38" Timestamp="1714"/>
+    <OFFDATA ID="19" REALID="19" Note="42" Timestamp="1717"/>
+    <OFFDATA ID="20" REALID="20" Note="36" Timestamp="1865"/>
+    <OFFDATA ID="21" REALID="21" Note="36" Timestamp="1951"/>
+    <OFFDATA ID="22" REALID="22" Note="42" Timestamp="1955"/>
+    <OFFDATA ID="23" REALID="23" Note="38" Timestamp="2193"/>
+    <OFFDATA ID="24" REALID="24" Note="42" Timestamp="2194"/>
+    <OFFDATA ID="25" REALID="25" Note="36" Timestamp="2347"/>
+    <OFFDATA ID="26" REALID="26" Note="42" Timestamp="2438"/>
+    <OFFDATA ID="27" REALID="27" Note="36" Timestamp="2592"/>
+    <OFFDATA ID="28" REALID="28" Note="38" Timestamp="2676"/>
+    <OFFDATA ID="29" REALID="29" Note="42" Timestamp="2678"/>
+    <OFFDATA ID="30" REALID="30" Note="36" Timestamp="2914"/>
+    <OFFDATA ID="31" REALID="31" Note="42" Timestamp="2918"/>
+    <OFFDATA ID="32" REALID="32" Note="38" Timestamp="3154"/>
+    <OFFDATA ID="33" REALID="33" Note="42" Timestamp="3159"/>
+    <OFFDATA ID="34" REALID="34" Note="36" Timestamp="3304"/>
+    <OFFDATA ID="35" REALID="35" Note="42" Timestamp="3397"/>
+    <OFFDATA ID="36" REALID="36" Note="38" Timestamp="3467"/>
+    <OFFDATA ID="37" REALID="37" Note="36" Timestamp="3549"/>
+    <OFFDATA ID="38" REALID="38" Note="38" Timestamp="3633"/>
+    <OFFDATA ID="39" REALID="39" Note="42" Timestamp="3636"/>
+    <OFFDATA ID="40" REALID="40" Note="36" Timestamp="3788"/>
+    <OFFDATA ID="41" REALID="41" Note="36" Timestamp="3874"/>
+    <OFFDATA ID="42" REALID="42" Note="42" Timestamp="3877"/>
+    <OFFDATA ID="43" REALID="43" Note="38" Timestamp="4114"/>
+    <OFFDATA ID="44" REALID="44" Note="42" Timestamp="4118"/>
+    <OFFDATA ID="45" REALID="45" Note="36" Timestamp="4268"/>
+    <OFFDATA ID="46" REALID="46" Note="42" Timestamp="4363"/>
+    <OFFDATA ID="47" REALID="47" Note="36" Timestamp="4506"/>
+    <OFFDATA ID="48" REALID="48" Note="38" Timestamp="4593"/>
+    <OFFDATA ID="49" REALID="49" Note="42" Timestamp="4596"/>
+    <OFFDATA ID="50" REALID="50" Note="36" Timestamp="4835"/>
+    <OFFDATA ID="51" REALID="51" Note="42" Timestamp="4838"/>
+    <OFFDATA ID="52" REALID="52" Note="38" Timestamp="5077"/>
+    <OFFDATA ID="53" REALID="53" Note="42" Timestamp="5080"/>
+    <OFFDATA ID="54" REALID="54" Note="36" Timestamp="5235"/>
+    <OFFDATA ID="55" REALID="55" Note="42" Timestamp="5319"/>
+    <OFFDATA ID="56" REALID="56" Note="38" Timestamp="5390"/>
+    <OFFDATA ID="57" REALID="57" Note="36" Timestamp="5468"/>
+    <OFFDATA ID="58" REALID="58" Note="38" Timestamp="5553"/>
+    <OFFDATA ID="59" REALID="59" Note="42" Timestamp="5557"/>
+    <OFFDATA ID="60" REALID="60" Note="36" Timestamp="5706"/>
+    <OFFDATA ID="61" REALID="61" Note="36" Timestamp="5793"/>
+    <OFFDATA ID="62" REALID="62" Note="42" Timestamp="5798"/>
+    <OFFDATA ID="63" REALID="63" Note="38" Timestamp="6033"/>
+    <OFFDATA ID="64" REALID="64" Note="42" Timestamp="6037"/>
+    <OFFDATA ID="65" REALID="65" Note="36" Timestamp="6193"/>
+    <OFFDATA ID="66" REALID="66" Note="42" Timestamp="6277"/>
+    <OFFDATA ID="67" REALID="67" Note="36" Timestamp="6428"/>
+    <OFFDATA ID="68" REALID="68" Note="38" Timestamp="6515"/>
+    <OFFDATA ID="69" REALID="69" Note="42" Timestamp="6519"/>
+    <OFFDATA ID="70" REALID="70" Note="36" Timestamp="6758"/>
+    <OFFDATA ID="71" REALID="71" Note="42" Timestamp="6760"/>
+    <OFFDATA ID="72" REALID="72" Note="38" Timestamp="6996"/>
+    <OFFDATA ID="73" REALID="73" Note="42" Timestamp="7002"/>
+    <OFFDATA ID="74" REALID="74" Note="36" Timestamp="7149"/>
+    <OFFDATA ID="75" REALID="75" Note="42" Timestamp="7236"/>
+    <OFFDATA ID="76" REALID="76" Note="38" Timestamp="7310"/>
+    <OFFDATA ID="77" REALID="77" Note="36" Timestamp="7387"/>
+    <OFFDATA ID="78" REALID="78" Note="38" Timestamp="7471"/>
+    <OFFDATA ID="79" REALID="79" Note="42" Timestamp="7474"/>
+    <OFFDATA ID="80" REALID="80" Note="36" Timestamp="7627"/>
+  </PatternOff>
+  <ShadowPatternOff Index="3"/>
+  <ShadowPatternOn Index="3"/>
+  <Pattern Index="4">
+    <DATA ID="1" REALID="1" Note="36" Velocity="88" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="31"/>
+    <DATA ID="2" REALID="2" Note="42" Velocity="91" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="3" REALID="3" Note="38" Velocity="26" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="4" REALID="4" Note="38" Velocity="35" Timestamp="65" Measure="0"
+          Beat="0" Tick="65" Length="32"/>
+    <DATA ID="5" REALID="5" Note="42" Velocity="45" Timestamp="127" Measure="0"
+          Beat="0" Tick="127" Length="32"/>
+    <DATA ID="6" REALID="6" Note="36" Velocity="65" Timestamp="187" Measure="0"
+          Beat="0" Tick="187" Length="32"/>
+    <DATA ID="7" REALID="7" Note="42" Velocity="64" Timestamp="242" Measure="0"
+          Beat="1" Tick="2" Length="32"/>
+    <DATA ID="8" REALID="8" Note="38" Velocity="112" Timestamp="246" Measure="0"
+          Beat="1" Tick="6" Length="33"/>
+    <DATA ID="9" REALID="9" Note="36" Velocity="66" Timestamp="364" Measure="0"
+          Beat="1" Tick="124" Length="32"/>
+    <DATA ID="10" REALID="10" Note="42" Velocity="42" Timestamp="370" Measure="0"
+          Beat="1" Tick="130" Length="32"/>
+    <DATA ID="11" REALID="11" Note="36" Velocity="81" Timestamp="483" Measure="0"
+          Beat="2" Tick="3" Length="31"/>
+    <DATA ID="12" REALID="12" Note="42" Velocity="62" Timestamp="483" Measure="0"
+          Beat="2" Tick="3" Length="32"/>
+    <DATA ID="13" REALID="13" Note="42" Velocity="63" Timestamp="724" Measure="0"
+          Beat="3" Tick="4" Length="32"/>
+    <DATA ID="14" REALID="14" Note="38" Velocity="111" Timestamp="726"
+          Measure="0" Beat="3" Tick="6" Length="32"/>
+    <DATA ID="15" REALID="15" Note="42" Velocity="36" Timestamp="845" Measure="0"
+          Beat="3" Tick="125" Length="31"/>
+    <DATA ID="16" REALID="16" Note="38" Velocity="36" Timestamp="904" Measure="0"
+          Beat="3" Tick="184" Length="22"/>
+    <DATA ID="17" REALID="17" Note="38" Velocity="31" Timestamp="928" Measure="0"
+          Beat="3" Tick="208" Length="26"/>
+    <DATA ID="18" REALID="18" Note="38" Velocity="29" Timestamp="959" Measure="0"
+          Beat="3" Tick="239" Length="31"/>
+    <DATA ID="19" REALID="19" Note="42" Velocity="60" Timestamp="963" Measure="1"
+          Beat="0" Tick="3" Length="31"/>
+    <DATA ID="20" REALID="20" Note="36" Velocity="87" Timestamp="964" Measure="1"
+          Beat="0" Tick="4" Length="32"/>
+    <DATA ID="21" REALID="21" Note="38" Velocity="34" Timestamp="1030"
+          Measure="1" Beat="0" Tick="70" Length="32"/>
+    <DATA ID="22" REALID="22" Note="42" Velocity="41" Timestamp="1084"
+          Measure="1" Beat="0" Tick="124" Length="32"/>
+    <DATA ID="23" REALID="23" Note="36" Velocity="71" Timestamp="1144"
+          Measure="1" Beat="0" Tick="184" Length="32"/>
+    <DATA ID="24" REALID="24" Note="38" Velocity="104" Timestamp="1204"
+          Measure="1" Beat="1" Tick="4" Length="32"/>
+    <DATA ID="25" REALID="25" Note="42" Velocity="64" Timestamp="1205"
+          Measure="1" Beat="1" Tick="5" Length="31"/>
+    <DATA ID="26" REALID="26" Note="36" Velocity="67" Timestamp="1323"
+          Measure="1" Beat="1" Tick="123" Length="32"/>
+    <DATA ID="27" REALID="27" Note="42" Velocity="38" Timestamp="1330"
+          Measure="1" Beat="1" Tick="130" Length="32"/>
+    <DATA ID="28" REALID="28" Note="36" Velocity="81" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="29" REALID="29" Note="42" Velocity="59" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="30" REALID="30" Note="42" Velocity="67" Timestamp="1681"
+          Measure="1" Beat="3" Tick="1" Length="32"/>
+    <DATA ID="31" REALID="31" Note="38" Velocity="117" Timestamp="1683"
+          Measure="1" Beat="3" Tick="3" Length="31"/>
+    <DATA ID="32" REALID="32" Note="38" Velocity="109" Timestamp="1745"
+          Measure="1" Beat="3" Tick="65" Length="32"/>
+    <DATA ID="33" REALID="33" Note="42" Velocity="36" Timestamp="1820"
+          Measure="1" Beat="3" Tick="140" Length="32"/>
+    <DATA ID="34" REALID="34" Note="38" Velocity="115" Timestamp="1868"
+          Measure="1" Beat="3" Tick="188" Length="26"/>
+  </Pattern>
+  <PatternOff Index="4">
+    <OFFDATA ID="1" REALID="1" Note="36" Timestamp="31"/>
+    <OFFDATA ID="2" REALID="2" Note="42" Timestamp="32"/>
+    <OFFDATA ID="3" REALID="3" Note="38" Timestamp="32"/>
+    <OFFDATA ID="4" REALID="4" Note="38" Timestamp="97"/>
+    <OFFDATA ID="5" REALID="5" Note="42" Timestamp="159"/>
+    <OFFDATA ID="6" REALID="6" Note="36" Timestamp="219"/>
+    <OFFDATA ID="7" REALID="7" Note="42" Timestamp="274"/>
+    <OFFDATA ID="8" REALID="8" Note="38" Timestamp="279"/>
+    <OFFDATA ID="9" REALID="9" Note="36" Timestamp="396"/>
+    <OFFDATA ID="10" REALID="10" Note="42" Timestamp="402"/>
+    <OFFDATA ID="11" REALID="11" Note="36" Timestamp="514"/>
+    <OFFDATA ID="12" REALID="12" Note="42" Timestamp="515"/>
+    <OFFDATA ID="13" REALID="13" Note="42" Timestamp="756"/>
+    <OFFDATA ID="14" REALID="14" Note="38" Timestamp="758"/>
+    <OFFDATA ID="15" REALID="15" Note="42" Timestamp="876"/>
+    <OFFDATA ID="16" REALID="16" Note="38" Timestamp="926"/>
+    <OFFDATA ID="17" REALID="17" Note="38" Timestamp="954"/>
+    <OFFDATA ID="18" REALID="18" Note="38" Timestamp="990"/>
+    <OFFDATA ID="19" REALID="19" Note="42" Timestamp="994"/>
+    <OFFDATA ID="20" REALID="20" Note="36" Timestamp="996"/>
+    <OFFDATA ID="21" REALID="21" Note="38" Timestamp="1062"/>
+    <OFFDATA ID="22" REALID="22" Note="42" Timestamp="1116"/>
+    <OFFDATA ID="23" REALID="23" Note="36" Timestamp="1176"/>
+    <OFFDATA ID="24" REALID="24" Note="38" Timestamp="1236"/>
+    <OFFDATA ID="25" REALID="25" Note="42" Timestamp="1236"/>
+    <OFFDATA ID="26" REALID="26" Note="36" Timestamp="1355"/>
+    <OFFDATA ID="27" REALID="27" Note="42" Timestamp="1362"/>
+    <OFFDATA ID="28" REALID="28" Note="36" Timestamp="1483"/>
+    <OFFDATA ID="29" REALID="29" Note="42" Timestamp="1483"/>
+    <OFFDATA ID="30" REALID="30" Note="42" Timestamp="1713"/>
+    <OFFDATA ID="31" REALID="31" Note="38" Timestamp="1714"/>
+    <OFFDATA ID="32" REALID="32" Note="38" Timestamp="1777"/>
+    <OFFDATA ID="33" REALID="33" Note="42" Timestamp="1852"/>
+    <OFFDATA ID="34" REALID="34" Note="38" Timestamp="1894"/>
+  </PatternOff>
+  <ShadowPatternOff Index="4"/>
+  <ShadowPatternOn Index="4"/>
+  <Pattern Index="5">
+    <DATA ID="1" REALID="1" Note="36" Velocity="88" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="31"/>
+    <DATA ID="2" REALID="2" Note="42" Velocity="91" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="3" REALID="3" Note="38" Velocity="26" Timestamp="0" Measure="0"
+          Beat="0" Tick="0" Length="32"/>
+    <DATA ID="4" REALID="4" Note="38" Velocity="35" Timestamp="65" Measure="0"
+          Beat="0" Tick="65" Length="32"/>
+    <DATA ID="5" REALID="5" Note="42" Velocity="45" Timestamp="127" Measure="0"
+          Beat="0" Tick="127" Length="32"/>
+    <DATA ID="6" REALID="6" Note="36" Velocity="65" Timestamp="187" Measure="0"
+          Beat="0" Tick="187" Length="32"/>
+    <DATA ID="7" REALID="7" Note="42" Velocity="64" Timestamp="242" Measure="0"
+          Beat="1" Tick="2" Length="32"/>
+    <DATA ID="8" REALID="8" Note="38" Velocity="112" Timestamp="246" Measure="0"
+          Beat="1" Tick="6" Length="33"/>
+    <DATA ID="9" REALID="9" Note="36" Velocity="66" Timestamp="364" Measure="0"
+          Beat="1" Tick="124" Length="32"/>
+    <DATA ID="10" REALID="10" Note="42" Velocity="42" Timestamp="370" Measure="0"
+          Beat="1" Tick="130" Length="32"/>
+    <DATA ID="11" REALID="11" Note="36" Velocity="81" Timestamp="483" Measure="0"
+          Beat="2" Tick="3" Length="31"/>
+    <DATA ID="12" REALID="12" Note="42" Velocity="62" Timestamp="483" Measure="0"
+          Beat="2" Tick="3" Length="32"/>
+    <DATA ID="13" REALID="13" Note="42" Velocity="63" Timestamp="724" Measure="0"
+          Beat="3" Tick="4" Length="32"/>
+    <DATA ID="14" REALID="14" Note="38" Velocity="111" Timestamp="726"
+          Measure="0" Beat="3" Tick="6" Length="32"/>
+    <DATA ID="15" REALID="15" Note="42" Velocity="36" Timestamp="845" Measure="0"
+          Beat="3" Tick="125" Length="31"/>
+    <DATA ID="16" REALID="16" Note="38" Velocity="36" Timestamp="904" Measure="0"
+          Beat="3" Tick="184" Length="22"/>
+    <DATA ID="17" REALID="17" Note="38" Velocity="31" Timestamp="928" Measure="0"
+          Beat="3" Tick="208" Length="26"/>
+    <DATA ID="18" REALID="18" Note="38" Velocity="29" Timestamp="959" Measure="0"
+          Beat="3" Tick="239" Length="31"/>
+    <DATA ID="19" REALID="19" Note="42" Velocity="60" Timestamp="963" Measure="1"
+          Beat="0" Tick="3" Length="31"/>
+    <DATA ID="20" REALID="20" Note="36" Velocity="87" Timestamp="964" Measure="1"
+          Beat="0" Tick="4" Length="32"/>
+    <DATA ID="21" REALID="21" Note="38" Velocity="34" Timestamp="1030"
+          Measure="1" Beat="0" Tick="70" Length="32"/>
+    <DATA ID="22" REALID="22" Note="42" Velocity="41" Timestamp="1084"
+          Measure="1" Beat="0" Tick="124" Length="32"/>
+    <DATA ID="23" REALID="23" Note="36" Velocity="71" Timestamp="1144"
+          Measure="1" Beat="0" Tick="184" Length="32"/>
+    <DATA ID="24" REALID="24" Note="38" Velocity="104" Timestamp="1204"
+          Measure="1" Beat="1" Tick="4" Length="32"/>
+    <DATA ID="25" REALID="25" Note="42" Velocity="64" Timestamp="1205"
+          Measure="1" Beat="1" Tick="5" Length="31"/>
+    <DATA ID="26" REALID="26" Note="36" Velocity="67" Timestamp="1323"
+          Measure="1" Beat="1" Tick="123" Length="32"/>
+    <DATA ID="27" REALID="27" Note="42" Velocity="38" Timestamp="1330"
+          Measure="1" Beat="1" Tick="130" Length="32"/>
+    <DATA ID="28" REALID="28" Note="36" Velocity="81" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="29" REALID="29" Note="42" Velocity="59" Timestamp="1451"
+          Measure="1" Beat="2" Tick="11" Length="32"/>
+    <DATA ID="30" REALID="30" Note="42" Velocity="67" Timestamp="1681"
+          Measure="1" Beat="3" Tick="1" Length="32"/>
+    <DATA ID="31" REALID="31" Note="38" Velocity="117" Timestamp="1683"
+          Measure="1" Beat="3" Tick="3" Length="31"/>
+    <DATA ID="32" REALID="32" Note="38" Velocity="109" Timestamp="1745"
+          Measure="1" Beat="3" Tick="65" Length="32"/>
+    <DATA ID="33" REALID="33" Note="42" Velocity="36" Timestamp="1820"
+          Measure="1" Beat="3" Tick="140" Length="32"/>
+    <DATA ID="34" REALID="34" Note="38" Velocity="115" Timestamp="1868"
+          Measure="1" Beat="3" Tick="188" Length="26"/>
+  </Pattern>
+  <PatternOff Index="5">
+    <OFFDATA ID="1" REALID="1" Note="36" Timestamp="31"/>
+    <OFFDATA ID="2" REALID="2" Note="42" Timestamp="32"/>
+    <OFFDATA ID="3" REALID="3" Note="38" Timestamp="32"/>
+    <OFFDATA ID="4" REALID="4" Note="38" Timestamp="97"/>
+    <OFFDATA ID="5" REALID="5" Note="42" Timestamp="159"/>
+    <OFFDATA ID="6" REALID="6" Note="36" Timestamp="219"/>
+    <OFFDATA ID="7" REALID="7" Note="42" Timestamp="274"/>
+    <OFFDATA ID="8" REALID="8" Note="38" Timestamp="279"/>
+    <OFFDATA ID="9" REALID="9" Note="36" Timestamp="396"/>
+    <OFFDATA ID="10" REALID="10" Note="42" Timestamp="402"/>
+    <OFFDATA ID="11" REALID="11" Note="36" Timestamp="514"/>
+    <OFFDATA ID="12" REALID="12" Note="42" Timestamp="515"/>
+    <OFFDATA ID="13" REALID="13" Note="42" Timestamp="756"/>
+    <OFFDATA ID="14" REALID="14" Note="38" Timestamp="758"/>
+    <OFFDATA ID="15" REALID="15" Note="42" Timestamp="876"/>
+    <OFFDATA ID="16" REALID="16" Note="38" Timestamp="926"/>
+    <OFFDATA ID="17" REALID="17" Note="38" Timestamp="954"/>
+    <OFFDATA ID="18" REALID="18" Note="38" Timestamp="990"/>
+    <OFFDATA ID="19" REALID="19" Note="42" Timestamp="994"/>
+    <OFFDATA ID="20" REALID="20" Note="36" Timestamp="996"/>
+    <OFFDATA ID="21" REALID="21" Note="38" Timestamp="1062"/>
+    <OFFDATA ID="22" REALID="22" Note="42" Timestamp="1116"/>
+    <OFFDATA ID="23" REALID="23" Note="36" Timestamp="1176"/>
+    <OFFDATA ID="24" REALID="24" Note="38" Timestamp="1236"/>
+    <OFFDATA ID="25" REALID="25" Note="42" Timestamp="1236"/>
+    <OFFDATA ID="26" REALID="26" Note="36" Timestamp="1355"/>
+    <OFFDATA ID="27" REALID="27" Note="42" Timestamp="1362"/>
+    <OFFDATA ID="28" REALID="28" Note="36" Timestamp="1483"/>
+    <OFFDATA ID="29" REALID="29" Note="42" Timestamp="1483"/>
+    <OFFDATA ID="30" REALID="30" Note="42" Timestamp="1713"/>
+    <OFFDATA ID="31" REALID="31" Note="38" Timestamp="1714"/>
+    <OFFDATA ID="32" REALID="32" Note="38" Timestamp="1777"/>
+    <OFFDATA ID="33" REALID="33" Note="42" Timestamp="1852"/>
+    <OFFDATA ID="34" REALID="34" Note="38" Timestamp="1894"/>
+  </PatternOff>
+  <ShadowPatternOff Index="5"/>
+  <ShadowPatternOn Index="5"/>
+  <Pattern Index="6"/>
+  <PatternOff Index="6"/>
+  <ShadowPatternOff Index="6"/>
+  <ShadowPatternOn Index="6"/>
+  <Pattern Index="7"/>
+  <PatternOff Index="7"/>
+  <ShadowPatternOff Index="7"/>
+  <ShadowPatternOn Index="7"/>
+  <Parameters>
+    <Parameter Name="name" Value="New Beats Pattern"/>
+    <Parameter Name="BPM" Value="120"/>
+    <Parameter Name="numerator" Value="4"/>
+    <Parameter Name="denominator" Value="4"/>
+    <Parameter Name="switchVariation" Value="4"/>
+    <Parameter Name="runStartQ" Value="0"/>
+    <Parameter Name="runStopQ" Value="100"/>
+    <Parameter Name="WFFN" Value="1"/>
+    <Parameter Name="name" Value="New Beats Pattern"/>
+    <Parameter Name="overrideHostTransport" Value="1"/>
+    <Parameter Name="notePassThrough" Value="1"/>
+    <Parameter Name="numPatterns" Value="6"/>
+    <Parameter Name="patternsRealID" Value="8"/>
+    <Parameter Name="numPoolNotes" Value="9"/>
+    <Parameter Name="poolNotesRealId" Value="1"/>
+    <Parameter Name="numNotes" Value="34" Index="0"/>
+    <Parameter Name="notesRealID" Value="34" Index="0"/>
+    <Parameter Name="patLenInTicks" Value="1894" Index="0"/>
+    <Parameter Name="lenInTicks" Value="1894" Index="0"/>
+    <Parameter Name="lenInMeasures" Value="2" Index="0"/>
+    <Parameter Name="patternToUse" Value="0" Index="0"/>
+    <Parameter Name="numNotes" Value="32" Index="1"/>
+    <Parameter Name="notesRealID" Value="32" Index="1"/>
+    <Parameter Name="patLenInTicks" Value="1891" Index="1"/>
+    <Parameter Name="lenInTicks" Value="1891" Index="1"/>
+    <Parameter Name="lenInMeasures" Value="2" Index="1"/>
+    <Parameter Name="patternToUse" Value="1" Index="1"/>
+    <Parameter Name="numNotes" Value="34" Index="2"/>
+    <Parameter Name="notesRealID" Value="34" Index="2"/>
+    <Parameter Name="patLenInTicks" Value="1920" Index="2"/>
+    <Parameter Name="lenInTicks" Value="1920" Index="2"/>
+    <Parameter Name="lenInMeasures" Value="2" Index="2"/>
+    <Parameter Name="patternToUse" Value="2" Index="2"/>
+    <Parameter Name="numNotes" Value="80" Index="3"/>
+    <Parameter Name="notesRealID" Value="80" Index="3"/>
+    <Parameter Name="patLenInTicks" Value="7627" Index="3"/>
+    <Parameter Name="lenInTicks" Value="7627" Index="3"/>
+    <Parameter Name="lenInMeasures" Value="8" Index="3"/>
+    <Parameter Name="patternToUse" Value="3" Index="3"/>
+    <Parameter Name="numNotes" Value="34" Index="4"/>
+    <Parameter Name="notesRealID" Value="34" Index="4"/>
+    <Parameter Name="patLenInTicks" Value="1894" Index="4"/>
+    <Parameter Name="lenInTicks" Value="1894" Index="4"/>
+    <Parameter Name="lenInMeasures" Value="2" Index="4"/>
+    <Parameter Name="patternToUse" Value="4" Index="4"/>
+    <Parameter Name="numNotes" Value="34" Index="5"/>
+    <Parameter Name="notesRealID" Value="34" Index="5"/>
+    <Parameter Name="patLenInTicks" Value="1894" Index="5"/>
+    <Parameter Name="lenInTicks" Value="1894" Index="5"/>
+    <Parameter Name="lenInMeasures" Value="2" Index="5"/>
+    <Parameter Name="patternToUse" Value="5" Index="5"/>
+    <Parameter Name="numNotes" Value="0" Index="6"/>
+    <Parameter Name="notesRealID" Value="1" Index="6"/>
+    <Parameter Name="patLenInTicks" Value="-842150451" Index="6"/>
+    <Parameter Name="lenInTicks" Value="-842150451" Index="6"/>
+    <Parameter Name="lenInMeasures" Value="-842150451" Index="6"/>
+    <Parameter Name="patternToUse" Value="6" Index="6"/>
+    <Parameter Name="numNotes" Value="0" Index="7"/>
+    <Parameter Name="notesRealID" Value="1" Index="7"/>
+    <Parameter Name="patLenInTicks" Value="-842150451" Index="7"/>
+    <Parameter Name="lenInTicks" Value="-842150451" Index="7"/>
+    <Parameter Name="lenInMeasures" Value="-842150451" Index="7"/>
+    <Parameter Name="patternToUse" Value="7" Index="7"/>
+  </Parameters>
+</TopiaryBeatsModel>

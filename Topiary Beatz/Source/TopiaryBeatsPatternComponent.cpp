@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ void TopiaryBeatsPatternComponent::setModel(TopiaryBeatsModel* m)
 
 	// trick to call the model and read 
 	
-	actionListenerCallback(MsgMasterTables); // among other things, set the pattern combobox;
+	actionListenerCallback(MsgMaster); // among other things, set the pattern combobox;
 
 } // setModel
 
@@ -93,7 +93,7 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 	{
 		// pattern (may have) changed; set the table such that the 
 	}
-	if (message.compare(MsgMasterTables) == 0)
+	if (message.compare(MsgMaster) == 0)
 	{
 		// find the list of patterns loaded
 		String patterns[8];

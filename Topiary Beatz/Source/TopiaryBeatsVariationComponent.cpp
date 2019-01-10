@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "../../Topiary/Topiary.h"
+#include "../../Topiary/Source/Topiary.h"
 #include "TopiaryBeatsModel.h"
 #include "TopiaryBeatsVariationComponent.h"
 
@@ -59,7 +59,7 @@ void TopiaryBeatsVariationComponent::setModel(TopiaryBeatsModel* m)
 {
 	beatsModel = m;	
 	beatsModel->setListener((ActionListener*)this);
-	actionListenerCallback(MsgMasterTables); // need to call this so we can fill the patternCombo !!!
+	actionListenerCallback(MsgMaster); // need to call this so we can fill the patternCombo !!!
 	
 	variationDefinitionComponent.variationCombo.setSelectedId(1);  // this will trigger a call to getVariationDefinition which gets the data
 	
@@ -126,29 +126,29 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 
 	if ((poolChannelComponent.poolChannelEditor1.getText().getIntValue() < 1) || (poolChannelComponent.poolChannelEditor1.getText().getIntValue() > 16))
 	{
-		beatsModel->beatsLog("Output channel for pool 1 should be > 0 and < 16.", Topiary::LogType::Warning);
+		beatsModel->Log("Output channel for pool 1 should be > 0 and < 16.", Topiary::LogType::Warning);
 		refused = true;
 	}
 	if ((poolChannelComponent.poolChannelEditor2.getText().getIntValue() < 1) || (poolChannelComponent.poolChannelEditor2.getText().getIntValue() > 16))
 	{
-		beatsModel->beatsLog("Output channel for pool 2 should be > 0 and < 16.", Topiary::LogType::Warning);
+		beatsModel->Log("Output channel for pool 2 should be > 0 and < 16.", Topiary::LogType::Warning);
 		refused = true;
 	}
 	if ((poolChannelComponent.poolChannelEditor3.getText().getIntValue() < 1) || (poolChannelComponent.poolChannelEditor3.getText().getIntValue() > 16))
 	{
-		beatsModel->beatsLog("Output channel for pool 3 should be > 0 and < 16.", Topiary::LogType::Warning);
+		beatsModel->Log("Output channel for pool 3 should be > 0 and < 16.", Topiary::LogType::Warning);
 		refused = true;
 	}
 	if ((poolChannelComponent.poolChannelEditor4.getText().getIntValue() < 1) || (poolChannelComponent.poolChannelEditor4.getText().getIntValue() > 16))
 	{
-		beatsModel->beatsLog("Output channel for pool 4 should be > 0 and < 16.", Topiary::LogType::Warning);
+		beatsModel->Log("Output channel for pool 4 should be > 0 and < 16.", Topiary::LogType::Warning);
 		refused = true;
 	}
 
 	if (!refused)
 	{
 		beatsModel->setVariationDefinition(variation, variationDefinitionComponent.enableButton.getToggleState(), variationDefinitionComponent.nameEditor.getText(), selectedPatternId, enables, poolLength, poolChannel);  //// TODO last parameter
-		beatsModel->beatsLog("Variation "+String(variation+1)+" saved.", Topiary::LogType::Info);
+		beatsModel->Log("Variation "+String(variation+1)+" saved.", Topiary::LogType::Info);
 	}
 	else
 		variationDefinitionComponent.enableButton.setToggleState(false, dontSendNotification);
@@ -237,7 +237,7 @@ void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &messa
 		getVariationDefinition();  
 		// be sure that the mastertables are read first so the patternCombo is set correctly !!!
 	}
-	if (message.compare(MsgMasterTables) == 0)
+	if (message.compare(MsgMaster) == 0)
 	{
 		// fill the patternCombo; careful, there may already be stuff there so clear it and then set it back where it was
 		int remember = variationDefinitionComponent.patternCombo.getSelectedId();

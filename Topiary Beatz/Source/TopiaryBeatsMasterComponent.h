@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 
 #pragma once
-#include"../../Topiary/TopiaryTable.h"  
+#include"../../Topiary/Source/TopiaryTable.h"  
 #include"TopiaryBeatsModel.h"
 
 class TopiaryBeatsMasterComponent;
@@ -54,8 +54,6 @@ private:
 	int patternTW = 253;
 	int patternTH = 240;
 
-	TextButton GMDrumMapButton;
-
 	// pool stuff
 	TopiaryTable poolTable;
 	XmlElement *poolListHeader = nullptr;
@@ -63,14 +61,12 @@ private:
 	
 	TextButton deletePoolButton;
 	TextButton newPoolButton;
+	TextButton GMDrumMapButton;
+	TextButton regeneratePoolButton;
 
 	int poolTW = 225;
 	int poolTH = 240;
 
-	/*
-	TopiaryBeatsPoolTimingComponent poolStart[4];
-	TopiaryBeatsPoolTimingComponent poolStop[4];
-	*/
 
 	// settings stuff
 

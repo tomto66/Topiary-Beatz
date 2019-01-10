@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,83 +19,68 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 
 #pragma once
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "../../Topiary/Topiary.h"
+#include "../../Topiary/Source/TopiaryModel.h"
 
-class TopiaryBeatsModel
+class TopiaryBeatsModel : public TopiaryModel
 {
 public:
 	TopiaryBeatsModel();
 	~TopiaryBeatsModel();
 
-	String name = "New Beats Pattern"; // name of this preset
+	String name = "New Beatz Pattern"; // name of this preset
 
 	void getMasterModel(XmlElement** h, XmlElement** d, XmlElement** ph, XmlElement** pd);
 	void getPatternModel(int patternIndex, XmlElement** h, XmlElement** d);
-	int getNumPatterns();
+	//int getNumPatterns();
 	void getPatterns(String pats[8]);
 	int getPatternLengthInMeasures(int i);  // needed in variationComponent for validating pool length values;
 	void deletePattern(int i);
 	void addPattern();
-	void addPool();
-	void deletePool(int i);
+
+	void addNote();
+	void deleteNote(int i);
+	void rebuildPool();
+	void setGMDrumMapLabels();
 	bool insertPatternFromFile(int patternIndex);
 	XmlElement* addToModel(char* type);
 	XmlElement* addToModel(char *type, int index);
 	void removeFromModel(char *type, XmlElement *child);
-	void rebuildPool();
-	void setGMDrumMapLabels();
+	
+	void savePreset(File f) override;
+	void loadPreset(File f) override;
+	void saveStateToMemoryBlock(MemoryBlock& destData) override;
+	void restoreStateFromMemoryBlock(const void* data, int sizeInBytes) override;
+	bool processVariationSwitch() override;
+	bool switchingVariations() override;
+	void getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended) override;
+	void initializeVariationsForRunning() override;
+	void setEnded() override;
 
-	void savePreset(File f);
-	void loadPreset(File f);
-	void saveStateToMemoryBlock(MemoryBlock& destData);
-	void restoreStateFromMemoryBlock(const void* data, int sizeInBytes);
-
-	////// Logger 
-	String* getBeatsLog();
-	String getLastWarning();
-	void beatsLog(String s, int logType);
-	void setBeatsLogSettings(bool warning, bool midiIn, bool midiOut, bool debug, bool transport, bool variations, bool info);
-	void clearBeatsLog();
-	void getBeatsLogSettings(bool& warning, bool& midiIn, bool& midiOut, bool& debug, bool &transport, bool &variations, bool &info);
-	void getMidiLogSettings(bool &in, bool &out);
-	void logMidi(bool in, MidiMessage &msg); // in denotes msg in or msg out
-
-	////// Transport
-
-	void setBPM(int bpm);
-	void setNumeratorDenominator(int n, int d);
-	void getTransportState(int& b, int& n, int& d, int& bs, bool& o, bool &waitFFN);
-	void setOverrideHostTransport(bool o);
-	void setRunState(int n);
-	int getRunState();
-	void processTransportControls(int buttonEnabled); // // buttonEnabled; 0=Stop; 1=start; 2=rec
-
-
+	
 	////// Variations
 
-	void setVariation(int i);
+	void setVariation(int i) override;
 	void getVariation(int& running, int& selected);
 	void getVariationEnables(bool enables[8]);
+	bool getVariationEnabled(int v);
+	int getVariationLenInTicks(int v);
 
 	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4]);   // pass variation Definition on to VariationComponent in editor
 	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4]);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
 	bool validateVariationDefinition(int i, bool enable, String vname, int patternId, int poolLength[4][3][2]);
 	void generateVariation(int i); // Generates the variation; at the end , swaps it in (using spinlock)
+	void generateAllVariations();
 
 	struct Variation {
 
-		int patternToUse;				// index in patterndata
+		int patternToUse;					// index in patterndata
 		int lenInTicks;
 		int lenInMeasures;
-		XmlElement* patternOn;			// pattern On note events - points to patterndata!!!
-		XmlElement* patternOff;			// pattern Off note events
-		XmlElement* currentPatternChild;    // where we are in generation - not in patterns but in shadowpatterns!
-		XmlElement* currentPatternChildOff; // where we are in generation - not in patterns but in shadowpatterns!
-
+		XmlElement* pattern;				// pattern  events
+		XmlElement* currentPatternChild;    // where we are in generation 
+		
 		bool ending;					// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended)
-		//XmlElement *shadowPatternOn;	// shadow pattern On note events
-		//XmlElement *shadowPatternOff;	// shadow pattern Off note events - copy of patterndata, so holds its own elements!!! (which gets destroyed when this gets destroyed)
+		bool ended;
 
 		bool enabled = false;
 		String name = "";
@@ -115,7 +100,7 @@ public:
 	};
 
 	// Generator stuff
-
+	/*
 	void setSampleRate(double sr);
 	void setBlockSize(int blocksz);
 	void setStartTimes();
@@ -139,15 +124,18 @@ public:
 	String getName();
 	void setName(String n);
 	void getTime(int& b, int& m);
+	*/
 
 	////////// Broadcasters & Listeners
-
+/*
 	void setListener(ActionListener *listener);
 	void removeListener(ActionListener *listener);
 	void sendActionMessage(String s);  // needed because the tables are updated in the editor, and the tables resort the data !!!
 	ActionBroadcaster* getBroadcaster();
+	*/
 
 	// broadcaster messages
+	/*
 #define MsgTransport "t"
 #define MsgLog "l"
 #define MsgMasterTables "m"
@@ -158,20 +146,20 @@ public:
 #define MsgWarning "w"
 #define MsgPattern "p"
 #define MsgTiming "T"
+*/
 
 	////////// Automation
-
+/*
 	void setVariationControl(bool ccSwitching, int channel, int switches[8]);
 	void getVariationControl(bool& ccSwitching, int& channel, int switches[8]);
 	void processAutomation(MidiMessage& msg);
-
+	*/
 #define NUMBEROFQANTIZERS 10
 
 private:
 
-	SpinLock lockModel;
-
-	ActionBroadcaster broadcaster;
+	//SpinLock lockModel;
+	//ActionBroadcaster broadcaster;
 
 	XmlElement *patternListHeader = new XmlElement("PatternListHeader");
 	XmlElement *patternListData = new XmlElement("PatternListData");
@@ -183,7 +171,7 @@ private:
 	struct Pattern
 	{
 		XmlElement *noteData;
-		XmlElement *noteOffData;
+		
 		int numNotes = 0;
 		int notesRealID = 1;
 		int patLenInTicks = 0;
@@ -194,10 +182,10 @@ private:
 	int numPoolNotes = 0;
 	int poolNotesRealID = 1;
 
-	std::unique_ptr<XmlElement> model;
+	//std::unique_ptr<XmlElement> model;
 
 	/////////// Logger 
-
+	/*
 	String logString;
 	String lastWarning;
 
@@ -208,31 +196,32 @@ private:
 	bool logTransport = true;
 	bool logVariations = true;
 	bool logInfo = true;
-
+	*/
 	/////////// Transport
-
+	/*
 	bool overrideHostTransport;
 	int denominator = 0; // b in a/b
 	int numerator = 0;  // a in a/b
 	int BPM = 120;
 	int runState;
+	*/
 
 	/////////// Variations
 
-	int variationSelected = 0;
-	int variationRunning = 0; // this may differ from variationSelected during switch trigger time !!!
+	//int variationSelected = 0;
+	//int variationRunning = 0; // this may differ from variationSelected during switch trigger time !!!
 
 	Variation variation[8];  // struct to hold variation detail
 
 	/////////// Generator variables
-
+	/*
 	double sampleRate, ticksPerBeat, samplesPerTick;  // housekeeping in recalcRealTime() !
 
 	int64 blockCursor;					// sampletime of start of current block
 	int64 nextRTGenerationCursor;		// real time cursor of next event to generate
 	int blockSize;						// size of block to generate 
-	int patternCursorOn;				// ticks within the variation/pattern for next note on
-	int patternCursorOff;				// ticks within the variation/pattern for next note off
+	int patternCursor;				// ticks within the variation/pattern for next note on
+	//int patternCursorOff;				// ticks within the variation/pattern for next note off
 
 	int variationStartQ = 100;			// when to switch variations
 	int runStopQ = 100;					// when to stop running
@@ -245,19 +234,19 @@ private:
 	int beat = 0;						// keep track of where we are in generation
 	int tick = 0;						// keep track of where we are in generation
 	int64 cursorToStop = -1;			// used when running, set once, to cursor where we should stop; needs to be set to -1 when running stops (typically in processEnding() but also when arming 
-
+	*/
 	//SortedSet<int> noteOnSet;			// keep track of which notes are still on
 
 	/////////////// Automation
-
+	/*
 	int variationSwitch[8];     // either notes for each variation, of CC numbers
 	bool ccVariationSwitching;  // if false then we're using notes
 	int variationSwitchChannel; // midi channel for variation switching; 0 == omni
 
 	String filePath;
-
+	*/
 	/////////////////////////////////////////////////////////////////////////
-
+	/*
 	class DataSorter
 	{
 	public:
@@ -313,7 +302,9 @@ private:
 			id++;
 			child = child->getNextElement();
 		}
-	} // renumberNotes
+	} // renumberNotes */
+
+	///////////////////////////////////////////////////////////////////////
 
 	void renumberPool(XmlElement *list)
 	{  // resort by timestamp and set the Ids in that order
@@ -331,8 +322,9 @@ private:
 
 	///////////////////////////////////////////////////////////////////////
 
-	bool loadMidiDrumPattern(const File& fileToRead, XmlElement *noteList, XmlElement *noteOffList, int patternIndex, int& measures, int& lenInTicks)
-	{   // fileToRead and noteList must have been initialized!!
+	bool loadMidiDrumPattern(const File& fileToRead, XmlElement *noteList, int patternIndex, int& measures, int& lenInTicks)
+	{
+		// fileToRead and noteList must have been initialized!!
 		// noteList will receive children that have tag NOTEDATA
 		// if the input file contains more than 1 real track, the result will
 		// be undefined and possibly mix note data from different channels
@@ -340,16 +332,19 @@ private:
 
 		//jassert(noteList->getTagName().compare("PATTERNDATA"));
 
+		//std::unique_ptr<XmlElement> noteOffList;  // to hold the note off data - to delete at the end
+		//noteOffList.reset(new XmlElement("NoteOffData"));
+
 		if (!fileToRead.existsAsFile())
 		{
-			beatsLog("File " + fileToRead.getFileName() + " does not exist.)", Topiary::LogType::Warning);  // file doesn't exist
+			Log("File " + fileToRead.getFileName() + " does not exist.)", Topiary::LogType::Warning);  // file doesn't exist
 			return false;
 		}
 		FileInputStream inputStream(fileToRead);
 
 		if (!inputStream.openedOk())
 		{
-			beatsLog("Cannot open file " + fileToRead.getFileName() + ".", Topiary::LogType::Warning);
+			Log("Cannot open file " + fileToRead.getFileName() + ".", Topiary::LogType::Warning);
 			return false;  // failed to open
 		}
 
@@ -365,7 +360,7 @@ private:
 		MidiFile midifile;
 		if (!midifile.readFrom(inputStream))
 		{
-			beatsLog("Invalid MIDI format in file " + fileToRead.getFileName() + ".", Topiary::LogType::Warning);
+			Log("Invalid MIDI format in file " + fileToRead.getFileName() + ".", Topiary::LogType::Warning);
 			return false;
 		}
 
@@ -429,10 +424,10 @@ private:
 				}
 				if (message.isNoteOff())
 				{
-					auto newNoteOff = new XmlElement("OFFDATA");
+					//auto newNoteOff = new XmlElement("OFFDATA");
 
-					Logger::writeToLog(message.getDescription());
-					Logger::writeToLog(String(message.getTimeStamp()));
+					//Logger::writeToLog(message.getDescription());
+					//Logger::writeToLog(String(message.getTimeStamp()));
 					// find the note that is off and set the length
 					int oldNote = message.getNoteNumber();
 					// now find the last occurrence of this note in the children of noteList
@@ -449,11 +444,11 @@ private:
 					child->setAttribute("Length", (int)floor(timeStamp - child->getStringAttribute("Timestamp").getIntValue()));
 
 					// so child is our note ON event; fill the note OFF event
-					newNoteOff->setAttribute("ID", child->getStringAttribute("ID"));
-					newNoteOff->setAttribute("REALID", child->getStringAttribute("REALID"));
-					newNoteOff->setAttribute("Note", child->getStringAttribute("Note"));
-					newNoteOff->setAttribute("Timestamp", (int)timeStamp);
-					noteOffList->prependChildElement(newNoteOff);
+					//newNoteOff->setAttribute("ID", child->getStringAttribute("ID"));
+					//newNoteOff->setAttribute("REALID", child->getStringAttribute("REALID"));
+					//newNoteOff->setAttribute("Note", child->getStringAttribute("Note"));
+					//newNoteOff->setAttribute("Timestamp", (int)timeStamp);
+					//noteOffList->prependChildElement(newNoteOff);
 				}
 				if (message.isMetaEvent())
 				{
@@ -479,34 +474,24 @@ private:
 			measures++;
 			int finalLength = measures * num * Topiary::TICKS_PER_QUARTER;
 			lenInTicks = finalLength;
-			renumberNotes(noteList);
-			renumberNotes(noteOffList);
-
-			/* not efficient - would be simpler to do this with while loop before restoring: can't get that to work */
-			forEachXmlChildElement(*noteOffList, child)
-			{
-				if (child->getIntAttribute("Timestamp") == finalLength)
-				{
-					child->setAttribute("Timestamp", child->getIntAttribute("Timestamp") - 1);
-				}
-			}
-
+			renumberByTimestamp(noteList);
+			
 			// summary:
-			Logger::writeToLog(String("************ BPM: ") + String(bpm) + String(" signature ") + String(num) + String("/") + String(den));
-			Logger::writeToLog(String("************ From header timeframe:  tickperQ ") + String(timeFormat) + String("ticksperFrame ") +
-				String(ticksPerFrame) + String("framesPerSecond ") + String(framesPerSecond));
-			String myXmlDoc2 = noteList->createDocument(String());
-			Logger::writeToLog(myXmlDoc2);
+			//Logger::writeToLog(String("************ BPM: ") + String(bpm) + String(" signature ") + String(num) + String("/") + String(den));
+			//Logger::writeToLog(String("************ From header timeframe:  tickperQ ") + String(timeFormat) + String("ticksperFrame ") +
+			//	String(ticksPerFrame) + String("framesPerSecond ") + String(framesPerSecond));
+			//String myXmlDoc2 = noteList->createDocument(String());
+			//Logger::writeToLog(myXmlDoc2);
 
-			String myXmlDoc = noteOffList->createDocument(String());
-			Logger::writeToLog(myXmlDoc);
+			//String myXmlDoc = noteOffList->createDocument(String());
+			//Logger::writeToLog(myXmlDoc);
 
 
 		}
-		beatsLog("File " + fileToRead.getFileName() + " imported.", Topiary::LogType::Info);
+		Log("File " + fileToRead.getFileName() + " imported.", Topiary::LogType::Info);
 
 		if ((num != numerator) || (den != denominator))
-			beatsLog("Time signature in file is different from plugin timesignature; results may be unexpected!", Topiary::LogType::Warning);
+			Log("Time signature in file is different from plugin timesignature; results may be unexpected!", Topiary::LogType::Warning);
 
 		return true;
 	}; // loadMidiDrumPattern
@@ -724,7 +709,6 @@ private:
 
 			// automation
 			addIntToModel(parameters, variationSwitch[i], "variationSwitch", i);
-			addBoolToModel(parameters, ccVariationSwitching, "ccVariationSwitching");
 		}
 
 	} // addParametersToModel
@@ -732,9 +716,9 @@ private:
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void restoreParametersToModel()
-	{ // model now has a child "Parameters"; set all non-XML parameters to their new values
-
-		//auto parameters = model->getChildByName("Parameters");
+	{ 
+		// model now has a child "Parameters"; set all non-XML parameters to their new values
+		
 		auto child = model->getFirstChildElement();
 		while (child != nullptr)
 		{
@@ -830,7 +814,8 @@ private:
 					if (parameterName.compare("tickTo3") == 0) variation[parameter->getIntAttribute("Index")].tickTo[3] = parameter->getIntAttribute("Value");
 
 					// patterndata array variables
-					if (parameterName.compare("patLenInTicks") == 0)  patternData[parameter->getIntAttribute("Index")].patLenInTicks = parameter->getIntAttribute("Value");					if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
+					if (parameterName.compare("patLenInTicks") == 0)  patternData[parameter->getIntAttribute("Index")].patLenInTicks = parameter->getIntAttribute("Value");
+					if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
 					if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
 
 					// automation
@@ -853,7 +838,6 @@ private:
 			if (tagName.compare("PoolListHeader") == 0)
 				poolListHeader = child;
 
-			if (tagName.compare("PatternOff") == 0) patternData[child->getIntAttribute("Index")].noteOffData = child;
 			if (tagName.compare("Pattern") == 0) patternData[child->getIntAttribute("Index")].noteData = child;
 
 			//if (tagName.compare("ShadowPatternOn") == 0) variation[child->getIntAttribute("Index")].shadowPatternOn = child;  LEAK
@@ -894,7 +878,7 @@ private:
 		// inform editor
 		broadcaster.sendActionMessage(MsgTransport);
 		broadcaster.sendActionMessage(MsgLog);
-		broadcaster.sendActionMessage(MsgMasterTables);
+		broadcaster.sendActionMessage(MsgMaster);
 		broadcaster.sendActionMessage(MsgVariationEnables);		// so that if needed variationbuttons are disabled/enabled
 		broadcaster.sendActionMessage(MsgVariationDefinition);	// inform editor of variation settings;
 		broadcaster.sendActionMessage(MsgVariationAutomation);	// inform editor of variation automation settings;
@@ -915,7 +899,7 @@ private:
 		if (denominator == 0) return;
 		ticksPerBeat = Topiary::TICKS_PER_QUARTER * 4 / denominator;
 		samplesPerTick = (double)sampleRate / ((double)ticksPerBeat * BPM / 60.0);
-		beatsLog("Samples per tick" + String(samplesPerTick), Topiary::LogType::Debug);
+		Log("Samples per tick" + String(samplesPerTick), Topiary::LogType::Debug);
 
 	} // recalcRealTime
 
@@ -1088,7 +1072,7 @@ private:
 
 	void generatePool(int v, int p, XmlElement *newPatternOn, int poolNote[128])
 	{
-		
+		// generates the pool notes in poop p for variation v
 		// v is variation to generate
 		// p is poolnumber
 
@@ -1139,7 +1123,7 @@ private:
 				newChild->setAttribute("ID", patternChild->getStringAttribute("ID"));
 				newChild->setAttribute("Note", patternChild->getStringAttribute("Note"));
 				newChild->setAttribute("Velocity", patternChild->getStringAttribute("Velocity"));
-
+				newChild->setAttribute("midiType", Topiary::MidiType::NoteOn);
 				// timestamp is variation[v].poolTickCursor !!!!
 				// except if first note note generated; then it's the timestamp of the note in the pattern!
 

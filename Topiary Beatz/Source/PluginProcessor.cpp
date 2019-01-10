@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -219,7 +219,7 @@ void TopiaryBeatsAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBu
 			}
 		}
 	}
-	else beatsModel.beatsLog("ERROR>>>> No playhead provided!", Topiary::LogType::Warning);
+	else beatsModel.Log("ERROR>>>> No playhead provided!", Topiary::LogType::Warning);
 
 	if (!waitFFN && (runState == Topiary::Armed))
 	{
@@ -289,7 +289,7 @@ void TopiaryBeatsAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBu
 					case juce::MidiMessage::mmc_rewind:
 						break;
 					case juce::MidiMessage::mmc_recordStart:
-						beatsModel.beatsLog("Host sent RECORD NOTE DONE YET", Topiary::LogType::Warning);
+						beatsModel.Log("Host sent RECORD NOTE DONE YET", Topiary::LogType::Warning);
 						break;
 					case juce::MidiMessage::mmc_recordStop:
 						break;

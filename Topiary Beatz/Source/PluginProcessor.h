@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -75,6 +75,7 @@ private:
 		beatsModel.setRunState(Topiary::Running);
 		beatsModel.setSampleRate(getSampleRate());	// see if prepareToPlay is called, if so no need to keep checking this
 		beatsModel.setStartTimes();	// and do some housekeeping like set the parents to the correct variation
+		beatsModel.initializeVariationsForRunning();
 		return beatsModel.getRunState();  // because if there are no variations selected, it shouldn't run!!!
 	} // tellModelToRun
 	

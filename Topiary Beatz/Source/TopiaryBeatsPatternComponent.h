@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include"TopiaryBeatsModel.h"
-#include "../../Topiary/Topiary.h"
-#include"../../Topiary/TopiaryTable.h"  
+#include "../../Topiary/Source/Topiary.h"
+#include"../../Topiary/Source/TopiaryTable.h"  
 
 class TopiaryBeatsPatternComponent : public Component, ActionListener
 {

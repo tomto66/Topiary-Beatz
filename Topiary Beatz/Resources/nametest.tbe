@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<TopiaryBeatsModel Version="0.8.0">
+  <PatternHeader>
+    <COLUMN columnId="1" name="ID" width="20" type="int"/>
+    <COLUMN columnId="2" name="Measure" width="80" type="int"/>
+    <COLUMN columnId="3" name="Beat" width="80" type="int"/>
+    <COLUMN columnId="4" name="Tick" width="80" type="int"/>
+    <COLUMN columnId="5" name="Note" width="80" type="int"/>
+    <COLUMN columnId="6" name="Length" width="80" type="int"/>
+    <COLUMN columnId="7" name="Velocity" width="80" type="int"/>
+    <COLUMN columnId="8" name="Timestamp" width="80" type="int"/>
+  </PatternHeader>
+  <PatternListHeader>
+    <COLUMN columnId="1" name="ID" width="20" type="int"/>
+    <COLUMN columnId="2" name="Name" width="140" type="char"/>
+    <COLUMN columnId="3" name="Measures" width="70" type="int"/>
+  </PatternListHeader>
+  <PatternListData/>
+  <PoolListData/>
+  <PoolListHeader>
+    <COLUMN columnId="1" name="ID" width="20" type="int"/>
+    <COLUMN columnId="2" name="Note" width="40" type="int"/>
+    <COLUMN columnId="3" name="Label" width="100" type="char"/>
+    <COLUMN columnId="4" name="Pool" width="40" type="int"/>
+    <COLUMN columnId="5" name="Channel" width="100" type="int"/>
+  </PoolListHeader>
+  <Pattern Index="0"/>
+  <PatternOff Index="0"/>
+  <ShadowPatternOff Index="0"/>
+  <ShadowPatternOn Index="0"/>
+  <Pattern Index="1"/>
+  <PatternOff Index="1"/>
+  <ShadowPatternOff Index="1"/>
+  <ShadowPatternOn Index="1"/>
+  <Pattern Index="2"/>
+  <PatternOff Index="2"/>
+  <ShadowPatternOff Index="2"/>
+  <ShadowPatternOn Index="2"/>
+  <Pattern Index="3"/>
+  <PatternOff Index="3"/>
+  <ShadowPatternOff Index="3"/>
+  <ShadowPatternOn Index="3"/>
+  <Pattern Index="4"/>
+  <PatternOff Index="4"/>
+  <ShadowPatternOff Index="4"/>
+  <ShadowPatternOn Index="4"/>
+  <Pattern Index="5"/>
+  <PatternOff Index="5"/>
+  <ShadowPatternOff Index="5"/>
+  <ShadowPatternOn Index="5"/>
+  <Pattern Index="6"/>
+  <PatternOff Index="6"/>
+  <ShadowPatternOff Index="6"/>
+  <ShadowPatternOn Index="6"/>
+  <Pattern Index="7"/>
+  <PatternOff Index="7"/>
+  <ShadowPatternOff Index="7"/>
+  <ShadowPatternOn Index="7"/>
+  <Parameters>
+    <Parameter Name="name" Value="Test Pattern"/>
+    <Parameter Name="BPM" Value="60"/>
+    <Parameter Name="numerator" Value="2"/>
+    <Parameter Name="denominator" Value="2"/>
+    <Parameter Name="variationStartQ" Value="100"/>
+    <Parameter Name="runStartQ" Value="100"/>
+    <Parameter Name="runStopQ" Value="100"/>
+    <Parameter Name="WFFN" Value="0"/>
+    <Parameter Name="name" Value="Test Pattern"/>
+    <Parameter Name="overrideHostTransport" Value="0"/>
+    <Parameter Name="notePassThrough" Value="0"/>
+    <Parameter Name="numPatterns" Value="0"/>
+    <Parameter Name="patternsRealID" Value="1"/>
+    <Parameter Name="numPoolNotes" Value="0"/>
+    <Parameter Name="poolNotesRealId" Value="1"/>
+    <Parameter Name="numNotes" Value="0" Index="0"/>
+    <Parameter Name="notesRealID" Value="1" Index="0"/>
+    <Parameter Name="numNotes" Value="0" Index="1"/>
+    <Parameter Name="notesRealID" Value="1" Index="1"/>
+    <Parameter Name="numNotes" Value="0" Index="2"/>
+    <Parameter Name="notesRealID" Value="1" Index="2"/>
+    <Parameter Name="numNotes" Value="0" Index="3"/>
+    <Parameter Name="notesRealID" Value="1" Index="3"/>
+    <Parameter Name="numNotes" Value="0" Index="4"/>
+    <Parameter Name="notesRealID" Value="1" Index="4"/>
+    <Parameter Name="numNotes" Value="0" Index="5"/>
+    <Parameter Name="notesRealID" Value="1" Index="5"/>
+    <Parameter Name="numNotes" Value="0" Index="6"/>
+    <Parameter Name="notesRealID" Value="1" Index="6"/>
+    <Parameter Name="numNotes" Value="0" Index="7"/>
+    <Parameter Name="notesRealID" Value="1" Index="7"/>
+  </Parameters>
+</TopiaryBeatsModel>

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,8 +20,9 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "TopiaryBeatsTransportComponent.h"
+#include "../../Topiary/Source/TopiaryTransportComponent.cpp"
 
-
+/*
 TopiaryBeatsTransportComponent::TopiaryBeatsTransportComponent()
 {
 }
@@ -68,10 +69,11 @@ void TopiaryBeatsTransportComponent::checkModel()
 	bool override;
 	bool waitFFN;
 	beatsModel->getTransportState(BPM, n, d, transportState, override, waitFFN);
-	updateState(override, BPM, n, d, transportState);
+	updateState(override, BPM, n, d, transportState, true); // the true shows the record button
 		
 	
 } // checkModel
 
 /////////////////////////////////////////////////////////////////////////
 
+*/

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<TABLE_DATA>
+<HEADERS>
+<COLUMN name="ID"          columnId="1" type="hidden"/>      /* do I need ID? */
+<COLUMN name="Time"        columnId="2" type="hidden"/>      /* Measure:Beat:Tick tick 0-95 for sorting!!! */
+<COLUMN name="Duration"    columnId="3" type="hidden"/>      /* Measure:Beat:Tick */
+<COLUMN name="PoolId"      columnId="4" type="editableint"/> /* pool index that will translate to note/channel */
+<COLUMN name="Velocity"    columnId="5" type="editableint"/> 
+</HEADERS>
+<DATA>
+<ITEM ID="0" Time="00:00:00" Duration="00:00:47" PoolId="2" "Velocity="128">  /* duration kan met noot, halve noot, kwart etc symbooltjes */
+<ITEM ID="0" Time="00:01:00" Duration="00:00:47" PoolId="0" "Velocity="128">
+<ITEM ID="0" Time="00:01:47" Duration="00:00:47" PoolId="0" "Velocity="128">
+<ITEM ID="0" Time="00:02:00" Duration="00:00:47" PoolId="2" "Velocity="128">
+</DATA>
+</TABLE_DATA>

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ private:
 	TopiaryBeatsMasterComponent masterComponent;
 	TopiaryBeatsVariationComponent variationComponent;
 	TopiaryBeatsLogComponent logComponent;
-	TopiaryBeatsRealtimeComponent realtimeComponent;
+	TopiaryBeatsRealTimeComponent realtimeComponent;
 	TopiaryBeatsAutomationComponent automationComponent;
 	TopiaryBeatsPatternComponent patternComponent;
 
