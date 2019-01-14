@@ -777,13 +777,14 @@ void TopiaryBeatsModel::setVariation(int n)
 	jassert(n >= 0);
 	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 
-	if (n != variationSelected)
+	if ((n != variationSelected) || (runState == Topiary::Stopped)) 
+		// the || runState || is needed because we may need to re-set a waiting variation to non-waiting; in that case we want the update to happen otherwise the buttons stays orange
 		if (variation[n].enabled)
 		{
 			variationSelected = n;
 			if (runState == Topiary::Stopped)  // otherwise the switch will be done when running depending on the variation switch Q
 				variationRunning = n;
-			Log(String("Variation ") + String(n) + String(" selected."), Topiary::LogType::Variations);
+			Log(String("Variation ") + String(n+1) + String(" selected."), Topiary::LogType::Variations);
 			broadcaster.sendActionMessage(MsgVariationSelected);
 		}
 

@@ -17,8 +17,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-#include"TopiaryBeatsModel.h"
-#define TOPIARYMODEL TopiaryBeatsModel
-#define TOPIARYLOGCOMPONENT TopiaryBeatsLogComponent
-#include "../../Topiary/Source/TopiaryLogComponent.h"
+#include "BeatsPluginProcessor.h"
+#include "BeatsPluginEditor.h"
+#include "../../Topiary/Source/PluginProcessor.cpp"

@@ -20,6 +20,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "../../Topiary/Source/TopiaryModel.h"
+#define BEATZ
 
 class TopiaryBeatsModel : public TopiaryModel
 {
@@ -1096,10 +1097,12 @@ private:
 		if (!variation[v].enabled) return; // might not be decently initialized!!!
 		if (!variation[v].enablePool[p]) return; // might not be decently initialized!!!
 
-		Logger::writeToLog("------------------- Start generation of pool " + String(p));
+		//Logger::writeToLog("------------------- Start generation of pool " + String(p));
 
 		// find poolIDCursor
 		patternChild = patternOn->getFirstChildElement();
+		if (patternChild == nullptr) return; // empty variation
+
 		while (patternChild->getIntAttribute("ID") != variation[v].poolIdCursor[p])
 		{
 			Logger::outputDebugString("ID =" + patternChild->getStringAttribute("ID") + " -- look for -- " + String(variation[v].poolIdCursor[p]));

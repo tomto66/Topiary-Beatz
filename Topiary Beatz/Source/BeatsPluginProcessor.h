@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 /*
 This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
@@ -18,7 +18,10 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include"TopiaryBeatsModel.h"
+#include "../JuceLibraryCode/JuceHeader.h"
+#include "TopiaryBeatsModel.h" 
 #define TOPIARYMODEL TopiaryBeatsModel
-#define TOPIARYLOGCOMPONENT TopiaryBeatsLogComponent
-#include "../../Topiary/Source/TopiaryLogComponent.h"
+#define TOPIARYEDITORCOMPONENT TopiaryBeatsComponent
+
+#include "../../Topiary/Source/PluginProcessor.h"
+

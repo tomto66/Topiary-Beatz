@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" jucerVersion="5.3.2"
-              version="0.8.3" companyName="Topiary" pluginManufacturer="Topiary"
+              version="0.8.4" companyName="Topiary" pluginManufacturer="Topiary"
               pluginVSTCategory="kPlugCategGenerator" pluginManufacturerCode="Beat"
               pluginCode="Beat" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               splashScreenColour="Light" pluginFormats="buildStandalone,buildVST">
@@ -60,12 +60,12 @@
             resource="0" file="Source/TopiaryBeatsVariationComponent.cpp"/>
       <FILE id="kORVe9" name="TopiaryBeatsVariationComponent.h" compile="0"
             resource="0" file="Source/TopiaryBeatsVariationComponent.h"/>
-      <FILE id="xhqjmO" name="PluginProcessor.cpp" compile="1" resource="0"
-            file="Source/PluginProcessor.cpp"/>
-      <FILE id="fuukxd" name="PluginProcessor.h" compile="0" resource="0"
-            file="Source/PluginProcessor.h"/>
-      <FILE id="Fq1A3d" name="PluginEditor.cpp" compile="1" resource="0"
-            file="Source/PluginEditor.cpp"/>
+      <FILE id="xhqjmO" name="BeatsPluginProcessor.cpp" compile="1" resource="0"
+            file="Source/BeatsPluginProcessor.cpp"/>
+      <FILE id="fuukxd" name="BeatsPluginProcessor.h" compile="0" resource="0"
+            file="Source/BeatsPluginProcessor.h"/>
+      <FILE id="Fq1A3d" name="BeatsPluginEditor.cpp" compile="1" resource="0"
+            file="Source/BeatsPluginEditor.cpp"/>
       <FILE id="OTAOIy" name="TopiaryBeatsComponent.cpp" compile="1" resource="0"
             file="Source/TopiaryBeatsComponent.cpp"/>
       <FILE id="VajC7n" name="TopiaryBeatsComponent.h" compile="0" resource="0"
@@ -100,7 +100,8 @@
             file="Source/TopiaryBeatsLogComponent.h"/>
       <FILE id="QEZLwq" name="TopiaryBeatsVariationButtonsComponent.h" compile="0"
             resource="0" file="Source/TopiaryBeatsVariationButtonsComponent.h"/>
-      <FILE id="h7GfMZ" name="PluginEditor.h" compile="0" resource="0" file="Source/PluginEditor.h"/>
+      <FILE id="h7GfMZ" name="BeatsPluginEditor.h" compile="0" resource="0"
+            file="Source/BeatsPluginEditor.h"/>
     </GROUP>
     <FILE id="SJfEY3" name="BinaryData.cpp" compile="1" resource="0" file="JuceLibraryCode/BinaryData.cpp"/>
     <FILE id="ipOmti" name="BinaryData.h" compile="0" resource="0" file="JuceLibraryCode/BinaryData.h"/>
