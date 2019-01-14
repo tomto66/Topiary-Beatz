@@ -24,9 +24,8 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 
 void TopiaryModel::saveStateToMemoryBlock(MemoryBlock& destData)
 {
-	addParametersToModel();  // this adds and XML element "Parameters" to the model
-	AudioProcessor::copyXmlToBinary(*model, destData);
-	model->deleteAllChildElementsWithTagName("Parameters");
+	// virtual
+	UNUSED(destData)
 
 } // saveStateToMemoryBlock
 
@@ -34,10 +33,9 @@ void TopiaryModel::saveStateToMemoryBlock(MemoryBlock& destData)
 
 void TopiaryModel::restoreStateFromMemoryBlock(const void* data, int sizeInBytes)
 {
-	//return; // XXXXXXXXX
-	model.reset(AudioProcessor::getXmlFromBinary(data, sizeInBytes));
-	restoreParametersToModel();
-
+	// virtual
+	UNUSED(data)
+	UNUSED(sizeInBytes)
 } // restoreStateFromMemoryBlock
 
 
@@ -435,9 +433,11 @@ void TopiaryModel::setRunState(int n)
 			patternCursor = 0;
 			blockCursor = 0;
 			cursorToStop = (int64)-1;
-			
 			Log("Stopped.", Topiary::LogType::Transport);
 			broadcaster.sendActionMessage(MsgTransport);
+
+			// if there is a variation waiting, then we need to make sure it becomes boue again - do that outside this scoped lock otherwise we'll lock -- see below
+
 			break;
 		case Topiary::Ending:
 			Log("Ending, cleaning up.", Topiary::LogType::Transport);
@@ -518,6 +518,10 @@ void TopiaryModel::setRunState(int n)
 	{
 		setVariation(variationSelected);	// so that if the button was orange, it becomes blue again
 	}
+
+	// now the first waiting variation might stil be orange; fix that below
+	if (remember == Topiary::Armed)
+		setVariation(variationSelected);
 
 } // setRunState
 

@@ -49,7 +49,7 @@ void TopiaryThread::setModel(TopiaryModel* m)
 
 void TopiaryThread::run()
 {
-	Logger::outputDebugString("Worker thread started.");
+	//Logger::outputDebugString("Worker thread started.");
 	wait(-1); // wait till model fully initialized - then it will get an notify
 	//Logger::outputDebugString("Worker thread WAKES UP --------------------------------------------------");
 	while (!threadShouldExit())
@@ -57,7 +57,7 @@ void TopiaryThread::run()
 		// main loop
 		model->threadRunner();
 		wait(-1); // wait until something notifies this thread
-		Logger::outputDebugString("Worker thread WAKES UP --------------------------------------------------");
+		//Logger::outputDebugString("Worker thread WAKES UP --------------------------------------------------");
 	}
 	//Logger::outputDebugString("Worker thread stopped.");
 	return;

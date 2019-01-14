@@ -126,6 +126,7 @@ public:
 	void processAutomation(MidiMessage& msg);
 	virtual void processCC(MidiMessage& msg, MidiBuffer* midiBuffer) ;
 	virtual void processCC(MidiMessage& msg);
+
 protected:
 
 	SpinLock lockModel;

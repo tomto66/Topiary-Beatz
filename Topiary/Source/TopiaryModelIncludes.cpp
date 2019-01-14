@@ -212,12 +212,13 @@ bool TOPIARYMODEL::switchingVariations()
 	bool switching = (variationRunning != variationSelected);
 	
 #ifdef PRESETZ	
+	// for Presetz, switching variations needs to trigger regeneration of the variations
 	if (switching)
 	{
 		if (threadRunnerState == Topiary::ThreadRunnerState::NothingToDo)
 		{
 			// we just detected the variation switch for the first time
-			Logger::outputDebugString("Worker thread NOTIFIED --------------------------------------------------");
+			//Logger::outputDebugString("Worker thread NOTIFIED --------------------------------------------------");
 			transitioningFrom = variationRunning;
 			transitioningTo = variationSelected;
 			threadRunnerState = Topiary::ThreadRunnerState::Generating;
@@ -225,7 +226,6 @@ bool TOPIARYMODEL::switchingVariations()
 		}	
 	}
 #endif
-
 
 	return switching;
 
