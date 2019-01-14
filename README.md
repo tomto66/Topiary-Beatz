@@ -1,4 +1,4 @@
-# Topiary Beatz 0.8.2
+# Topiary Beatz 0.8.4
 
 Topiary Beatz is a plugin for beats & drums.
 
@@ -27,7 +27,10 @@ Here: https://topiaryplugins.wordpress.com/
 
 ## Release Notes
 
-Here for this release: https://topiaryplugins.wordpress.com/2018/12/27/topiary-beatz-0-8-2/
-Here for a previous bugfix: https://topiaryplugins.wordpress.com/2018/12/25/topiary-beatz-0-8-1/
+Here for this release: https://topiaryplugins.wordpress.com/2019/01/14/topiary-beatz-0-8-4/
+Here for previous releases:
+* https://topiaryplugins.wordpress.com/2019/01/10/topiary-beats-0-8-3/
+* https://topiaryplugins.wordpress.com/2018/12/27/topiary-beatz-0-8-2/
+* https://topiaryplugins.wordpress.com/2018/12/25/topiary-beatz-0-8-1/
 
 See original release notes for changes from V0.7 to 0.8 here: https://topiaryplugins.wordpress.com/2018/12/23/topiary-beats-v-0-8-0/
