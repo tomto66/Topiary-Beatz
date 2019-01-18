@@ -233,6 +233,7 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		startButton.specialState = 0;
 		stopButton.setToggleState(false, dontSendNotification); // dirty trick to force repaint
 		stopButton.setToggleState(true, dontSendNotification);
+		overrideButton.setEnabled(true);
 		break;
 
 	case 1: // Running
@@ -240,12 +241,14 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		stopButton.specialState = 0;
 		startButton.setToggleState(false, dontSendNotification); // dirty trick to force repaint
 		startButton.setToggleState(true, dontSendNotification);
+		overrideButton.setEnabled(false);
 		break;
 
 	case 3: // Armed
 		startButton.specialState = Topiary::TopiaryButtonSpecialState::waitToApply;
 		stopButton.specialState = 0;
 		startButton.setToggleState(true, dontSendNotification);
+		overrideButton.setEnabled(false);
 		break;
 
 	case 2: 

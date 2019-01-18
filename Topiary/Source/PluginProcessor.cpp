@@ -209,7 +209,7 @@ void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer&
 			{
 				// just arm it - if we get a note it will switch to playing if WFFN; else if will auto-switch before generating MIDI
 				model.setRunState(Topiary::Armed);
-				runState = Topiary::Armed;
+				runState = model.getRunState();  // because the plugin may want to refuse to arm!!!
 			}
 		} // detect we are playing depending on override
 		else if (!override)
