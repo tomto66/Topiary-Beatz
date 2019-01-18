@@ -47,8 +47,8 @@ public:
 	XmlElement* addToModel(char *type, int index);
 	void removeFromModel(char *type, XmlElement *child);
 	
-	void savePreset(File f) override;
-	void loadPreset(File f) override;
+	//void savePreset(File f) override;
+	//void loadPreset(File f) override;
 	void saveStateToMemoryBlock(MemoryBlock& destData) override;
 	void restoreStateFromMemoryBlock(const void* data, int sizeInBytes) override;
 	bool processVariationSwitch() override;
@@ -56,7 +56,7 @@ public:
 	void getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended) override;
 	void initializeVariationsForRunning() override;
 	void setEnded() override;
-
+	void generateMidi(MidiBuffer* midiBuffer) override;
 	
 	////// Variations
 
@@ -69,9 +69,13 @@ public:
 	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4]);   // pass variation Definition on to VariationComponent in editor
 	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4]);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
 	bool validateVariationDefinition(int i, bool enable, String vname, int patternId, int poolLength[4][3][2]);
+	void setRandomizeNotes(int v, bool enable, bool enablePool[4], int value);
+	void getRandomizeNotes(int v, bool &enable, bool enablePool[4], int &value);
+
+
 	void generateVariation(int i); // Generates the variation; at the end , swaps it in (using spinlock)
 	void generateAllVariations();
-
+	void threadRunner() override;
 	struct Variation {
 
 		int patternToUse;					// index in patterndata
@@ -86,6 +90,7 @@ public:
 		bool enabled = false;
 		String name = "";
 		bool enablePool[4];
+		
 		/// pool length definitions
 		int beatFrom[4]; int beatTo[4];
 		int measureFrom[4]; int measureTo[4];
@@ -97,70 +102,17 @@ public:
 		int poolTickCursor[4];	// offset in ticks of next note to generate in the pool (offset in the to-generate pattern, not offset in the pool :)
 		int poolIdCursor[4];	// Id of next note to generate in the pool (ID of note in the parent pattern; both cursors to initialize every time run starts
 
-		// lots more to come!
+		// note occurrence randomization
+		bool randomizeNotes;
+		int randomizeNotesValue;
+		bool randomizeNotePool[4];
+
 	};
 
-	// Generator stuff
-	/*
-	void setSampleRate(double sr);
-	void setBlockSize(int blocksz);
-	void setStartTimes();
-	void generateMidi(MidiBuffer* midiBuffer);
-
-	bool processEnding();
-	bool processVariationSwitch();
-	void endNotesOn(MidiBuffer* midiBuffer); // send noteOff events for all notes and empty noteOnSet
-	bool switchingVariations();
-
-	void setWFFN(bool wffn);
-	bool getWFFN();
-	void setNotePassThrough(bool echo);
-	bool getNotePassThrough();
-	void setSwitchVariation(int a);
-	int getSwitchVariation();
-	void setVariationStartQ(int q);
-	int getVariationStartQ();
-	void setRunStopQ(int q);
-	int getRunStopQ();
-	String getName();
-	void setName(String n);
-	void getTime(int& b, int& m);
-	*/
-
-	////////// Broadcasters & Listeners
-/*
-	void setListener(ActionListener *listener);
-	void removeListener(ActionListener *listener);
-	void sendActionMessage(String s);  // needed because the tables are updated in the editor, and the tables resort the data !!!
-	ActionBroadcaster* getBroadcaster();
-	*/
-
-	// broadcaster messages
-	/*
-#define MsgTransport "t"
-#define MsgLog "l"
-#define MsgMasterTables "m"
-#define MsgVariationDefinition "d"
-#define MsgVariationEnables "e"
-#define MsgVariationAutomation "a"  // variationcontrol
-#define MsgVariationSelected "s"
-#define MsgWarning "w"
-#define MsgPattern "p"
-#define MsgTiming "T"
-*/
-
-	////////// Automation
-/*
-	void setVariationControl(bool ccSwitching, int channel, int switches[8]);
-	void getVariationControl(bool& ccSwitching, int& channel, int switches[8]);
-	void processAutomation(MidiMessage& msg);
-	*/
+	
 #define NUMBEROFQANTIZERS 10
 
 private:
-
-	//SpinLock lockModel;
-	//ActionBroadcaster broadcaster;
 
 	XmlElement *patternListHeader = new XmlElement("PatternListHeader");
 	XmlElement *patternListData = new XmlElement("PatternListData");
@@ -183,127 +135,8 @@ private:
 	int numPoolNotes = 0;
 	int poolNotesRealID = 1;
 
-	//std::unique_ptr<XmlElement> model;
-
-	/////////// Logger 
-	/*
-	String logString;
-	String lastWarning;
-
-	bool logWarning = true;
-	bool logMidiIn = false;
-	bool logMidiOut = false;
-	bool logDebug = false;
-	bool logTransport = true;
-	bool logVariations = true;
-	bool logInfo = true;
-	*/
-	/////////// Transport
-	/*
-	bool overrideHostTransport;
-	int denominator = 0; // b in a/b
-	int numerator = 0;  // a in a/b
-	int BPM = 120;
-	int runState;
-	*/
-
-	/////////// Variations
-
-	//int variationSelected = 0;
-	//int variationRunning = 0; // this may differ from variationSelected during switch trigger time !!!
-
+	
 	Variation variation[8];  // struct to hold variation detail
-
-	/////////// Generator variables
-	/*
-	double sampleRate, ticksPerBeat, samplesPerTick;  // housekeeping in recalcRealTime() !
-
-	int64 blockCursor;					// sampletime of start of current block
-	int64 nextRTGenerationCursor;		// real time cursor of next event to generate
-	int blockSize;						// size of block to generate 
-	int patternCursor;				// ticks within the variation/pattern for next note on
-	//int patternCursorOff;				// ticks within the variation/pattern for next note off
-
-	int variationStartQ = 100;			// when to switch variations
-	int runStopQ = 100;					// when to stop running
-	bool WFFN = false;					// start at first note in if true; otherwize immediate
-	int switchVariation = 1;			// when new pattern starts, it always starts at beginning - enumerator
-										// if not, we try to stay within same measure/beat as the running pattern
-										// if the running pattern is shorter than the new one, we start within the first measure
-	bool notePassThrough = false;		// echo incoming notes out
-	int measure = 0;					// keep track of where we are in generation
-	int beat = 0;						// keep track of where we are in generation
-	int tick = 0;						// keep track of where we are in generation
-	int64 cursorToStop = -1;			// used when running, set once, to cursor where we should stop; needs to be set to -1 when running stops (typically in processEnding() but also when arming 
-	*/
-	//SortedSet<int> noteOnSet;			// keep track of which notes are still on
-
-	/////////////// Automation
-	/*
-	int variationSwitch[8];     // either notes for each variation, of CC numbers
-	bool ccVariationSwitching;  // if false then we're using notes
-	int variationSwitchChannel; // midi channel for variation switching; 0 == omni
-
-	String filePath;
-	*/
-	/////////////////////////////////////////////////////////////////////////
-	/*
-	class DataSorter
-	{
-	public:
-		DataSorter(const String& attributeToSortBy, bool forwards)
-			: attributeToSort(attributeToSortBy),
-			direction(forwards ? 1 : -1)
-		{}
-
-		int compareElements(XmlElement* first, XmlElement* second) const
-		{
-			auto result = first->getStringAttribute(attributeToSort)
-				.compareNatural(second->getStringAttribute(attributeToSort));
-
-			if (result == 0)
-				result = first->getStringAttribute("ID")
-				.compareNatural(second->getStringAttribute("ID"));
-
-			return direction * result;
-		}
-
-	private:
-		String attributeToSort;
-		int direction;
-	}; // class DataSorter
-
-	///////////////////////////////////////////////////////////////////////
-
-	void renumberList(XmlElement *list)
-	{  // resort by RealID and reset all IDs
-		DataSorter sorter("REALID", true);
-		list->sortChildElements(sorter);
-		XmlElement* child = list->getFirstChildElement();
-		int id = 1;
-		while (child != nullptr)
-		{
-			child->setAttribute("ID", id);
-			id++;
-			child = child->getNextElement();
-		}
-	} // renumberList
-
-	///////////////////////////////////////////////////////////////////////
-
-	void renumberNotes(XmlElement *list)
-	{  // resort by timestamp and set the Ids in that order
-		DataSorter sorter("Timestamp", true);
-		list->sortChildElements(sorter);
-		XmlElement* child = list->getFirstChildElement();
-		int id = 1;
-		while (child != nullptr)
-		{
-			child->setAttribute("ID", id);
-			id++;
-			child = child->getNextElement();
-		}
-	} // renumberNotes */
 
 	///////////////////////////////////////////////////////////////////////
 
@@ -332,9 +165,6 @@ private:
 		// note data need not be on Channel10 (any channel will do as long as it's one track and one channel
 
 		//jassert(noteList->getTagName().compare("PATTERNDATA"));
-
-		//std::unique_ptr<XmlElement> noteOffList;  // to hold the note off data - to delete at the end
-		//noteOffList.reset(new XmlElement("NoteOffData"));
 
 		if (!fileToRead.existsAsFile())
 		{
@@ -425,10 +255,6 @@ private:
 				}
 				if (message.isNoteOff())
 				{
-					//auto newNoteOff = new XmlElement("OFFDATA");
-
-					//Logger::writeToLog(message.getDescription());
-					//Logger::writeToLog(String(message.getTimeStamp()));
 					// find the note that is off and set the length
 					int oldNote = message.getNoteNumber();
 					// now find the last occurrence of this note in the children of noteList
@@ -445,25 +271,20 @@ private:
 					child->setAttribute("Length", (int)floor(timeStamp - child->getStringAttribute("Timestamp").getIntValue()));
 
 					// so child is our note ON event; fill the note OFF event
-					//newNoteOff->setAttribute("ID", child->getStringAttribute("ID"));
-					//newNoteOff->setAttribute("REALID", child->getStringAttribute("REALID"));
-					//newNoteOff->setAttribute("Note", child->getStringAttribute("Note"));
-					//newNoteOff->setAttribute("Timestamp", (int)timeStamp);
-					//noteOffList->prependChildElement(newNoteOff);
 				}
 				if (message.isMetaEvent())
 				{
 					if (message.isTempoMetaEvent())
 					{
 						//getTempoMetaEventTickLength(short timeFormat)
-						Logger::writeToLog(String("TEMPO META EVENT tempo seconds per quarter note: " + String(message.getTempoSecondsPerQuarterNote())));
+						//Logger::writeToLog(String("TEMPO META EVENT tempo seconds per quarter note: " + String(message.getTempoSecondsPerQuarterNote())));
 						bpm = (60 / message.getTempoSecondsPerQuarterNote());
-						Logger::writeToLog(String("=====> BPM " + String(bpm)));
+						//Logger::writeToLog(String("=====> BPM " + String(bpm)));
 					}
 					if (message.isTimeSignatureMetaEvent())
 					{
 						message.getTimeSignatureInfo(num, den);
-						Logger::writeToLog(String("SIGNATURE META EVENT: " + String(num) + String("/") + String(den)));
+						//Logger::writeToLog(String("SIGNATURE META EVENT: " + String(num) + String("/") + String(den)));
 					}
 				}
 			}
@@ -708,6 +529,13 @@ private:
 			addIntToModel(parameters, variation[i].poolChannel[2], "poolChannel2", i);
 			addIntToModel(parameters, variation[i].poolChannel[3], "poolChannel3", i);
 
+			addBoolToModel(parameters, variation[i].randomizeNotes, "randomizeNotes", i);
+			addIntToModel(parameters, variation[i].randomizeNotesValue, "randomizeNotesValue", i);
+			addBoolToModel(parameters, variation[i].randomizeNotePool[0], "randomizeNotePool0", i);
+			addBoolToModel(parameters, variation[i].randomizeNotePool[1], "randomizeNotePool1", i);
+			addBoolToModel(parameters, variation[i].randomizeNotePool[2], "randomizeNotePool2", i);
+			addBoolToModel(parameters, variation[i].randomizeNotePool[3], "randomizeNotePool3", i);
+
 			// automation
 			addIntToModel(parameters, variationSwitch[i], "variationSwitch", i);
 		}
@@ -813,6 +641,13 @@ private:
 					if (parameterName.compare("tickTo1") == 0) variation[parameter->getIntAttribute("Index")].tickTo[1] = parameter->getIntAttribute("Value");
 					if (parameterName.compare("tickTo2") == 0) variation[parameter->getIntAttribute("Index")].tickTo[2] = parameter->getIntAttribute("Value");
 					if (parameterName.compare("tickTo3") == 0) variation[parameter->getIntAttribute("Index")].tickTo[3] = parameter->getIntAttribute("Value");
+
+					if (parameterName.compare("randomizeNotes") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotes = parameter->getBoolAttribute("Value");
+					if (parameterName.compare("randomizeNotesValue") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotesValue = parameter->getIntAttribute("Value");
+					if (parameterName.compare("randomizeNotePool0") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[0] = parameter->getBoolAttribute("Value");
+					if (parameterName.compare("randomizeNotePool1") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[1] = parameter->getBoolAttribute("Value");
+					if (parameterName.compare("randomizeNotePool2") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[2] = parameter->getBoolAttribute("Value");
+					if (parameterName.compare("randomizeNotePool3") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[3] = parameter->getBoolAttribute("Value");
 
 					// patterndata array variables
 					if (parameterName.compare("patLenInTicks") == 0)  patternData[parameter->getIntAttribute("Index")].patLenInTicks = parameter->getIntAttribute("Value");
@@ -1077,6 +912,8 @@ private:
 		// v is variation to generate
 		// p is poolnumber
 
+		Random randomizer;
+
 		XmlElement* newChild = nullptr;
 		XmlElement* patternOn = patternData[variation[v].patternToUse].noteData; ///
 		int patLenInTicks = variation[v].lenInTicks;
@@ -1119,40 +956,54 @@ private:
 			note = patternChild->getIntAttribute("Note");
 			if (poolNote[note] == p)
 			{
+				// note randomization logic
+				bool doNote = true;
 
-				// need some decision logic to make sure we generate the child
-
-				newChild = new XmlElement("DATA");
-				newChild->setAttribute("ID", patternChild->getStringAttribute("ID"));
-				newChild->setAttribute("Note", patternChild->getStringAttribute("Note"));
-				newChild->setAttribute("Velocity", patternChild->getStringAttribute("Velocity"));
-				newChild->setAttribute("midiType", Topiary::MidiType::NoteOn);
-				// timestamp is variation[v].poolTickCursor !!!!
-				// except if first note note generated; then it's the timestamp of the note in the pattern!
-
-				if (firstNoteGenerated)
-					newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
-				else
+				if (variation[v].randomizeNotes && variation[v].randomizeNotePool[p])
 				{
-					variation[v].poolTickCursor[p] = patternChild->getIntAttribute("Timestamp");
-					newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
-					firstNoteGenerated = true;
+					float rnd = randomizer.nextFloat();
+					// decide whether we're generating this one or not
+					if (rnd > ((float) variation[v].randomizeNotesValue / 100))
+					{
+						doNote = false;
+					}
+				};
+
+				if (doNote)
+				{
+					// need some decision logic to make sure we generate the child
+
+					newChild = new XmlElement("DATA");
+						newChild->setAttribute("ID", patternChild->getStringAttribute("ID"));
+						newChild->setAttribute("Note", patternChild->getStringAttribute("Note"));
+						newChild->setAttribute("Velocity", patternChild->getStringAttribute("Velocity"));
+					newChild->setAttribute("midiType", Topiary::MidiType::NoteOn);
+					// timestamp is variation[v].poolTickCursor !!!!
+					// except if first note generated; then it's the timestamp of the note in the pattern!
+
+					if (firstNoteGenerated)
+						newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
+					else
+					{
+						variation[v].poolTickCursor[p] = patternChild->getIntAttribute("Timestamp");
+						newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
+						firstNoteGenerated = true;
+					}
+					// the following 3 are incorrect!!! these are what's in the pattern definition, but won't match tick value.  That's OK
+					// because nobody gets to see these :)
+
+					newChild->setAttribute("Measure", patternChild->getStringAttribute("Measure"));
+					newChild->setAttribute("Beat", patternChild->getStringAttribute("Beat"));
+					newChild->setAttribute("Tick", patternChild->getStringAttribute("Tick"));
+					newChild->setAttribute("Channel", variation[v].poolChannel[p]);
+					newChild->setAttribute("Length", patternChild->getStringAttribute("Length"));
+
+					newPatternOn->prependChildElement(newChild);
+
+					Logger::outputDebugString("Generating Note " + String(note) + " timestamp " + String(variation[v].poolTickCursor[p]));
+					jassert(variation[v].poolTickCursor[p] >= 0);
 				}
-				// the following 3 are incorrect!!! these are what's in the pattern definition, but won't match tick value.  That's OK
-				// because nobody gets to see these :)
-
-				newChild->setAttribute("Measure", patternChild->getStringAttribute("Measure"));
-				newChild->setAttribute("Beat", patternChild->getStringAttribute("Beat"));
-				newChild->setAttribute("Tick", patternChild->getStringAttribute("Tick"));
-				newChild->setAttribute("Channel", variation[v].poolChannel[p]);
-				newChild->setAttribute("Length", patternChild->getStringAttribute("Length"));
-
-				newPatternOn->prependChildElement(newChild);
-
-				Logger::outputDebugString("Generating Note " + String(note) + " timestamp " + String(variation[v].poolTickCursor[p]));
-				jassert(variation[v].poolTickCursor[p] >= 0);
-				
-			}
+			} // end if note in this pool
 
 			// remember the tick of the last generated note; tick in the source pattern!
 			previousTick = patternChild->getIntAttribute("Timestamp");
@@ -1222,6 +1073,7 @@ private:
 
 	void swapXmlElementPointers(XmlElement** a, XmlElement** b)
 	{
+		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 		XmlElement* remember;
 		remember = *a;
 		*a = *b;

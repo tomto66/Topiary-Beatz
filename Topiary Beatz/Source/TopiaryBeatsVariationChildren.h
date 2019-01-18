@@ -102,6 +102,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // RandomNoteComponent
+// Randomizes note occurrence
 ////////////////////////////////////////////////////////////////////////////////
 
 class RandomNoteComponent : public Component
@@ -117,8 +118,8 @@ public:
 	TopiaryButton onButton;
 	Slider	percentSlider;
 
-	int width = 65;
-	int heigth = 95;
+	int width = 85;
+	int heigth = 120;
 
 	RandomNoteComponent();
 	~RandomNoteComponent();

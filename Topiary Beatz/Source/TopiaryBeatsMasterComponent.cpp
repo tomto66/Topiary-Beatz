@@ -214,42 +214,21 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	saveButton.setButtonText("Save");
 	saveButton.onClick = [this]
 	{
-		FileChooser myChooser("Please select Topiay Beats file to load...",
-			File::getSpecialLocation(File::userHomeDirectory),
-			"*.tbe");
-		if (myChooser.browseForFileToSave(true))
-		{
-			auto f = myChooser.getResult();
-			beatsModel->savePreset(f);
-			return;
-		}
-		else
-		{ // file not found or not opened
-		}
+		
+		beatsModel->savePreset("Please select Topiay Beats file to load...", "*.tbe" );
 	};
 	
 	addAndMakeVisible(loadButton);
 	loadButton.setSize(100, buttonH);
 	loadButton.setButtonText("Load");
 	loadButton.onClick = [this]
-	{
-		FileChooser myChooser("Please select Topiary Beats file to load...",
-			File::getSpecialLocation(File::userHomeDirectory),
-			"*.tbe");
-		if (myChooser.browseForFileToOpen())
-		{
-			auto f = myChooser.getResult();
-			beatsModel->loadPreset(f);
-			setModel(beatsModel);
-			getSettings();
-			patternsTable.updateContent();
-			poolTable.updateContent();
-			setButtonStates(); 
-			return;
-		}
-		else
-		{ // file not found or not opened
-		}
+	{		
+		beatsModel->loadPreset("Please select Topiary Beats file to load...", "*.tbe");
+		setModel(beatsModel); // does this make sense?
+		getSettings();
+		patternsTable.updateContent();
+		poolTable.updateContent();
+		setButtonStates();
 	};
 
 	addAndMakeVisible(nameEditor);

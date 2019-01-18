@@ -27,10 +27,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 TopiaryBeatsVariationComponent::TopiaryBeatsVariationComponent()
 {   // size set by paint!
 	variation = 0;
-	variationDefinitionComponent.setParent(this);
-	enablePoolComponent.setParent(this);
 
-	//addAndMakeVisible(randomNoteComponent);
 	variationDefinitionComponent.setParent(this);
 	addAndMakeVisible(variationDefinitionComponent);
 	
@@ -42,6 +39,12 @@ TopiaryBeatsVariationComponent::TopiaryBeatsVariationComponent()
 
 	addAndMakeVisible(poolChannelComponent);
 	poolChannelComponent.setParent(this);
+
+	addAndMakeVisible(randomNoteComponent);
+	randomNoteComponent.setParent(this);
+
+	//addAndMakeVisible(poolTimingComponent);
+	//poolTimingComponent.setParent(this);
 
 } // TopiaryBeatsVariationComponent() 
 
@@ -153,6 +156,8 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 	else
 		variationDefinitionComponent.enableButton.setToggleState(false, dontSendNotification);
 
+	setRandomizeNotes();
+
 	initializing = false;
 
 }  // setVariationDefinition
@@ -226,7 +231,48 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 	{
 		variationDefinitionComponent.patternCombo.setSelectedId(0);
 	}
+
+	getRandomizeNotes();
+
+
 } // getVariationDefinition
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::getRandomizeNotes()
+{
+	// get note randomisation from model
+	bool enable;
+	bool pool[4];
+	int value;
+
+	beatsModel->getRandomizeNotes(variationDefinitionComponent.variationCombo.getSelectedId()-1, enable, pool, value);
+
+	randomNoteComponent.onButton.setToggleState(enable, dontSendNotification);
+	randomNoteComponent.pool1Button.setToggleState(pool[0], dontSendNotification);
+	randomNoteComponent.pool2Button.setToggleState(pool[1], dontSendNotification);
+	randomNoteComponent.pool3Button.setToggleState(pool[2], dontSendNotification);
+	randomNoteComponent.pool4Button.setToggleState(pool[3], dontSendNotification);
+	randomNoteComponent.percentSlider.setValue(value, dontSendNotification);
+
+} // getRandomizeNotes
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::setRandomizeNotes()
+{
+	// set note randomisation to model
+
+	bool pool[4];
+
+	pool[0] = randomNoteComponent.pool1Button.getToggleState();
+	pool[1] = randomNoteComponent.pool2Button.getToggleState();
+	pool[2] = randomNoteComponent.pool3Button.getToggleState();
+	pool[3] = randomNoteComponent.pool4Button.getToggleState();
+
+	beatsModel->setRandomizeNotes(variationDefinitionComponent.variationCombo.getSelectedId()-1, randomNoteComponent.onButton.getToggleState(), pool, (int) randomNoteComponent.percentSlider.getValue());
+
+} // setRandomizeNotes
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -279,13 +325,17 @@ void TopiaryBeatsVariationComponent::paint(Graphics& g)
 	enablePoolComponent.setBounds(10, 150, enablePoolComponent.width, enablePoolComponent.heigth);
 	poolLengthComponent.setBounds(160, 10, poolLengthComponent.width, poolLengthComponent.heigth);
 	poolChannelComponent.setBounds(10, 270, poolChannelComponent.width, poolChannelComponent.heigth);
+	//poolTimingComponent.setBounds(400, 370, poolTimingComponent.width, poolTimingComponent.heigth);
+	randomNoteComponent.setBounds(350, 10, randomNoteComponent.width, randomNoteComponent.heigth);
+
 
 } // paint
+
+//////////////////////////////////////////////////
 
 void TopiaryBeatsVariationComponent::resized()
 {
 } // resized
-
 
 //////////////////////////////////////////////////
 

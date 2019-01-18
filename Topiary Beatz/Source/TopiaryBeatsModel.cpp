@@ -44,30 +44,6 @@ void TopiaryBeatsModel::restoreStateFromMemoryBlock(const void* data, int sizeIn
 
 /////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::savePreset(File f)
-{
-	addParametersToModel();  // this adds and XML element "Parameters" to the model
-	String myXmlDoc = model->createDocument(String());
-	f.replaceWithText(myXmlDoc);
-	//Logger::writeToLog(myXmlDoc);
-
-	// now delete the no-longer-needed "Parameters" child
-	model->deleteAllChildElementsWithTagName("Parameters");
-}
-
-/////////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::loadPreset(File f)
-{
-	model.reset(XmlDocument::parse(f));
-	restoreParametersToModel();
-}
-
-/////////////////////////////////////////////////////////////////////////
-
-#define xstr(s) str(s)
-#define str(s) #s
-
 TopiaryBeatsModel::TopiaryBeatsModel()
 {
 
@@ -268,6 +244,8 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 
 		variation[i].name = "Variation " + String(i + 1);
 		variation[i].enabled = false;
+		variation[i].randomizeNotes = false;
+		variation[i].randomizeNotesValue = 100;
 		for (int j = 0; j < 4; j++)
 		{
 			variation[i].enablePool[j] = false;
@@ -278,6 +256,9 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 			variation[i].beatTo[j] = -1;
 			variation[i].tickFrom[j] = 0;
 			variation[i].tickTo[j] = -1;
+
+			variation[i].randomizeNotePool[j] = false;
+			
 		}
 	}
 
@@ -310,6 +291,9 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	for (int i = 0; i < 8; i++) {
 		model->addChildElement(patternData[i].noteData);
 	}
+
+	threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
+	topiaryThread.notify();
 
 } // TopiaryBeatsModel
 
@@ -663,8 +647,9 @@ void TopiaryBeatsModel::deleteNote(int i)
 	removeFromModel("PoolData", child);
 	broadcaster.sendActionMessage(MsgMaster);
 	Log("Note deleted.", Topiary::LogType::Info);
-	String myXmlDoc = poolListData->createDocument(String());
-	Logger::writeToLog(myXmlDoc);
+	//String myXmlDoc = poolListData->createDocument(String());
+	//Logger::writeToLog(myXmlDoc);
+
 } // deleteNote
 
 ///////////////////////////////////////////////////////////////////////
@@ -1001,6 +986,33 @@ bool TopiaryBeatsModel::validateVariationDefinition(int i, bool enable, String v
 
 ///////////////////////////////////////////////////////////////////////
 
+void TopiaryBeatsModel::setRandomizeNotes(int v, bool enable, bool enablePool[4], int value)
+{
+	variation[v].randomizeNotes = enable;
+	variation[v].randomizeNotesValue = value;
+	for (int i = 0; i < 4; i++)
+	{
+		variation[v].randomizeNotePool[i] = enablePool[i];
+	}
+	generateVariation(v);
+	
+} // getRandomNotes
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::getRandomizeNotes(int v, bool &enable, bool enablePool[4], int &value)
+{
+	enable = variation[v].randomizeNotes;
+	value = variation[v].randomizeNotesValue;
+	for (int i = 0; i < 4; i++)
+	{
+		enablePool[i] = variation[v].randomizeNotePool[i];
+	}
+
+} // setRandomNotes
+
+///////////////////////////////////////////////////////////////////////
+
 void TopiaryBeatsModel::getPatterns(String pats[8])
 {
 	XmlElement* pattern;
@@ -1144,3 +1156,16 @@ void  TopiaryBeatsModel::generateAllVariations()
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+void TopiaryBeatsModel::threadRunner()
+{	
+	{
+		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		threadRunnerState = Topiary::ThreadRunnerState::Generating;
+	}
+	generateAllVariations(); // this one swaps in the variations using the spinlock
+	{
+		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
+	}
+
+} // threadRunner

@@ -34,6 +34,9 @@ public:
 	void setModel(TopiaryBeatsModel* m);
 	void setVariationDefinition();  // write to model
 	void getVariationDefinition();  // get data from model
+	void getRandomizeNotes();
+	void setRandomizeNotes();
+
 	void actionListenerCallback(const String &message) override;
 	TopiaryBeatsModel* beatsModel;
 
@@ -44,6 +47,8 @@ private:
 	EnablePoolComponent enablePoolComponent;
 	PoolLengthComponent poolLengthComponent;
 	PoolChannelComponent poolChannelComponent;
+	//PoolTimingComponent poolTimingComponent;
+	RandomNoteComponent randomNoteComponent;
 
 	int variation; // the one we are working on; 0-7
 	

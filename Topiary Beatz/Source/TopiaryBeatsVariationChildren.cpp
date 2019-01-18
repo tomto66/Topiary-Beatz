@@ -70,25 +70,31 @@ PoolTimingComponent::PoolTimingComponent()
 		parent->setVariationDefinition();
 	};
 	   
-
 	setSize(width, heigth);
 
 } // PoolTimingComponent
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 PoolTimingComponent::~PoolTimingComponent()
 {
-
 } // ~PoolTimingComponent
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void PoolTimingComponent::resized()
 {
-
 } // resized
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void PoolTimingComponent::setParent(TopiaryBeatsVariationComponent* p)
 {
 	parent = p;
-} // s
+
+} // setParent
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void PoolTimingComponent::paint(Graphics& g)
 {
@@ -126,11 +132,15 @@ PoolLengthComponent:: PoolLengthComponent()
 		addAndMakeVisible(poolStop[i]);
 		poolStop[i].label = "Pool " + String(i + 1) + " Stop";
 	}
-}
+} // PoolLengthComponent
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 PoolLengthComponent::~PoolLengthComponent()
 {
-}
+} // ~PoolLengthComponent
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void PoolLengthComponent::setParent(TopiaryBeatsVariationComponent* p)
 {
@@ -141,6 +151,8 @@ void PoolLengthComponent::setParent(TopiaryBeatsVariationComponent* p)
 		poolStop[i].setParent(parent);
 	}
 } // setParent
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void PoolLengthComponent::paint(Graphics& g)
 {
@@ -171,6 +183,8 @@ void PoolLengthComponent::paint(Graphics& g)
 	}
 
 } // paint
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void PoolLengthComponent::resized()
 {
@@ -223,20 +237,26 @@ EnablePoolComponent::EnablePoolComponent()
 
 } // EnablePoolComponent
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+
 EnablePoolComponent::~EnablePoolComponent() 
 {
-
 } // ~EnablePoolComponent
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void EnablePoolComponent::resized()
 {
-
 } // resized
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void EnablePoolComponent::setParent(TopiaryBeatsVariationComponent* p)
 {
 	parent = p;
 } // setparent
+
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 void  EnablePoolComponent::paint(Graphics& g)
 {
@@ -274,6 +294,7 @@ void  EnablePoolComponent::paint(Graphics& g)
 
 /////////////////////////////////////////////////////////////////////////
 // RandomNoteComponent
+// Randomizes note occurrence
 /////////////////////////////////////////////////////////////////////////
 
 RandomNoteComponent::RandomNoteComponent()
@@ -285,6 +306,7 @@ RandomNoteComponent::RandomNoteComponent()
 		pool1Button.setButtonText("1");
 		pool1Button.onClick = [this]
 		{
+			parent->setRandomizeNotes();
 		};
 
 		pool2Button.setClickingTogglesState(true);
@@ -294,6 +316,7 @@ RandomNoteComponent::RandomNoteComponent()
 		pool2Button.setButtonText("2");
 		pool2Button.onClick = [this]
 		{
+			parent->setRandomizeNotes();
 		};
 
 		pool3Button.setClickingTogglesState(true);
@@ -303,6 +326,7 @@ RandomNoteComponent::RandomNoteComponent()
 		pool3Button.setButtonText("3");
 		pool3Button.onClick = [this]
 		{
+			parent->setRandomizeNotes();
 		};
 
 		pool4Button.setClickingTogglesState(true);
@@ -312,6 +336,7 @@ RandomNoteComponent::RandomNoteComponent()
 		pool4Button.setButtonText("4");
 		pool4Button.onClick = [this]
 		{
+			parent->setRandomizeNotes();
 		};
 
 		onButton.setClickingTogglesState(true);
@@ -321,6 +346,7 @@ RandomNoteComponent::RandomNoteComponent()
 		onButton.setButtonText("RND Notes");
 		onButton.onClick = [this]
 		{
+			parent->setRandomizeNotes();
 		};
 
 		addAndMakeVisible(percentSlider);
@@ -331,6 +357,11 @@ RandomNoteComponent::RandomNoteComponent()
 		percentSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
 		percentSlider.setRange((double)0, (double)100, (double)1);
 		percentSlider.setTextValueSuffix("%");
+
+		percentSlider.onValueChange = [this]
+		{
+			parent->setRandomizeNotes();
+		};
 
 	} // RandomNoteComponent
 
@@ -400,7 +431,7 @@ void  RandomNoteComponent::paint(Graphics& g)
 		
 } // paint
 
-// End RandomNOteComponent
+// End RandomNoteComponent
 
 /////////////////////////////////////////////////////////////////////////
 // VariationDefinitionComponent
@@ -639,6 +670,5 @@ void  RandomNoteComponent::paint(Graphics& g)
 		topBounds.removeFromLeft(4 * lineWidth);
 		eBounds = topBounds.removeFromLeft(eW);
 		poolChannelEditor4.setBounds(eBounds);
-
 
 	} // paint

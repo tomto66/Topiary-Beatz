@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" jucerVersion="5.3.2"
-              version="0.8.4" companyName="Topiary" pluginManufacturer="Topiary"
+              version="0.8.5" companyName="Topiary" pluginManufacturer="Topiary"
               pluginVSTCategory="kPlugCategGenerator" pluginManufacturerCode="Beat"
               pluginCode="Beat" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               splashScreenColour="Light" pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="MiVGXn" name="Topiary Beatz">
+    <FILE id="Q9iV3U" name="PluginEditor.h" compile="0" resource="0" file="../Topiary/Source/PluginEditor.h"/>
+    <FILE id="wciZ72" name="PluginProcessor.h" compile="0" resource="0"
+          file="../Topiary/Source/PluginProcessor.h"/>
+    <FILE id="HJNtrb" name="PluginEditor.cpp" compile="1" resource="0"
+          file="../Topiary/Source/PluginEditor.cpp"/>
+    <FILE id="AOrKEd" name="PluginProcessor.cpp" compile="1" resource="0"
+          file="../Topiary/Source/PluginProcessor.cpp"/>
     <FILE id="VPivn9" name="Topiary.cpp" compile="1" resource="0" file="../Topiary/Source/Topiary.cpp"/>
     <FILE id="UAuPFW" name="Topiary.h" compile="0" resource="0" file="../Topiary/Source/Topiary.h"/>
     <FILE id="RohEBB" name="TopiaryAutomationComponent.cpp" compile="1"
