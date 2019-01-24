@@ -1,4 +1,4 @@
-# Topiary Beatz 0.8.5
+# Topiary Beatz 0.8.6
 
 Topiary Beatz is a plugin for beats & drums.
 
@@ -14,7 +14,8 @@ Careful: binary data is provided in the Topiary/JuceLibraryCode folder - make su
 ## Compatibility / Testing
 
 * Tested/Compiled with Juce 5.3 / Visual Studio 2017 / VST2 / Windows10/X64.
-* Tested with no issues in Cantabile 3, Reaper and Cubase LE.
+* Tested in Cantabile 3, Reaper and Cubase LE.
+* 2 known issues: https://github.com/tomto66/Topiary-Beatz/issues
 
 ## Installing binaries
 
