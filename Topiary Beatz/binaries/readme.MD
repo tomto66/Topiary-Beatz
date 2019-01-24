@@ -1,6 +1,7 @@
 Download and put the dll in your VST2 directory.  Possbily you'll need your host  to re-scan that directory.
-Tested in Cantabile 3 - works fine
-Tested in Cubase LE - workd fine
+Tested in Cantabile 3, Cubase LE & Reaper.
+
+2 known issues!  See here: https://github.com/tomto66/Topiary-Beatz/issues
 
 If the plugin does not work you may need to install the Microsoft Visual C++ redistributable from the link below.  Per V0.8.0 that should no longer be neccessary.
 
