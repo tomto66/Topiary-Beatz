@@ -434,6 +434,147 @@ void  RandomNoteComponent::paint(Graphics& g)
 // End RandomNoteComponent
 
 /////////////////////////////////////////////////////////////////////////
+// SwingComponent
+/////////////////////////////////////////////////////////////////////////
+
+SwingComponent::SwingComponent()
+{
+	pool1Button.setClickingTogglesState(true);
+	pool1Button.setLookAndFeel(&rndLookAndFeel);
+
+	addAndMakeVisible(pool1Button);
+	pool1Button.setButtonText("1");
+	pool1Button.onClick = [this]
+	{
+		parent->setSwing();
+	};
+
+	pool2Button.setClickingTogglesState(true);
+	pool2Button.setLookAndFeel(&rndLookAndFeel);
+
+	addAndMakeVisible(pool2Button);
+	pool2Button.setButtonText("2");
+	pool2Button.onClick = [this]
+	{
+		parent->setSwing();
+	};
+
+	pool3Button.setClickingTogglesState(true);
+	pool3Button.setLookAndFeel(&rndLookAndFeel);
+	//pool3Button.setSize(buttonH - 2, buttonH - 2);
+	addAndMakeVisible(pool3Button);
+	pool3Button.setButtonText("3");
+	pool3Button.onClick = [this]
+	{
+		parent->setSwing();
+	};
+
+	pool4Button.setClickingTogglesState(true);
+	pool4Button.setLookAndFeel(&rndLookAndFeel);
+	//pool4Button.setSize(buttonH - 2, buttonH - 2);
+	addAndMakeVisible(pool4Button);
+	pool4Button.setButtonText("4");
+	pool4Button.onClick = [this]
+	{
+		parent->setSwing();
+	};
+
+	onButton.setClickingTogglesState(true);
+	onButton.setLookAndFeel(&rndLookAndFeel);
+	onButton.setSize(100, buttonH);
+	addAndMakeVisible(onButton);
+	onButton.setButtonText("Swing");
+	onButton.onClick = [this]
+	{
+		parent->setSwing();
+	};
+
+	addAndMakeVisible(swingSlider);
+	swingSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+	swingSlider.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
+	swingSlider.setTextBoxIsEditable(true);
+	swingSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
+	swingSlider.setRange((double) -100, (double) 100, (double) 1);
+	swingSlider.setTextValueSuffix("%");
+
+	swingSlider.onValueChange = [this]
+	{
+		parent->setSwing();
+	};
+
+} // SwingComponent
+
+///////////////////////////////////////////////////////////////////////////////////
+
+SwingComponent::~SwingComponent()
+{
+} // ~SwingComponent
+
+///////////////////////////////////////////////////////////////////////////////////
+
+void SwingComponent::setParent(TopiaryBeatsVariationComponent* p)
+{
+	parent = p;
+} // s
+
+///////////////////////////////////////////////////////////////////////////////////
+
+void  SwingComponent::resized()
+{
+
+} // resized
+
+///////////////////////////////////////////////////////////////////////////////////
+
+void  SwingComponent::paint(Graphics& g)
+{
+
+	int labelOffset = 15;
+	int lineWidth = 2;
+	auto area = getLocalBounds();
+	g.fillAll(TopiaryColour::background);
+	g.setColour(TopiaryColour::foreground);
+	g.setFont(12.0f);
+
+	g.drawText("Swing", (int)lineWidth, (int)lineWidth, 200, (int)labelOffset, juce::Justification::centredLeft);
+	auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
+	g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
+
+	// turn it into inner rectangle
+	auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
+
+	// area for top button
+	auto topBounds = inRecBounds.removeFromTop(buttonH);
+	onButton.setBounds(topBounds);
+	onButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+	inRecBounds.removeFromTop(2 * lineWidth);
+	// inRecbounds is now the box for pool buttons + slider
+	auto poolBounds = inRecBounds.removeFromLeft(pbuttonH + 2 * lineWidth);
+	// inRecBounds is now box for slider
+
+	auto pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+	pool4Button.setBounds(pBounds);
+	pool4Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+	pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+	pool3Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+	pool3Button.setBounds(pBounds);
+	pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+	pool2Button.setBounds(pBounds);
+	pool2Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+	pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+	pool1Button.setBounds(pBounds);
+	pool1Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+	inRecBounds.removeFromLeft(2 * lineWidth);
+	swingSlider.setBounds(inRecBounds);
+	swingSlider.setSize(inRecBounds.getWidth(), inRecBounds.getHeight());
+	swingSlider.setLookAndFeel(&rndLookAndFeel);
+
+} // paint
+
+// End SwingComponent
+
+/////////////////////////////////////////////////////////////////////////
 // VariationDefinitionComponent
 /////////////////////////////////////////////////////////////////////////
 
@@ -672,3 +813,347 @@ void  RandomNoteComponent::paint(Graphics& g)
 		poolChannelEditor4.setBounds(eBounds);
 
 	} // paint
+
+	// end poolChannelComponent
+
+/////////////////////////////////////////////////////////////////////////
+//VelocityComponent
+/////////////////////////////////////////////////////////////////////////
+
+	VelocityComponent::VelocityComponent()
+	{
+		pool1Button.setClickingTogglesState(true);
+		pool1Button.setLookAndFeel(&rndLookAndFeel);
+
+		addAndMakeVisible(pool1Button);
+		pool1Button.setButtonText("1");
+		pool1Button.onClick = [this]
+		{
+			parent->setVelocity();
+		};
+
+		pool2Button.setClickingTogglesState(true);
+		pool2Button.setLookAndFeel(&rndLookAndFeel);
+
+		addAndMakeVisible(pool2Button);
+		pool2Button.setButtonText("2");
+		pool2Button.onClick = [this]
+		{
+			parent->setVelocity();
+		};
+
+		pool3Button.setClickingTogglesState(true);
+		pool3Button.setLookAndFeel(&rndLookAndFeel);
+		//pool3Button.setSize(buttonH - 2, buttonH - 2);
+		addAndMakeVisible(pool3Button);
+		pool3Button.setButtonText("3");
+		pool3Button.onClick = [this]
+		{
+			parent->setVelocity();
+		};
+
+		pool4Button.setClickingTogglesState(true);
+		pool4Button.setLookAndFeel(&rndLookAndFeel);
+		//pool4Button.setSize(buttonH - 2, buttonH - 2);
+		addAndMakeVisible(pool4Button);
+		pool4Button.setButtonText("4");
+		pool4Button.onClick = [this]
+		{
+			parent->setVelocity();
+		};
+
+		onButton.setClickingTogglesState(true);
+		onButton.setLookAndFeel(&rndLookAndFeel);
+		onButton.setSize(100, buttonH);
+		addAndMakeVisible(onButton);
+		onButton.setButtonText("RND Vel");
+		onButton.onClick = [this]
+		{
+			parent->setVelocity();
+		};
+
+		addAndMakeVisible(velocitySlider);
+		velocitySlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+		velocitySlider.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
+		velocitySlider.setTextBoxIsEditable(true);
+		velocitySlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
+		velocitySlider.setRange((double)0, (double)100, (double)1);
+		velocitySlider.setTextValueSuffix("%");
+
+		velocitySlider.onValueChange = [this]
+		{
+			parent->setVelocity();
+		};
+
+		plusButton.setClickingTogglesState(true);
+		plusButton.setLookAndFeel(&rndLookAndFeel);
+		plusButton.setSize(plusminusSize, plusminusSize);
+		addAndMakeVisible(plusButton);
+		plusButton.setButtonText("+");
+		plusButton.onClick = [this]
+		{
+			parent->setVelocity();
+		};
+
+		minusButton.setClickingTogglesState(true);
+		minusButton.setLookAndFeel(&rndLookAndFeel);
+		minusButton.setSize(plusminusSize, plusminusSize);
+		addAndMakeVisible(minusButton);
+		minusButton.setButtonText("-");
+		minusButton.onClick = [this]
+		{
+			parent->setVelocity();
+		};
+
+	} // VelocityComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	VelocityComponent::~VelocityComponent()
+	{
+	} // ~VelocityComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void VelocityComponent::setParent(TopiaryBeatsVariationComponent* p)
+	{
+		parent = p;
+	} // s
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  VelocityComponent::resized()
+	{
+
+	} // resized
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  VelocityComponent::paint(Graphics& g)
+	{
+
+		int labelOffset = 15;
+		int lineWidth = 2;
+		auto area = getLocalBounds();
+		g.fillAll(TopiaryColour::background);
+		g.setColour(TopiaryColour::foreground);
+		g.setFont(12.0f);
+
+		g.drawText("Velocity", (int)lineWidth, (int)lineWidth, 200, (int)labelOffset, juce::Justification::centredLeft);
+		auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
+		g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
+
+		// turn it into inner rectangle
+		auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
+
+		// area for top button
+		auto topBounds = inRecBounds.removeFromTop(buttonH);
+		onButton.setBounds(topBounds);
+		onButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+		inRecBounds.removeFromTop(2 * lineWidth);
+		// inRecbounds is now the box for pool buttons + slider
+		auto poolBounds = inRecBounds.removeFromLeft(pbuttonH + 2 * lineWidth);
+		// inRecBounds is now box for slider
+
+		auto pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool4Button.setBounds(pBounds);
+		pool4Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool3Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		pool3Button.setBounds(pBounds);
+		pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool2Button.setBounds(pBounds);
+		pool2Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool1Button.setBounds(pBounds);
+		pool1Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		inRecBounds.removeFromLeft(2 * lineWidth);
+		velocitySlider.setBounds(inRecBounds);
+		velocitySlider.setSize(inRecBounds.getWidth(), inRecBounds.getHeight());
+		velocitySlider.setLookAndFeel(&rndLookAndFeel);
+
+		// plusbutton top right
+		pBounds = inRecBounds.removeFromRight(plusminusSize);
+		pBounds.removeFromBottom(pBounds.getHeight() - plusminusSize);
+		plusButton.setBounds(pBounds);
+
+		// minus bottom top left
+		pBounds = inRecBounds.removeFromLeft(plusminusSize);
+		pBounds.removeFromBottom(pBounds.getHeight() - plusminusSize);
+		minusButton.setBounds(pBounds);
+
+	} // paint
+
+// End VelocityComponent
+
+/////////////////////////////////////////////////////////////////////////
+// TimingComponent
+/////////////////////////////////////////////////////////////////////////
+
+	TimingComponent::TimingComponent()
+	{
+		pool1Button.setClickingTogglesState(true);
+		pool1Button.setLookAndFeel(&rndLookAndFeel);
+		addAndMakeVisible(pool1Button);
+		pool1Button.setButtonText("1");
+		pool1Button.onClick = [this]
+		{
+			parent->setTiming();
+		};
+
+		pool2Button.setClickingTogglesState(true);
+		pool2Button.setLookAndFeel(&rndLookAndFeel);
+
+		addAndMakeVisible(pool2Button);
+		pool2Button.setButtonText("2");
+		pool2Button.onClick = [this]
+		{
+			parent->setTiming();
+		};
+
+		pool3Button.setClickingTogglesState(true);
+		pool3Button.setLookAndFeel(&rndLookAndFeel);
+		//pool3Button.setSize(buttonH - 2, buttonH - 2);
+		addAndMakeVisible(pool3Button);
+		pool3Button.setButtonText("3");
+		pool3Button.onClick = [this]
+		{
+			parent->setTiming();
+		};
+
+		pool4Button.setClickingTogglesState(true);
+		pool4Button.setLookAndFeel(&rndLookAndFeel);
+		//pool4Button.setSize(buttonH - 2, buttonH - 2);
+		addAndMakeVisible(pool4Button);
+		pool4Button.setButtonText("4");
+		pool4Button.onClick = [this]
+		{
+			parent->setTiming();
+		};
+
+		onButton.setClickingTogglesState(true);
+		onButton.setLookAndFeel(&rndLookAndFeel);
+		onButton.setSize(100, buttonH);
+		addAndMakeVisible(onButton);
+		onButton.setButtonText("RND Timing");
+		onButton.onClick = [this]
+		{
+			parent->setTiming();
+		};
+
+		addAndMakeVisible(timingSlider);
+		timingSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+		timingSlider.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
+		timingSlider.setTextBoxIsEditable(true);
+		timingSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
+		timingSlider.setRange((double)0, (double)100, (double)1);
+		timingSlider.setTextValueSuffix("%");
+
+		timingSlider.onValueChange = [this]
+		{
+			parent->setTiming();
+		};
+
+		plusButton.setClickingTogglesState(true);
+		plusButton.setLookAndFeel(&rndLookAndFeel);
+		plusButton.setSize(plusminusSize, plusminusSize);
+		addAndMakeVisible(plusButton);
+		plusButton.setButtonText("+");
+		plusButton.onClick = [this]
+		{
+			parent->setTiming();
+		};
+
+		minusButton.setClickingTogglesState(true);
+		minusButton.setLookAndFeel(&rndLookAndFeel);
+		minusButton.setSize(plusminusSize, plusminusSize);
+		addAndMakeVisible(minusButton);
+		minusButton.setButtonText("-");
+		minusButton.onClick = [this]
+		{
+			parent->setTiming();
+		};
+
+	} // TimingComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	TimingComponent::~TimingComponent()
+	{
+	} // ~TimingComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void TimingComponent::setParent(TopiaryBeatsVariationComponent* p)
+	{
+		parent = p;
+	} // setParent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  TimingComponent::resized()
+	{
+
+	} // resized
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  TimingComponent::paint(Graphics& g)
+	{
+
+		int labelOffset = 15;
+		int lineWidth = 2;
+		auto area = getLocalBounds();
+		g.fillAll(TopiaryColour::background);
+		g.setColour(TopiaryColour::foreground);
+		g.setFont(12.0f);
+
+		g.drawText("Timing", (int)lineWidth, (int)lineWidth, 200, (int)labelOffset, juce::Justification::centredLeft);
+		auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
+		g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
+
+		// turn it into inner rectangle
+		auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
+
+		// area for top button
+		auto topBounds = inRecBounds.removeFromTop(buttonH);
+		onButton.setBounds(topBounds);
+		onButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+		inRecBounds.removeFromTop(2 * lineWidth);
+		// inRecbounds is now the box for pool buttons + slider
+		auto poolBounds = inRecBounds.removeFromLeft(pbuttonH + 2 * lineWidth);
+		// inRecBounds is now box for slider
+
+		auto pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool4Button.setBounds(pBounds);
+		pool4Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool3Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		pool3Button.setBounds(pBounds);
+		pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool2Button.setBounds(pBounds);
+		pool2Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		pBounds = poolBounds.removeFromBottom(pbuttonH + 2 * lineWidth);
+		pool1Button.setBounds(pBounds);
+		pool1Button.setSize(pBounds.getWidth(), pBounds.getHeight());
+		inRecBounds.removeFromLeft(2 * lineWidth);
+		timingSlider.setBounds(inRecBounds);
+		timingSlider.setSize(inRecBounds.getWidth(), inRecBounds.getHeight());
+		timingSlider.setLookAndFeel(&rndLookAndFeel);
+
+		// plusbutton top right
+		pBounds = inRecBounds.removeFromRight(plusminusSize);
+		pBounds.removeFromBottom(pBounds.getHeight() - plusminusSize);
+		plusButton.setBounds(pBounds);
+
+		// minus bottom top left
+		pBounds = inRecBounds.removeFromLeft(plusminusSize);
+		pBounds.removeFromBottom(pBounds.getHeight() - plusminusSize);
+		minusButton.setBounds(pBounds);
+
+	} // paint
+
+// End TimingComponent
+

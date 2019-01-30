@@ -43,8 +43,15 @@ TopiaryBeatsVariationComponent::TopiaryBeatsVariationComponent()
 	addAndMakeVisible(randomNoteComponent);
 	randomNoteComponent.setParent(this);
 
-	//addAndMakeVisible(poolTimingComponent);
-	//poolTimingComponent.setParent(this);
+	addAndMakeVisible(swingComponent);
+	swingComponent.setParent(this);
+
+	addAndMakeVisible(velocityComponent);
+	velocityComponent.setParent(this);
+
+	addAndMakeVisible(timingComponent);
+	timingComponent.setParent(this);
+	
 
 } // TopiaryBeatsVariationComponent() 
 
@@ -157,6 +164,9 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 		variationDefinitionComponent.enableButton.setToggleState(false, dontSendNotification);
 
 	setRandomizeNotes();
+	setSwing();
+	setVelocity();
+	setTiming();
 
 	initializing = false;
 
@@ -168,9 +178,11 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 {
 	// get from model
 
-	if (variation != (variationDefinitionComponent.variationCombo.getSelectedId() - 1))
+	if (variation != (variationDefinitionComponent.variationCombo.getSelectedId() - 1) )
 	{
 		variation = variationDefinitionComponent.variationCombo.getSelectedId() - 1;
+		if (variation != -1 && !getVariationCalledFromChangeInVariationButton)  // because otherwise the variation is already set in the editor
+			beatsModel->setVariation(variation); // so that the variation buttons follow
 	}
 
 	if (variation <0 ) return;  // this should never happen, except when initializing
@@ -233,7 +245,9 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 	}
 
 	getRandomizeNotes();
-
+	getSwing();
+	getVelocity();
+	getTiming();
 
 } // getVariationDefinition
 
@@ -276,6 +290,128 @@ void TopiaryBeatsVariationComponent::setRandomizeNotes()
 
 /////////////////////////////////////////////////////////////////////////
 
+void TopiaryBeatsVariationComponent::setSwing()
+{
+	// set note randomisation to model
+
+	bool pool[4];
+
+	pool[0] = swingComponent.pool1Button.getToggleState();
+	pool[1] = swingComponent.pool2Button.getToggleState();
+	pool[2] = swingComponent.pool3Button.getToggleState();
+	pool[3] = swingComponent.pool4Button.getToggleState();
+
+	beatsModel->setSwing(variationDefinitionComponent.variationCombo.getSelectedId() - 1, swingComponent.onButton.getToggleState(), pool, (int)swingComponent.swingSlider.getValue());
+
+} // setSwing
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::getSwing()
+{
+	// get note randomisation from model
+	bool enable;
+	bool pool[4];
+	int value;
+
+	beatsModel->getSwing(variationDefinitionComponent.variationCombo.getSelectedId() - 1, enable, pool, value);
+
+	swingComponent.onButton.setToggleState(enable, dontSendNotification);
+	swingComponent.pool1Button.setToggleState(pool[0], dontSendNotification);
+	swingComponent.pool2Button.setToggleState(pool[1], dontSendNotification);
+	swingComponent.pool3Button.setToggleState(pool[2], dontSendNotification);
+	swingComponent.pool4Button.setToggleState(pool[3], dontSendNotification);
+	swingComponent.swingSlider.setValue(value, dontSendNotification);
+
+} // getSwing
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::setTiming()
+{
+	// set note randomisation to model
+
+	bool pool[4];
+
+	pool[0] = timingComponent.pool1Button.getToggleState();
+	pool[1] = timingComponent.pool2Button.getToggleState();
+	pool[2] = timingComponent.pool3Button.getToggleState();
+	pool[3] = timingComponent.pool4Button.getToggleState();
+
+	beatsModel->setRandomizeTiming(variationDefinitionComponent.variationCombo.getSelectedId() - 1, timingComponent.onButton.getToggleState(), pool, 
+									(int)timingComponent.timingSlider.getValue(),
+									timingComponent.plusButton.getToggleState(),
+									timingComponent.minusButton.getToggleState());
+
+} // setTiming
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::getTiming()
+{
+	// get note randomisation from model
+	bool enable;
+	bool pool[4], plus, min;
+	int value;
+
+	beatsModel->getRandomizeTiming(variationDefinitionComponent.variationCombo.getSelectedId() - 1, enable, pool, value, plus, min);
+
+	timingComponent.onButton.setToggleState(enable, dontSendNotification);
+	timingComponent.pool1Button.setToggleState(pool[0], dontSendNotification);
+	timingComponent.pool2Button.setToggleState(pool[1], dontSendNotification);
+	timingComponent.pool3Button.setToggleState(pool[2], dontSendNotification);
+	timingComponent.pool4Button.setToggleState(pool[3], dontSendNotification);
+	timingComponent.timingSlider.setValue(value, dontSendNotification);
+	timingComponent.plusButton.setToggleState(plus, dontSendNotification);
+	timingComponent.minusButton.setToggleState(min, dontSendNotification);
+
+} // getTiming
+
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::setVelocity()
+{
+	// set note randomisation to model
+
+	bool pool[4];
+
+	pool[0] = velocityComponent.pool1Button.getToggleState();
+	pool[1] = velocityComponent.pool2Button.getToggleState();
+	pool[2] = velocityComponent.pool3Button.getToggleState();
+	pool[3] = velocityComponent.pool4Button.getToggleState();
+
+	beatsModel->setRandomizeVelocity(variationDefinitionComponent.variationCombo.getSelectedId() - 1, velocityComponent.onButton.getToggleState(), pool, 
+									(int)velocityComponent.velocitySlider.getValue(),
+									velocityComponent.plusButton.getToggleState(),
+									velocityComponent.minusButton.getToggleState() 	);
+
+} // setVelocity
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::getVelocity()
+{
+	// get note randomisation from model
+	bool enable;
+	bool pool[4], plus, min;
+	int value;
+
+	beatsModel->getRandomizeVelocity (variationDefinitionComponent.variationCombo.getSelectedId() - 1, enable, pool, value, plus, min);
+
+	velocityComponent.onButton.setToggleState(enable, dontSendNotification);
+	velocityComponent.pool1Button.setToggleState(pool[0], dontSendNotification);
+	velocityComponent.pool2Button.setToggleState(pool[1], dontSendNotification);
+	velocityComponent.pool3Button.setToggleState(pool[2], dontSendNotification);
+	velocityComponent.pool4Button.setToggleState(pool[3], dontSendNotification);
+	velocityComponent.velocitySlider.setValue(value, dontSendNotification);
+	velocityComponent.plusButton.setToggleState(plus, dontSendNotification);
+	velocityComponent.minusButton.setToggleState(min, dontSendNotification);
+
+} // getVelocity
+
+/////////////////////////////////////////////////////////////////////////
+
 void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &message)
 {
 	if (message.compare(MsgVariationDefinition) == 0)
@@ -283,7 +419,7 @@ void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &messa
 		getVariationDefinition();  
 		// be sure that the mastertables are read first so the patternCombo is set correctly !!!
 	}
-	if (message.compare(MsgMaster) == 0)
+	else if (message.compare(MsgMaster) == 0)
 	{
 		// fill the patternCombo; careful, there may already be stuff there so clear it and then set it back where it was
 		int remember = variationDefinitionComponent.patternCombo.getSelectedId();
@@ -294,23 +430,38 @@ void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &messa
 		for (int i = 0; i < 8; i++) patterns[i] = "";
 
 		beatsModel->getPatterns(patterns);
-		int i = 0;
-		while (patterns[i].compare("") && (i<8))
+		//int i = 0;
+		//while (patterns[i].compare("") && (i<8))
+		for (int i=0; i<8; i++)
 		{
-			variationDefinitionComponent.patternCombo.addItem(patterns[i], i+1);
-			i++;
+			if (patterns[i].compare(""))
+				variationDefinitionComponent.patternCombo.addItem(patterns[i], i+1);		
 		}
 
 				// if there are no patterns, disable yourself!!!
-		if (beatsModel->getNumPatterns())
+		if (beatsModel->getNumPatterns()>0)
 			this->setEnabled(true);
 		else
 			this->setEnabled(false);
 
-		if (remember <= i)
+		if (remember <= variationDefinitionComponent.patternCombo.getNumItems())
 			variationDefinitionComponent.patternCombo.setSelectedId(remember, dontSendNotification);
 		else
 			variationDefinitionComponent.patternCombo.setSelectedId(1, dontSendNotification);
+	}
+	else if (message.compare(MsgVariationSelected) == 0)
+	{
+		// set the combo to the selected variation
+		int unused, newVariation;
+		beatsModel->getVariation(newVariation, unused);
+		if (variation != newVariation)
+		{
+			variationDefinitionComponent.variationCombo.setSelectedId(newVariation + 1, dontSendNotification);
+			getVariationCalledFromChangeInVariationButton = true;
+			getVariationDefinition();
+			getVariationCalledFromChangeInVariationButton = false;
+			UNUSED(unused)
+		}
 	}
 
 }  // actionListenerCallback
@@ -320,15 +471,15 @@ void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &messa
 void TopiaryBeatsVariationComponent::paint(Graphics& g)
 {
 	UNUSED(g)
-	//randomNoteComponent.setBounds(100, 100, 20 + randomNoteComponent.width, 20 + randomNoteComponent.heigth);
+	
 	variationDefinitionComponent.setBounds(10, 10, variationDefinitionComponent.width, variationDefinitionComponent.heigth);
 	enablePoolComponent.setBounds(10, 150, enablePoolComponent.width, enablePoolComponent.heigth);
 	poolLengthComponent.setBounds(160, 10, poolLengthComponent.width, poolLengthComponent.heigth);
 	poolChannelComponent.setBounds(10, 270, poolChannelComponent.width, poolChannelComponent.heigth);
-	//poolTimingComponent.setBounds(400, 370, poolTimingComponent.width, poolTimingComponent.heigth);
 	randomNoteComponent.setBounds(350, 10, randomNoteComponent.width, randomNoteComponent.heigth);
-
-
+	swingComponent.setBounds(450, 10, swingComponent.width, swingComponent.heigth);
+	velocityComponent.setBounds(550, 10, velocityComponent.width, velocityComponent.heigth);
+	timingComponent.setBounds(650, 10, timingComponent.width, timingComponent.heigth);
 } // paint
 
 //////////////////////////////////////////////////

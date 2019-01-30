@@ -23,7 +23,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #include "TopiaryBeatsTransportComponent.h"
 #include "TopiaryBeatsVariationButtonsComponent.h"
 
-class TopiaryBeatsHeaderComponent : public Component,  ActionListener
+class TopiaryBeatsHeaderComponent : public Component,  ActionListener, Timer
 {
 public:
 
@@ -33,14 +33,13 @@ public:
 	void paint(Graphics& g) override;
 	void resized() override;
 	void actionListenerCallback(const String &message) override;
+	void timerCallback();
 
 private:
 	TopiaryBeatsTransportComponent transportComponent;
 	TopiaryBeatsVariationButtonsComponent variationButtonsComponent;
 	TopiaryBeatsModel* beatsModel;
 	TextEditor warningEditor;
-
-	
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsHeaderComponent)
 };

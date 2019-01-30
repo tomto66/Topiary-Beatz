@@ -85,21 +85,26 @@ void TopiaryBeatsHeaderComponent::actionListenerCallback(const String &message)
 	if (message.compare(MsgWarning) == 0)
 	{
 		warningEditor.setVisible(true);
+		startTimer(3000);
 	}
 	else
 	{
 		if (message.compare(MsgVariationSelected) == 0)
 			variationButtonsComponent.checkModel();
-		if (message.compare(MsgTransport) == 0)
+		else if (message.compare(MsgTransport) == 0)
 			transportComponent.checkModel();
-		if (message.compare(MsgVariationEnables) == 0)
+		else if (message.compare(MsgVariationEnables) == 0)
 			variationButtonsComponent.getEnabled();
-		if (message.compare(MsgLog) == 0)
-			warningEditor.setVisible(false);
+		//if (message.compare(MsgLog) == 0)
+		//	warningEditor.setVisible(false);
 	}
 }
 
-
+void TopiaryBeatsHeaderComponent::timerCallback()
+{
+	warningEditor.setVisible(false);
+	stopTimer();
+}
 
 
 

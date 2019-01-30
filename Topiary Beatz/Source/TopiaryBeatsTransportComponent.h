@@ -23,20 +23,3 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #define TOPIARYTRANSPORTCOMPONENT TopiaryBeatsTransportComponent
 #include "../../Topiary/Source/TopiaryTransportComponent.h"
 
-/*
-class TopiaryBeatsTransportComponent : public TopiaryTransportComponent
-{
-public:
-	TopiaryBeatsTransportComponent();
-	~TopiaryBeatsTransportComponent();
-	void setModel(TopiaryBeatsModel *m);
-	void checkModel();
-	void processUIChanges(bool override, int& n, int& d, int& bpm, int buttonEnabled) override;
-
-private:
-	TopiaryBeatsModel* beatsModel;
-	
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsTransportComponent)
-
-};
-*/

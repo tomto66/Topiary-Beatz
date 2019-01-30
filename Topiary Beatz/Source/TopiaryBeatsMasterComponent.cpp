@@ -89,7 +89,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 		//patternsTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
 		//setButtonStates();
 		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
-		patternsTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
+		patternsTable.selectRow(beatsModel->getNumPatterns()-1);   // select the new row
 	};
 
 
@@ -125,7 +125,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	newPoolButton.onClick = [this] {
 		beatsModel->addNote();
 		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
-		poolTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
+		poolTable.selectRow(beatsModel->getNumPatterns()-1 );   // select the new row
 	};
 
 	// Regenerate Button

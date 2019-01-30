@@ -177,6 +177,92 @@ private:
 }; // VariationDefinitionComponent
 
 ////////////////////////////////////////////////////////////////////////////////
+// SwingComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class SwingComponent : public Component
+{
+public:
+
+	TopiaryLookAndFeel rndLookAndFeel;
+	TopiaryButton pool1Button;
+	TopiaryButton pool2Button;
+	TopiaryButton pool3Button;
+	TopiaryButton pool4Button;
+
+	TopiaryButton onButton;
+	Slider	swingSlider;
+
+	int width = 85;
+	int heigth = 120;
+
+	SwingComponent();
+	~SwingComponent();
+	void resized();
+	void paint(Graphics& g) override;
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+private:
+
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int buttonH = 20;
+	static const int pbuttonH = 12;
+	static const int sliderH = 100;
+	static const int sliderV = 65;
+	static const int sliderTW = 60;
+	static const int sliderTH = 15;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwingComponent)
+
+}; // SwingComponent
+
+////////////////////////////////////////////////////////////////////////////////
+// VelocityComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class VelocityComponent : public Component
+{
+public:
+
+	TopiaryLookAndFeel rndLookAndFeel;
+	TopiaryButton pool1Button;
+	TopiaryButton pool2Button;
+	TopiaryButton pool3Button;
+	TopiaryButton pool4Button;
+
+	TopiaryButton plusButton;
+	TopiaryButton minusButton;
+
+	TopiaryButton onButton;
+	Slider	velocitySlider;
+
+	int width = 85;
+	int heigth = 120;
+
+	VelocityComponent();
+	~VelocityComponent();
+	void resized();
+	void paint(Graphics& g) override;
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+private:
+
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int buttonH = 20;
+	static const int pbuttonH = 12;
+	static const int sliderH = 100;
+	static const int sliderV = 65;
+	static const int sliderTW = 60;
+	static const int sliderTH = 15;
+	static const int plusminusSize = 12;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VelocityComponent)
+
+}; // VelocityComponent
+
+////////////////////////////////////////////////////////////////////////////////
 // PoolChannelComponent
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -207,3 +293,49 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PoolChannelComponent)
 
 }; // PoolChannelComponent
+
+
+////////////////////////////////////////////////////////////////////////////////
+// TimingComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class TimingComponent : public Component
+{
+public:
+
+	TopiaryLookAndFeel rndLookAndFeel;
+	TopiaryButton pool1Button;
+	TopiaryButton pool2Button;
+	TopiaryButton pool3Button;
+	TopiaryButton pool4Button;
+
+	TopiaryButton plusButton;
+	TopiaryButton minusButton;
+
+	TopiaryButton onButton;
+	Slider	timingSlider;
+
+	int width = 85;
+	int heigth = 120;
+
+	TimingComponent();
+	~TimingComponent();
+	void resized();
+	void paint(Graphics& g) override;
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+private:
+
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int plusminusSize = 12;
+	static const int buttonH = 20;
+	static const int pbuttonH = 12;
+	static const int sliderH = 100;
+	static const int sliderV = 65;
+	static const int sliderTW = 60;
+	static const int sliderTH = 15;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TimingComponent)
+
+}; // TimingComponent

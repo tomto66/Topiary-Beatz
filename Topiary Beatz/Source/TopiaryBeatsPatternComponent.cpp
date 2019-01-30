@@ -101,11 +101,13 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 		for (int i = 0; i < 8; i++) patterns[i] = "";
 
 		beatsModel->getPatterns(patterns);
-		int i = 0;
-		while (patterns[i].compare(""))
+		//int i = 0;
+		//while (i<8)
+		for (int i=0; i<8; i++)
 		{
-			patternCombo.addItem(patterns[i], i + 1);
-			i++;
+			if (patterns[i].compare(""))
+				patternCombo.addItem(patterns[i], i + 1);
+			
 		}
 
 		// if there are no patterns, disable yourself!!!

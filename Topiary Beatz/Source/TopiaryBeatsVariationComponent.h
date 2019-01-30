@@ -36,19 +36,27 @@ public:
 	void getVariationDefinition();  // get data from model
 	void getRandomizeNotes();
 	void setRandomizeNotes();
+	void setSwing();
+	void getSwing();
+	void setVelocity();
+	void getVelocity();
+	void getTiming();
+	void setTiming();
 
 	void actionListenerCallback(const String &message) override;
 	TopiaryBeatsModel* beatsModel;
 
 private:
 	   
-	//RandomNoteComponent randomNoteComponent;
+	
 	VariationDefinitionComponent variationDefinitionComponent;
 	EnablePoolComponent enablePoolComponent;
 	PoolLengthComponent poolLengthComponent;
 	PoolChannelComponent poolChannelComponent;
-	//PoolTimingComponent poolTimingComponent;
 	RandomNoteComponent randomNoteComponent;
+	SwingComponent swingComponent;
+	VelocityComponent velocityComponent;
+	TimingComponent timingComponent;
 
 	int variation; // the one we are working on; 0-7
 	
@@ -58,7 +66,8 @@ private:
 	static const int sliderTW = 60;
 	static const int sliderTH = 20;
 
-	bool initializing = true; // to avoid unneeded warnings @init. set to true when get/set detects numPatterns = 0; set to false as soons as a patternId of 1 gets written.
+	bool initializing = true; // to avoid unneeded warnings @init. Set to true when get/set detects numPatterns = 0; set to false as soons as a patternId of 1 gets written.
+	bool getVariationCalledFromChangeInVariationButton = false;
 
 	//////////////////////////////////////////////////////
 

@@ -32,7 +32,6 @@ public:
 
 	void getMasterModel(XmlElement** h, XmlElement** d, XmlElement** ph, XmlElement** pd);
 	void getPatternModel(int patternIndex, XmlElement** h, XmlElement** d);
-	//int getNumPatterns();
 	void getPatterns(String pats[8]);
 	int getPatternLengthInMeasures(int i);  // needed in variationComponent for validating pool length values;
 	void deletePattern(int i);
@@ -71,11 +70,19 @@ public:
 	bool validateVariationDefinition(int i, bool enable, String vname, int patternId, int poolLength[4][3][2]);
 	void setRandomizeNotes(int v, bool enable, bool enablePool[4], int value);
 	void getRandomizeNotes(int v, bool &enable, bool enablePool[4], int &value);
-
+	void setSwing(int v, bool enable, bool enablePool[4], int value);
+	void getSwing(int v, bool &enable, bool enablePool[4], int &value);
+	void setRandomizeVelocity(int v, bool enable, bool enablePool[4], int value, bool plus, bool min);
+	void getRandomizeVelocity(int v, bool &enable, bool enablePool[4], int &value, bool &plus, bool &min);
+	void setRandomizeTiming(int v, bool enable, bool enablePool[4], int value, bool plus, bool min);
+	void getRandomizeTiming(int v, bool &enable, bool enablePool[4], int &value, bool &plus, bool &min);
 
 	void generateVariation(int i); // Generates the variation; at the end , swaps it in (using spinlock)
 	void generateAllVariations();
 	void threadRunner() override;
+
+	void setOverrideHostTransport(bool o) override;
+
 	struct Variation {
 
 		int patternToUse;					// index in patterndata
@@ -107,10 +114,29 @@ public:
 		int randomizeNotesValue;
 		bool randomizeNotePool[4];
 
+		// swing
+		bool swing;
+		int swingValue;
+		bool swingPool[4];
+
+		// velocity
+		bool randomizeVelocity;
+		int velocityValue;
+		bool velocityPool[4];
+		bool velocityPlus;
+		bool velocityMin;
+
+		// timing
+		bool randomizeTiming;
+		int timingValue;
+		bool timingPool[4];
+		bool timingPlus;
+		bool timingMin;
+
 	};
 
 	
-#define NUMBEROFQANTIZERS 10
+#define NUMBEROFQUANTIZERS 10
 
 private:
 
@@ -130,14 +156,14 @@ private:
 		int patLenInTicks = 0;
 	} patternData[8];
 
-	int numPatterns = 0;
 	int patternsRealID = 1;
 	int numPoolNotes = 0;
 	int poolNotesRealID = 1;
-
 	
-	Variation variation[8];  // struct to hold variation detail
+	int debugLastNoteOn = 0; // delete - for debugging duplicate notes
 
+	Variation variation[8];  // struct to hold variation detail
+	
 	///////////////////////////////////////////////////////////////////////
 
 	void renumberPool(XmlElement *list)
@@ -468,7 +494,7 @@ private:
 		addBoolToModel(parameters, logInfo, "logInfo");
 		addStringToModel(parameters, filePath, "filePath");
 
-		addIntToModel(parameters, numPatterns, "numPatterns");
+		//addIntToModel(parameters, numPatterns, "numPatterns"); NOT SAVED BUT COUNTED
 		addIntToModel(parameters, patternsRealID, "patternsRealID");
 		addIntToModel(parameters, numPoolNotes, "numPoolNotes");
 		addIntToModel(parameters, poolNotesRealID, "poolNotesRealId");
@@ -482,7 +508,7 @@ private:
 			addIntToModel(parameters, patternData[i].notesRealID, "notesRealID", i);
 			addIntToModel(parameters, patternData[i].patLenInTicks, "patLenInTicks", i);
 
-			// still to do - variation variables!!!
+			// Variations
 			addIntToModel(parameters, variation[i].lenInTicks, "lenInTicks", i);
 			addIntToModel(parameters, variation[i].lenInMeasures, "lenInMeasures", i);
 			addIntToModel(parameters, variation[i].patternToUse, "patternToUse", i);
@@ -536,6 +562,31 @@ private:
 			addBoolToModel(parameters, variation[i].randomizeNotePool[2], "randomizeNotePool2", i);
 			addBoolToModel(parameters, variation[i].randomizeNotePool[3], "randomizeNotePool3", i);
 
+			addBoolToModel(parameters, variation[i].swing, "swing", i);
+			addIntToModel(parameters, variation[i].swingValue, "swingValue", i);
+			addBoolToModel(parameters, variation[i].swingPool[0], "swingPool0", i);
+			addBoolToModel(parameters, variation[i].swingPool[1], "swingPool1", i);
+			addBoolToModel(parameters, variation[i].swingPool[2], "swingPool2", i);
+			addBoolToModel(parameters, variation[i].swingPool[3], "swingPool3", i);
+
+			addBoolToModel(parameters, variation[i].randomizeVelocity, "randomizeVelocity", i);
+			addIntToModel(parameters, variation[i].velocityValue, "velocityValue", i);
+			addBoolToModel(parameters, variation[i].velocityPool[0], "velocityPool0", i);
+			addBoolToModel(parameters, variation[i].velocityPool[1], "velocityPool1", i);
+			addBoolToModel(parameters, variation[i].velocityPool[2], "velocityPool2", i);
+			addBoolToModel(parameters, variation[i].velocityPool[3], "velocityPool3", i);
+			addBoolToModel(parameters, variation[i].velocityPlus, "velocityPlus", i);
+			addBoolToModel(parameters, variation[i].velocityMin, "velocityMin", i);
+
+			addBoolToModel(parameters, variation[i].randomizeTiming, "randomizeTiming", i);
+			addIntToModel(parameters, variation[i].timingValue, "timingValue", i);
+			addBoolToModel(parameters, variation[i].timingPool[0], "timingPool0", i);
+			addBoolToModel(parameters, variation[i].timingPool[1], "timingPool1", i);
+			addBoolToModel(parameters, variation[i].timingPool[2], "timingPool2", i);
+			addBoolToModel(parameters, variation[i].timingPool[3], "timingPool3", i);
+			addBoolToModel(parameters, variation[i].timingPlus, "timingPlus", i);
+			addBoolToModel(parameters, variation[i].timingMin, "timingMin", i);
+
 			// automation
 			addIntToModel(parameters, variationSwitch[i], "variationSwitch", i);
 		}
@@ -547,179 +598,219 @@ private:
 	void restoreParametersToModel()
 	{ 
 		// model now has a child "Parameters"; set all non-XML parameters to their new values
-		
-		auto child = model->getFirstChildElement();
-		while (child != nullptr)
-		{
-			String tagName = child->getTagName();
+		overrideHostTransport = true; // otherwise we might get very weird effects if the host were running
+		setRunState(Topiary::Stopped);
 
-			if (tagName.compare("Parameters") == 0)
+		bool rememberOverride = true; // we do not want to set that right away!
+
+		{
+			// block protected by lock	
+			const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+
+			auto child = model->getFirstChildElement();
+			while (child != nullptr)
 			{
-				auto parameter = child->getFirstChildElement();
-				while (parameter != nullptr)
+				String tagName = child->getTagName();
+
+				if (tagName.compare("Parameters") == 0)
 				{
-					String parameterName = parameter->getStringAttribute("Name");
-					if (parameterName.compare("name") == 0)	name = parameter->getStringAttribute("Value");
-					if (parameterName.compare("BPM") == 0) BPM = parameter->getIntAttribute("Value");
-					if (parameterName.compare("numerator") == 0) numerator = parameter->getIntAttribute("Value");
-					if (parameterName.compare("overrideHostTransport") == 0) overrideHostTransport = (bool)parameter->getIntAttribute("Value");
-					if (parameterName.compare("denominator") == 0) denominator = parameter->getIntAttribute("Value");
-					if (parameterName.compare("variationSelected") == 0)
+					auto parameter = child->getFirstChildElement();
+					while (parameter != nullptr)
 					{
-						variationSelected = parameter->getIntAttribute("Value");
-						variationRunning = variationSelected;
+						String parameterName = parameter->getStringAttribute("Name");
+						if (parameterName.compare("name") == 0)	name = parameter->getStringAttribute("Value");
+						if (parameterName.compare("BPM") == 0) BPM = parameter->getIntAttribute("Value");
+						if (parameterName.compare("numerator") == 0) numerator = parameter->getIntAttribute("Value");
+						if (parameterName.compare("overrideHostTransport") == 0) rememberOverride = (bool)parameter->getIntAttribute("Value");
+						if (parameterName.compare("denominator") == 0) denominator = parameter->getIntAttribute("Value");
+						if (parameterName.compare("variationSelected") == 0)
+						{
+							variationSelected = parameter->getIntAttribute("Value");
+							variationRunning = variationSelected;
+						}
+
+						if (parameterName.compare("switchVariation") == 0) switchVariation = parameter->getIntAttribute("Value");
+						if (parameterName.compare("runStopQ") == 0) runStopQ = parameter->getIntAttribute("Value");
+						if (parameterName.compare("variationStartQ") == 0) variationStartQ = parameter->getIntAttribute("Value");
+						if (parameterName.compare("name") == 0) name = parameter->getStringAttribute("Value");
+
+						if (parameterName.compare("WFFN") == 0)	WFFN = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("notePassThrough") == 0) 	notePassThrough = (bool)parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("logMidiIn") == 0) logMidiIn = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("logMidiOut") == 0)	logMidiOut = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("logDebug") == 0)	logDebug = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("logTransport") == 0)	logTransport = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("logVariations") == 0) logVariations = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("logInfo") == 0)	logInfo = parameter->getBoolAttribute("Value");
+
+						if (parameterName.compare("filePath") == 0)	filePath = parameter->getStringAttribute("Value");
+
+						//if (parameterName.compare("numPatterns") == 0) numPatterns = parameter->getIntAttribute("Value");
+						if (parameterName.compare("patternsRealID") == 0) patternsRealID = parameter->getIntAttribute("Value");
+						if (parameterName.compare("numPoolNotes") == 0) numPoolNotes = parameter->getIntAttribute("Value");
+						if (parameterName.compare("poolNotesRealID") == 0) poolNotesRealID = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
+						if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("lenInTicks") == 0) variation[parameter->getIntAttribute("Index")].lenInTicks = parameter->getIntAttribute("Value");
+						if (parameterName.compare("lenInMeasures") == 0) variation[parameter->getIntAttribute("Index")].lenInMeasures = parameter->getIntAttribute("Value");
+						if (parameterName.compare("patternToUse") == 0) variation[parameter->getIntAttribute("Index")].patternToUse = parameter->getIntAttribute("Value");
+						if (parameterName.compare("variationEnabled") == 0) variation[parameter->getIntAttribute("Index")].enabled = parameter->getBoolAttribute("Value");
+
+						if (parameterName.compare("enablePool0") == 0) variation[parameter->getIntAttribute("Index")].enablePool[0] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("enablePool1") == 0) variation[parameter->getIntAttribute("Index")].enablePool[1] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("enablePool2") == 0) variation[parameter->getIntAttribute("Index")].enablePool[2] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("enablePool3") == 0) variation[parameter->getIntAttribute("Index")].enablePool[3] = parameter->getBoolAttribute("Value");
+
+						if (parameterName.compare("poolChannel0") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("poolChannel1") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("poolChannel2") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("poolChannel3") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("variationName") == 0) variation[parameter->getIntAttribute("Index")].name = parameter->getStringAttribute("Value");
+
+						if (parameterName.compare("measureFrom0") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("measureFrom1") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("measureFrom2") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("measureFrom3") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("measureTo0") == 0) variation[parameter->getIntAttribute("Index")].measureTo[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("measureTo1") == 0) variation[parameter->getIntAttribute("Index")].measureTo[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("measureTo2") == 0) variation[parameter->getIntAttribute("Index")].measureTo[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("measureTo3") == 0) variation[parameter->getIntAttribute("Index")].measureTo[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("beatFrom0") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("beatFrom1") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("beatFrom2") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("beatFrom3") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("beatTo0") == 0) variation[parameter->getIntAttribute("Index")].beatTo[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("beatTo1") == 0) variation[parameter->getIntAttribute("Index")].beatTo[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("beatTo2") == 0) variation[parameter->getIntAttribute("Index")].beatTo[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("beatTo3") == 0) variation[parameter->getIntAttribute("Index")].beatTo[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("tickFrom0") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("tickFrom1") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("tickFrom2") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("tickFrom3") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("tickTo0") == 0) variation[parameter->getIntAttribute("Index")].tickTo[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("tickTo1") == 0) variation[parameter->getIntAttribute("Index")].tickTo[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("tickTo2") == 0) variation[parameter->getIntAttribute("Index")].tickTo[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("tickTo3") == 0) variation[parameter->getIntAttribute("Index")].tickTo[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("randomizeNotes") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotes = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("randomizeNotesValue") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotesValue = parameter->getIntAttribute("Value");
+						if (parameterName.compare("randomizeNotePool0") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[0] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("randomizeNotePool1") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[1] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("randomizeNotePool2") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[2] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("randomizeNotePool3") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[3] = parameter->getBoolAttribute("Value");
+
+						if (parameterName.compare("swing") == 0) variation[parameter->getIntAttribute("Index")].swing = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("swingValue") == 0) variation[parameter->getIntAttribute("Index")].swingValue = parameter->getIntAttribute("Value");
+						if (parameterName.compare("swingPool0") == 0) variation[parameter->getIntAttribute("Index")].swingPool[0] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("swingPool1") == 0) variation[parameter->getIntAttribute("Index")].swingPool[1] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("swingPool2") == 0) variation[parameter->getIntAttribute("Index")].swingPool[2] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("swingPool3") == 0) variation[parameter->getIntAttribute("Index")].swingPool[3] = parameter->getBoolAttribute("Value");
+
+						if (parameterName.compare("randomizeVelocity") == 0) variation[parameter->getIntAttribute("Index")].randomizeVelocity = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("velocityValue") == 0) variation[parameter->getIntAttribute("Index")].velocityValue = parameter->getIntAttribute("Value");
+						if (parameterName.compare("velocityPool0") == 0) variation[parameter->getIntAttribute("Index")].velocityPool[0] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("velocityPool1") == 0) variation[parameter->getIntAttribute("Index")].velocityPool[1] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("velocityPool2") == 0) variation[parameter->getIntAttribute("Index")].velocityPool[2] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("velocityPool3") == 0) variation[parameter->getIntAttribute("Index")].velocityPool[3] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("velocityPlus") == 0) variation[parameter->getIntAttribute("Index")].velocityPlus = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("velocityMin") == 0) variation[parameter->getIntAttribute("Index")].velocityMin = parameter->getBoolAttribute("Value");
+
+						if (parameterName.compare("randomizeTiming") == 0) variation[parameter->getIntAttribute("Index")].randomizeTiming = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("timingValue") == 0) variation[parameter->getIntAttribute("Index")].timingValue = parameter->getIntAttribute("Value");
+						if (parameterName.compare("timingPool0") == 0) variation[parameter->getIntAttribute("Index")].timingPool[0] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("timingPool1") == 0) variation[parameter->getIntAttribute("Index")].timingPool[1] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("timingPool2") == 0) variation[parameter->getIntAttribute("Index")].timingPool[2] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("timingPool3") == 0) variation[parameter->getIntAttribute("Index")].timingPool[3] = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("timingPlus") == 0) variation[parameter->getIntAttribute("Index")].timingPlus = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("timingMin") == 0) variation[parameter->getIntAttribute("Index")].timingMin = parameter->getBoolAttribute("Value");
+
+						// patterndata array variables
+						if (parameterName.compare("patLenInTicks") == 0)  patternData[parameter->getIntAttribute("Index")].patLenInTicks = parameter->getIntAttribute("Value");
+						if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
+						if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
+
+						// automation
+						if (parameterName.compare("variationSwitch") == 0)  variationSwitch[parameter->getIntAttribute("Index")] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("ccVariationSwitching") == 0)  ccVariationSwitching = (bool)parameter->getIntAttribute("Value");
+						if (parameterName.compare("variationSwitchChannel") == 0)  variationSwitchChannel = parameter->getIntAttribute("Value");
+
+						parameter = parameter->getNextElement();
 					}
-
-					if (parameterName.compare("switchVariation") == 0) switchVariation = parameter->getIntAttribute("Value");
-					if (parameterName.compare("runStopQ") == 0) runStopQ = parameter->getIntAttribute("Value");
-					if (parameterName.compare("variationStartQ") == 0) variationStartQ = parameter->getIntAttribute("Value");
-					if (parameterName.compare("name") == 0) name = parameter->getStringAttribute("Value");
-
-					if (parameterName.compare("WFFN") == 0)	WFFN = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("notePassThrough") == 0) 	notePassThrough = (bool)parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("logMidiIn") == 0) logMidiIn = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("logMidiOut") == 0)	logMidiOut = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("logDebug") == 0)	logDebug = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("logTransport") == 0)	logTransport = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("logVariations") == 0) logVariations = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("logInfo") == 0)	logInfo = parameter->getBoolAttribute("Value");
-
-					if (parameterName.compare("filePath") == 0)	filePath = parameter->getStringAttribute("Value");
-
-					if (parameterName.compare("numPatterns") == 0) numPatterns = parameter->getIntAttribute("Value");
-					if (parameterName.compare("patternsRealID") == 0) patternsRealID = parameter->getIntAttribute("Value");
-					if (parameterName.compare("numPoolNotes") == 0) numPoolNotes = parameter->getIntAttribute("Value");
-					if (parameterName.compare("poolNotesRealID") == 0) poolNotesRealID = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
-					if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("lenInTicks") == 0) variation[parameter->getIntAttribute("Index")].lenInTicks = parameter->getIntAttribute("Value");
-					if (parameterName.compare("lenInMeasures") == 0) variation[parameter->getIntAttribute("Index")].lenInMeasures = parameter->getIntAttribute("Value");
-					if (parameterName.compare("patternToUse") == 0) variation[parameter->getIntAttribute("Index")].patternToUse = parameter->getIntAttribute("Value");
-					if (parameterName.compare("variationEnabled") == 0) variation[parameter->getIntAttribute("Index")].enabled = parameter->getBoolAttribute("Value");
-
-					if (parameterName.compare("enablePool0") == 0) variation[parameter->getIntAttribute("Index")].enablePool[0] = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("enablePool1") == 0) variation[parameter->getIntAttribute("Index")].enablePool[1] = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("enablePool2") == 0) variation[parameter->getIntAttribute("Index")].enablePool[2] = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("enablePool3") == 0) variation[parameter->getIntAttribute("Index")].enablePool[3] = parameter->getBoolAttribute("Value");
-
-					if (parameterName.compare("poolChannel0") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[0] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("poolChannel1") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[1] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("poolChannel2") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[2] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("poolChannel3") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[3] = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("variationName") == 0) variation[parameter->getIntAttribute("Index")].name = parameter->getStringAttribute("Value");
-
-					if (parameterName.compare("measureFrom0") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[0] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("measureFrom1") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[1] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("measureFrom2") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[2] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("measureFrom3") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[3] = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("measureTo0") == 0) variation[parameter->getIntAttribute("Index")].measureTo[0] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("measureTo1") == 0) variation[parameter->getIntAttribute("Index")].measureTo[1] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("measureTo2") == 0) variation[parameter->getIntAttribute("Index")].measureTo[2] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("measureTo3") == 0) variation[parameter->getIntAttribute("Index")].measureTo[3] = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("beatFrom0") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[0] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("beatFrom1") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[1] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("beatFrom2") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[2] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("beatFrom3") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[3] = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("beatTo0") == 0) variation[parameter->getIntAttribute("Index")].beatTo[0] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("beatTo1") == 0) variation[parameter->getIntAttribute("Index")].beatTo[1] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("beatTo2") == 0) variation[parameter->getIntAttribute("Index")].beatTo[2] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("beatTo3") == 0) variation[parameter->getIntAttribute("Index")].beatTo[3] = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("tickFrom0") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[0] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("tickFrom1") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[1] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("tickFrom2") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[2] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("tickFrom3") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[3] = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("tickTo0") == 0) variation[parameter->getIntAttribute("Index")].tickTo[0] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("tickTo1") == 0) variation[parameter->getIntAttribute("Index")].tickTo[1] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("tickTo2") == 0) variation[parameter->getIntAttribute("Index")].tickTo[2] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("tickTo3") == 0) variation[parameter->getIntAttribute("Index")].tickTo[3] = parameter->getIntAttribute("Value");
-
-					if (parameterName.compare("randomizeNotes") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotes = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("randomizeNotesValue") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotesValue = parameter->getIntAttribute("Value");
-					if (parameterName.compare("randomizeNotePool0") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[0] = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("randomizeNotePool1") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[1] = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("randomizeNotePool2") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[2] = parameter->getBoolAttribute("Value");
-					if (parameterName.compare("randomizeNotePool3") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[3] = parameter->getBoolAttribute("Value");
-
-					// patterndata array variables
-					if (parameterName.compare("patLenInTicks") == 0)  patternData[parameter->getIntAttribute("Index")].patLenInTicks = parameter->getIntAttribute("Value");
-					if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
-					if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
-
-					// automation
-					if (parameterName.compare("variationSwitch") == 0)  variationSwitch[parameter->getIntAttribute("Index")] = parameter->getIntAttribute("Value");
-					if (parameterName.compare("ccVariationSwitching") == 0)  ccVariationSwitching = (bool)parameter->getIntAttribute("Value");
-					if (parameterName.compare("variationSwitchChannel") == 0)  variationSwitchChannel = parameter->getIntAttribute("Value");
-
-					parameter = parameter->getNextElement();
+					break;
 				}
-				break;
-			}
-			if (tagName.compare("PatternHeader") == 0)
-				patternHeader = child;
-			if (tagName.compare("PatternListHeader") == 0)
-				patternListHeader = child;
-			if (tagName.compare("PatternListData") == 0)
-				patternListData = child;
-			if (tagName.compare("PoolListData") == 0)
-				poolListData = child;
-			if (tagName.compare("PoolListHeader") == 0)
-				poolListHeader = child;
+				if (tagName.compare("PatternHeader") == 0)
+					patternHeader = child;
+				if (tagName.compare("PatternListHeader") == 0)
+					patternListHeader = child;
+				if (tagName.compare("PatternListData") == 0)
+					patternListData = child;
+				if (tagName.compare("PoolListData") == 0)
+					poolListData = child;
+				if (tagName.compare("PoolListHeader") == 0)
+					poolListHeader = child;
 
-			if (tagName.compare("Pattern") == 0) patternData[child->getIntAttribute("Index")].noteData = child;
+				if (tagName.compare("Pattern") == 0) patternData[child->getIntAttribute("Index")].noteData = child;
 
-			//if (tagName.compare("ShadowPatternOn") == 0) variation[child->getIntAttribute("Index")].shadowPatternOn = child;  LEAK
-			//if (tagName.compare("ShadowPatternOff") == 0) variation[child->getIntAttribute("Index")].shadowPatternOff = child;
+				//if (tagName.compare("ShadowPatternOn") == 0) variation[child->getIntAttribute("Index")].shadowPatternOn = child;  LEAK
+				//if (tagName.compare("ShadowPatternOff") == 0) variation[child->getIntAttribute("Index")].shadowPatternOff = child;
 
-			child = child->getNextElement();
+				child = child->getNextElement();
 
-		} // foreach parameters
+			} // foreach parameters
 
-		// do some housekeeping to set variables always contained in the model object
+			// do some housekeeping to set variables always contained in the model object
 
-		for (int i = 0; i < 8; i++)
-		{
-			// housekeeping auxciliary values for pools
-			variation[i].lenInTicks = patternData[variation[i].patternToUse].patLenInTicks;
+			// if there are no patterns; all variations need to be disabled!!!
 
-			for (int j = 0; j < 4; j++)
+			numPatterns = patternListData->getNumChildElements(); // these are not saved but counted; ALSO DO THIS WHERE THIS GETS CALLED (not sure which part of XML processed when!!!
+
+			if (numPatterns == 0)
 			{
-				variation[i].fullTickFrom[j] = variation[i].tickFrom[j] + variation[i].beatFrom[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureFrom[j] * Topiary::TICKS_PER_QUARTER;
-				variation[i].fullTickTo[j] = variation[i].tickTo[j] + variation[i].beatTo[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureTo[j] * Topiary::TICKS_PER_QUARTER;
+				for (int i = 0; i < 8; i++)
+					variation[i].enabled = false;
 			}
-			// create the variations
-			generateVariation(i);
-			
-		}
 
-		// now delete the no-longer-needed "Parameters" child
-		model->deleteAllChildElementsWithTagName("Parameters");
-
-		// if there are no patterns; all variations need to be disabled!!!
-
-		if (numPatterns == 0)
-		{
 			for (int i = 0; i < 8; i++)
-				variation[i].enabled = false;
-		}
+			{
+				// housekeeping auxciliary values for pools
+				variation[i].lenInTicks = patternData[variation[i].patternToUse].patLenInTicks;
 
+				for (int j = 0; j < 4; j++)
+				{
+					variation[i].fullTickFrom[j] = variation[i].tickFrom[j] + variation[i].beatFrom[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureFrom[j] * Topiary::TICKS_PER_QUARTER;
+					variation[i].fullTickTo[j] = variation[i].tickTo[j] + variation[i].beatTo[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureTo[j] * Topiary::TICKS_PER_QUARTER;
+				}
+
+			}
+
+			// now delete the no-longer-needed "Parameters" child
+			model->deleteAllChildElementsWithTagName("Parameters");
+
+		} // end block protected by lock
+
+		setRunState(Topiary::Stopped);
+		setOverrideHostTransport(rememberOverride);
+
+		// generate the variations
+		for (int v = 0; v < 8; v++)
+			generateAllVariations();
+		
 		// inform editor
 		broadcaster.sendActionMessage(MsgTransport);
 		broadcaster.sendActionMessage(MsgLog);
 		broadcaster.sendActionMessage(MsgMaster);
 		broadcaster.sendActionMessage(MsgVariationEnables);		// so that if needed variationbuttons are disabled/enabled
 		broadcaster.sendActionMessage(MsgVariationDefinition);	// inform editor of variation settings;
-		broadcaster.sendActionMessage(MsgVariationAutomation);	// inform editor of variation automation settings;
-
-		setRunState(Topiary::Stopped);
+		broadcaster.sendActionMessage(MsgVariationAutomation);	// inform editor of variation automation settings;	
 
 	} // restoreParametersToModel
 
@@ -946,8 +1037,8 @@ private:
 			patternChild = patternChild->getNextElement();
 		}
 
-		//XmlElement* patternH = patternListData->getChildByAttribute("ID", String(variation[v].patternToUse));
-
+		
+		jassert(variation[v].poolTickCursor[p] >= 0);
 		while (variation[v].poolTickCursor[p] < patLenInTicks)
 		{
 			// careful: the ID we walk to may not be in this notepool (it might be the first ID that made the previous run loop over the patternlength
@@ -974,34 +1065,131 @@ private:
 					// need some decision logic to make sure we generate the child
 
 					newChild = new XmlElement("DATA");
-						newChild->setAttribute("ID", patternChild->getStringAttribute("ID"));
-						newChild->setAttribute("Note", patternChild->getStringAttribute("Note"));
+					newChild->setAttribute("ID", patternChild->getStringAttribute("ID"));
+					newChild->setAttribute("Note", patternChild->getStringAttribute("Note"));
+					newChild->setAttribute("Channel", variation[v].poolChannel[p]);
+					newChild->setAttribute("Length", patternChild->getStringAttribute("Length"));
+
+					if (variation[v].randomizeVelocity && (variation[v].velocityPlus || variation[v].velocityMin))
+					{
+						int vel = patternChild->getIntAttribute("Velocity");
+						float rnd;
+						int direction;
+						if (variation[v].velocityPlus && variation[v].velocityMin)
+						{
+							rnd = randomizer.nextFloat();
+							if (rnd > 0.5)
+								direction = 1;
+							else
+								direction = -1;
+						}
+						else if (variation[v].velocityPlus)
+							direction = 1;
+						else direction = -1;
+
+						rnd = randomizer.nextFloat();
+						//int debug = direction * rnd * 128 * variation[v].velocityValue /100;
+						vel = vel + (int) (direction * rnd * 128 * variation[v].velocityValue/100);
+						if (vel > 127) vel = 127;
+						if (vel < 0) vel = 0;
+						newChild->setAttribute("Velocity", vel);
+					}
+					else
 						newChild->setAttribute("Velocity", patternChild->getStringAttribute("Velocity"));
+
 					newChild->setAttribute("midiType", Topiary::MidiType::NoteOn);
 					// timestamp is variation[v].poolTickCursor !!!!
 					// except if first note generated; then it's the timestamp of the note in the pattern!
 
 					if (firstNoteGenerated)
+					{
 						newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
+						jassert(variation[v].poolTickCursor[p] >= 0);
+						jassert(newChild->getIntAttribute("Timestamp") >= 0);
+					}
 					else
 					{
+						jassert(variation[v].poolTickCursor[p] >= 0);
 						variation[v].poolTickCursor[p] = patternChild->getIntAttribute("Timestamp");
+						jassert(variation[v].poolTickCursor[p] >= 0);
 						newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
 						firstNoteGenerated = true;
+						jassert(newChild->getIntAttribute("Timestamp") >= 0);
 					}
+
+					if (variation[v].swing && variation[v].swingPool[p])
+					{
+						// recalc the timestamp, based on the swing lookup table
+						int timestamp = newChild->getIntAttribute("Timestamp");
+
+						//Logger::outputDebugString("Timestamp pre " + String(timestamp));
+
+						int base = ((int)(timestamp / Topiary::TICKS_PER_QUARTER)) * Topiary::TICKS_PER_QUARTER;
+
+						//Logger::outputDebugString("Remainder pre " + String(timestamp-base));
+
+						int remainder = swing(timestamp - base, variation[v].swingValue);
+						newChild->setAttribute("Timestamp", base + remainder);
+
+						//Logger::outputDebugString("Remainder post" + String (remainder));
+						//Logger::outputDebugString("New Timestamp " + String(base + remainder) + " (DIFF: " + String (timestamp-base-remainder));
+
+						jassert((remainder) <= Topiary::TICKS_PER_QUARTER);
+						jassert(newChild->getIntAttribute("Timestamp") >= 0);
+						
+					}
+
+					// we apply timing randomization AFTER possible swing !!!
+
+					if (variation[v].randomizeTiming && (variation[v].timingPlus || variation[v].timingMin))
+					{
+						int timestamp = newChild->getIntAttribute("Timestamp");
+						float rnd;
+						int direction;
+						if (variation[v].velocityPlus & variation[v].velocityMin)
+						{
+							rnd = randomizer.nextFloat();
+							if (rnd > 0.5)
+								direction = 1;
+						}
+						else if (variation[v].velocityPlus)
+							direction = 1;
+						else 
+							direction = -1;
+							direction = -1;
+
+						rnd = randomizer.nextFloat();
+						//int debug = direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].timingValue /100;
+						timestamp = timestamp + (int)(direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].velocityValue / 800);
+						if (timestamp < 0) timestamp = 0;
+
+						if (timestamp > (variation->lenInTicks-1)) timestamp = variation->lenInTicks - 1; // lenInTicks -1 because we need time for the note off event
+
+						// make sure we do not run over the patternlenght with note off
+						int length = newChild->getIntAttribute("Length");
+						if ((length + timestamp) >= variation->lenInTicks)
+						{
+							length = variation->lenInTicks - timestamp - 1;
+							newChild->setAttribute("Length", length);
+							jassert(length > 0);
+						}
+
+						newChild->setAttribute("Timestamp", timestamp);
+					}
+
+
 					// the following 3 are incorrect!!! these are what's in the pattern definition, but won't match tick value.  That's OK
 					// because nobody gets to see these :)
-
 					newChild->setAttribute("Measure", patternChild->getStringAttribute("Measure"));
 					newChild->setAttribute("Beat", patternChild->getStringAttribute("Beat"));
 					newChild->setAttribute("Tick", patternChild->getStringAttribute("Tick"));
-					newChild->setAttribute("Channel", variation[v].poolChannel[p]);
-					newChild->setAttribute("Length", patternChild->getStringAttribute("Length"));
+
 
 					newPatternOn->prependChildElement(newChild);
 
-					Logger::outputDebugString("Generating Note " + String(note) + " timestamp " + String(variation[v].poolTickCursor[p]));
+					//Logger::outputDebugString("Generating Note " + String(note) + " timestamp " + String(variation[v].poolTickCursor[p]));
 					jassert(variation[v].poolTickCursor[p] >= 0);
+					jassert(newChild->getIntAttribute("Timestamp") >= 0);
 				}
 			} // end if note in this pool
 
@@ -1011,7 +1199,7 @@ private:
 			//debug
 			//jassert(previousTick < 950);
 
-			Logger::outputDebugString(" looking for next note ");
+			//Logger::outputDebugString(" looking for next note ");
 
 			// now find the next child that's in the pool; loop because it may take a couple of tries; a loop without loops is empty and caught in the caller: generateVariation()
 
@@ -1021,7 +1209,7 @@ private:
 
 				if (patternChild == nullptr) // run over pattern end
 				{
-					Logger::outputDebugString(" running over pattern end");
+					//Logger::outputDebugString(" running over pattern end");
 					variation[v].poolTickCursor[p] += (variation[v].lenInTicks - previousTick) + 1; // +1 because we will reset to start of pool/pattern (and that start is 1st tick in that pattern/pool)
 					
 					patternChild = patternOn->getFirstChildElement();
@@ -1031,7 +1219,7 @@ private:
 				{
 					if (patternChild->getIntAttribute("Timestamp") > variation[v].fullTickTo[p]) // run over pool end
 					{
-						Logger::outputDebugString(" running over pool end");
+						//Logger::outputDebugString(" running over pool end");
 						variation[v].poolTickCursor[p] += (patternChild->getIntAttribute("Timestamp") - previousTick);
 						previousTick = patternChild->getIntAttribute("Timestamp");
 					}
@@ -1078,7 +1266,44 @@ private:
 		remember = *a;
 		*a = *b;
 		*b = remember;
-	}
+	} // swapXmlElementPointers
+
+	///////////////////////////////////////////////////////////////////////
+
+	int swing(int value, int deviation)
+	{ 
+		// value between 0 - ticksPerBeat; deviation -100 to 100
+		jassert(deviation < 101);
+		jassert(deviation > -101);
+
+		int maxMidiValue = Topiary::TICKS_PER_QUARTER-1;
+		int midMidiValue = (int) (maxMidiValue / 2);
+
+		// This is our control point for the quadratic bezier curve
+		// We want this to be between 0 (min) and 63.5 (max)
+		double controlPointX = midMidiValue + ((deviation / 100) * midMidiValue);
+
+		// Get the percent position of the incoming value in relation to the max
+		double t = (double)value / maxMidiValue;
+
+		// The quadratic bezier curve formula
+		// B(t) = ((1 - t) * (1 - t) * p0) + (2 * (1 - t) * t * p1) + (t * t * p2)
+
+		// t  = the position on the curve between (0 and 1)
+		// p0 = minMidiValue (0)
+		// p1 = controlPointX (the bezier control point)
+		// p2 = maxMidiValue (127)
+
+		// Formula can now be simplified as:
+		// B(t) = ((1 - t) * (1 - t) * minMidiValue) + (2 * (1 - t) * t * controlPointX) + (t * t * maxMidiValue)
+
+		// What is the deviation from our value?
+		int delta = (int) round((2 * (1 - t) * t * controlPointX) + (t * t * maxMidiValue));
+
+		//Logger::outputDebugString("swing delta: " + String(delta));
+		return (value - delta) + value;
+	
+	} // swing
 
 	///////////////////////////////////////////////////////////////////////
 

@@ -246,6 +246,18 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 		variation[i].enabled = false;
 		variation[i].randomizeNotes = false;
 		variation[i].randomizeNotesValue = 100;
+		variation[i].swing = false;
+		variation[i].swingValue = 0;
+		variation[i].randomizeVelocity = false;
+		variation[i].velocityValue = 0;
+		variation[i].velocityPlus = true;
+		variation[i].velocityMin = true;
+
+		variation[i].randomizeTiming = false;
+		variation[i].timingValue = 0;
+		variation[i].timingPlus = true;
+		variation[i].timingMin = true;
+
 		for (int j = 0; j < 4; j++)
 		{
 			variation[i].enablePool[j] = false;
@@ -258,7 +270,9 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 			variation[i].tickTo[j] = -1;
 
 			variation[i].randomizeNotePool[j] = false;
-			
+			variation[i].swingPool[j] = false;
+			variation[i].velocityPool[j] = false;
+			variation[i].timingPool[j] = false;
 		}
 	}
 
@@ -372,7 +386,7 @@ int TopiaryBeatsModel::getPatternLengthInMeasures(int i)
 void TopiaryBeatsModel::deletePattern(int deletePattern)
 {
 	jassert(deletePattern > -1); // has to be a valid row to delete
-	jassert(deletePattern < patternListData->getNumChildElements()); // number has to be smaller than number of children (it starts at 0 
+	jassert(deletePattern < patternListData->getNumChildElements()); // number has to be smaller than number of children (it starts at 0)
 	
 	// remove from the patternlist - find it first
 	auto child = patternListData->getChildElement(deletePattern);
@@ -402,6 +416,8 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 	//myXmlDoc2 = patternData[deletePattern + 1].noteData->createDocument(String());
 	//Logger::writeToLog(myXmlDoc2);
 	
+	// shift all patterns above the one deleted, down by 1
+
 	for (int j = deletePattern; j < 7; j++) // <7 because we are swapping  with pattern j+1 !!!
 	{
 		//Logger::outputDebugString("Pattern[" + String(j) + "] before swap");
@@ -411,12 +427,22 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 		patternData[j].patLenInTicks = patternData[j+1].patLenInTicks;
 		patternData[j].notesRealID = patternData[j+1].notesRealID;
 		patternData[j].numNotes = patternData[j+1].numNotes;
+
+		// also lower the index attribute in the patterndata!!!
+		// XXXXXXXXXXXXXXXXXX patternData[j].noteData->setAttribute("Index", patternData[j].noteData->getIntAttribute("Index") - 1);
+
 		//Logger::outputDebugString("-------------------------------------------");
 		//Logger::outputDebugString("Pattern[" + String(j) + "] after swap");
 		//myXmlDoc2 = patternData[j].noteData->createDocument(String());
 		//Logger::writeToLog(myXmlDoc2);
 		//Logger::outputDebugString("===========================================");
 	}
+
+	// and clean  up the indexes in the patterndata
+	// these are not really used; but better clean than sorry
+	//for (int p=0; p<8; p++)
+	//	patternData[p].noteData->setAttribute("Index", p);
+
 
 	Log("Pattern "+String(deletePattern)+" deleted.", Topiary::LogType::Info);
 	// broadcaster.sendActionMessage(MsgMasterTables); not needed done in editor
@@ -438,12 +464,11 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 		if (variation[j].patternToUse > (deletePattern))
 		{
 			variation[j].patternToUse--;
-			// everything else should remain the same because it's still referring to the same pattern; just the pattern's ID will be 1 less
 		}
-
-
 	}
 	broadcaster.sendActionMessage(MsgVariationDefinition);  // something may have changed to the currently shown variation (it might be disabled)
+	
+
 } // deletePattern
 
 ///////////////////////////////////////////////////////////////////////
@@ -451,7 +476,7 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 void TopiaryBeatsModel::addPattern()
 {
 	int i = patternListData->getNumChildElements();
-
+	
 	if (i == 8)
 	{
 		Log("Number of patterns is limited to 8.", Topiary::LogType::Warning);
@@ -496,7 +521,7 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex)
 		jassert(patternIndex > -1);  // nothing selected in the model
 
 		numPatterns = patternListData->getNumChildElements();
-		jassert(patternIndex <= numPatterns);
+		jassert(patternIndex < numPatterns);
 
 		XmlElement* patternParent = patternListData->getChildElement(patternIndex);
 
@@ -516,9 +541,9 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex)
 			patternData[patternIndex].patLenInTicks = lenInTicks;
 			patternParent->setAttribute("Name", f.getFileName());
 			patternParent->setAttribute("Measures", patternMeasures);
-			//patternData[patternIndex].noteData->setAttribute("debugPatNumber", patternIndex);
+			
 			rebuildPool();
-			//broadcaster.sendActionMessage(MsgMasterTables); not needed; done in the edirot
+			//broadcaster.sendActionMessage(MsgMasterTables); not needed; done in the editor
 
 			bool deassigned = false;
 
@@ -578,8 +603,8 @@ XmlElement* TopiaryBeatsModel::addToModel(char* type)
 		XmlElement *child = new XmlElement("PatternData");
 		child->setAttribute("REALID", patternsRealID);
 		patternListData->addChildElement(child);
-
-		numPatterns++;
+		numPatterns = patternListData->getNumChildElements();
+		
 		patternsRealID++;
 		return child;
 	}
@@ -608,10 +633,9 @@ void TopiaryBeatsModel::removeFromModel(char *type, XmlElement *child)
 		patternListData->removeChildElement(child, true);
 		//now renumber by REALID
 		renumberByID(patternListData);
-		numPatterns--;
-		// now remove the patterns themselves!!! NOT DONE HERE - DONE BY CALLER !!!!
-		// patternData[patternDataID].noteData->deleteAllChildElements();
-		// patternData[patternDataID].noteOffData->deleteAllChildElements();
+		numPatterns = patternListData->getNumChildElements();
+		// removing the patterns  NOT DONE HERE - DONE BY CALLER !!!!
+		
 		return;
 	}
 	if (!strcmp(type, "PoolData"))
@@ -747,36 +771,6 @@ void TopiaryBeatsModel::setGMDrumMapLabels()
 //  VARIATIONS
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::getVariation(int& running, int& selected)
-{
-	running = variationRunning;
-	selected = variationSelected;
-	return;
-} // getVariation
-
-///////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::setVariation(int n)
-{
-	jassert(n < 8);
-	jassert(n >= 0);
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
-
-	if ((n != variationSelected) || (runState == Topiary::Stopped)) 
-		// the || runState || is needed because we may need to re-set a waiting variation to non-waiting; in that case we want the update to happen otherwise the buttons stays orange
-		if (variation[n].enabled)
-		{
-			variationSelected = n;
-			if (runState == Topiary::Stopped)  // otherwise the switch will be done when running depending on the variation switch Q
-				variationRunning = n;
-			Log(String("Variation ") + String(n+1) + String(" selected."), Topiary::LogType::Variations);
-			broadcaster.sendActionMessage(MsgVariationSelected);
-		}
-
-} // setVariation
-
-///////////////////////////////////////////////////////////////////////
-
 void TopiaryBeatsModel::initializeVariationsForRunning()
 {
 	// careful; this code is different in various plugins - don't think it's generic!!!
@@ -784,13 +778,14 @@ void TopiaryBeatsModel::initializeVariationsForRunning()
 	{
 		variation[v].ended = false;
 		variation[v].currentPatternChild = nullptr;
+		for (int p=0;p<4;p++)
+			variation[v].poolTickCursor[p] = 0;
 	}
 } // initializeVariationsForRunning
 
 ///////////////////////////////////////////////////////////////////////
 // Variation Parameters
 ///////////////////////////////////////////////////////////////////////
-
 
 void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4])
 {
@@ -819,6 +814,7 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 {
 	// write to model
 	// assume the data has been validated first!
+	// make sure that overrideHost is set to TRUE if there are no enabled variations!!!
 
 	jassert(i < 8); // goes from 0-7
 
@@ -831,6 +827,21 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 
 	variation[i].name = vname;
 	variation[i].enabled = enabled;
+
+	if (!enabled)
+	{
+		// make sure to enable hostOverride if there are no enabled variations
+		// otherwise host might try to run the plugin when these is nothing to run - it might hang
+		bool ok = false;
+		for (int v = 0; v < 8; v++)
+		{
+			if (variation[v].enabled)
+				ok = true;
+		}
+
+		if (!ok && !overrideHostTransport)
+			setOverrideHostTransport(true);
+	}
 
 	// if we are changing patterns there is no need to pass in from/to - those will be reinitialized
 	if (patternId == variation[i].patternToUse)
@@ -1013,6 +1024,99 @@ void TopiaryBeatsModel::getRandomizeNotes(int v, bool &enable, bool enablePool[4
 
 ///////////////////////////////////////////////////////////////////////
 
+void TopiaryBeatsModel::setSwing(int v, bool enable, bool enablePool[4], int value)
+{
+	variation[v].swing = enable;
+	variation[v].swingValue = value;
+	for (int i = 0; i < 4; i++)
+	{
+		variation[v].swingPool[i] = enablePool[i];
+	}
+
+	generateVariation(v);
+
+} // getSwing
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::getSwing(int v, bool &enable, bool enablePool[4], int &value)
+{
+	enable = variation[v].swing;
+	value = variation[v].swingValue;
+	for (int i = 0; i < 4; i++)
+	{
+		enablePool[i] = variation[v].swingPool[i];
+	}
+
+} // getSwing
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::setRandomizeVelocity(int v, bool enable, bool enablePool[4], int value, bool plus, bool min)
+{
+	variation[v].randomizeVelocity = enable;
+	variation[v].velocityValue = value;
+	variation[v].velocityPlus = plus;
+	variation[v].velocityMin = min;
+	for (int i = 0; i < 4; i++)
+	{
+		variation[v].velocityPool[i] = enablePool[i];
+	}
+
+	generateVariation(v);
+
+} // getRandomizeVelocity
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::getRandomizeVelocity(int v, bool &enable, bool enablePool[4], int &value, bool &plus, bool &min)
+{
+	enable = variation[v].randomizeVelocity;
+	value = variation[v].velocityValue;
+	plus = variation[v].velocityPlus;
+	min = variation[v].velocityMin;
+	for (int i = 0; i < 4; i++)
+	{
+		enablePool[i] = variation[v].velocityPool[i];
+	}
+
+} // getRandomizeVelocity
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::setRandomizeTiming(int v, bool enable, bool enablePool[4], int value, bool plus, bool min)
+{
+	variation[v].randomizeTiming = enable;
+	variation[v].timingValue = value;
+	variation[v].timingPlus = plus;
+	variation[v].timingMin = min;
+	for (int i = 0; i < 4; i++)
+	{
+		variation[v].timingPool[i] = enablePool[i];
+	}
+
+	generateVariation(v);
+
+} // getRandomizeTiming
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::getRandomizeTiming(int v, bool &enable, bool enablePool[4], int &value, bool &plus, bool &min)
+{
+	enable = variation[v].randomizeTiming;
+	value = variation[v].timingValue;
+	plus = variation[v].timingPlus;
+	min = variation[v].timingMin;
+
+	for (int i = 0; i < 4; i++)
+	{
+		enablePool[i] = variation[v].timingPool[i];
+	}
+
+} // getRandomizeTiming
+
+///////////////////////////////////////////////////////////////////////
+
 void TopiaryBeatsModel::getPatterns(String pats[8])
 {
 	XmlElement* pattern;
@@ -1025,6 +1129,7 @@ void TopiaryBeatsModel::getPatterns(String pats[8])
 		pattern = pattern->getNextElement();
 		i++;
 	}
+
 } // getPatterns
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1089,7 +1194,7 @@ void TopiaryBeatsModel::generateVariation(int i)
 
 	for (int j = 0; j < 4; j++)
 	{
-		// only call generatePool if there are notes in the pool; otherwise generatePool will loop forever!!![j]) 
+		// only call generatePool if there are notes in the pool; otherwise generatePool will loop forever!!!) 
 		if (poolHasNotes[j])
 			generatePool(i, j, newPattern, poolNote);
 	}
@@ -1132,7 +1237,7 @@ void TopiaryBeatsModel::generateVariation(int i)
 	//Logger::writeToLog("Measures: " + String(lenInMeasures) + " --- Ticks " + String(lenInTicks));
 
 	String myXmlDoc2 = newPattern->createDocument(String());
-	Logger::writeToLog(myXmlDoc2);
+	Logger::writeToLog(myXmlDoc2); 
 
 	// swap the patterns; SHOULD BE A CRITICAL SECTION
 	// TODO - set the variation[i].currentPatternChild - or set those to nullptr and generateMidi will figure it out???
@@ -1148,6 +1253,9 @@ void TopiaryBeatsModel::generateVariation(int i)
 
 void  TopiaryBeatsModel::generateAllVariations()
 {
+	for (int v = 0; v < 8; v++)
+		for (int p = 0; p < 4; p++) variation[v].poolTickCursor[p] = 0;
+
 	for (int v = 0; v < 8; v++)
 	{
 		generateVariation(v);
