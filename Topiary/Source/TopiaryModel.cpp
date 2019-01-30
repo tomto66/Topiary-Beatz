@@ -99,7 +99,7 @@ TopiaryModel::TopiaryModel()
 	filePath = "";
 	logString = "";
 	
-	overrideHostTransport = false;
+	overrideHostTransport = true;
 	runState = Topiary::Stopped;
 	BPM = 120;
 	numerator = 4; denominator = 4;
@@ -114,6 +114,8 @@ TopiaryModel::TopiaryModel()
 TopiaryModel::~TopiaryModel()
 {
 	topiaryThread.stopThread(-1);
+	runState = Topiary::Stopped;
+
 } //~TopiaryModel
 
 ///////////////////////////////////////////////////////////////////////
@@ -351,30 +353,10 @@ void TopiaryModel::logMidi(bool in, MidiMessage &msg)
 
 void TopiaryModel::setOverrideHostTransport(bool o)
 {
-	//const GenericScopedLock<SpinLock> myScopedLock(lockModel); 
+	// virtual
+	UNUSED(o)
+}
 
-	if (overrideHostTransport != o)
-	{
-		overrideHostTransport = o;
-		
-		broadcaster.sendActionMessage(MsgTransport);
-		// careful here - if we just set the runstate to Stopped - it might have been stopped already and variables may be undefined
-		// dirty hack below
-		runState = -1000000; // to force a runstate stopped below!!!
-		setRunState(Topiary::Stopped);
-		if (o)
-		{
-			Log(String("Host transport overriden."), Topiary::LogType::Transport);
-			recalcRealTime();
-		}
-		else
-		{
-			Log(String("Host transport in control."), Topiary::LogType::Transport);
-			recalcRealTime();
-		}
-
-	}
-} // setOverrideHostTransport
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -448,6 +430,7 @@ void TopiaryModel::setRunState(int n)
 			patternCursor = 0;
 			blockCursor = 0;
 			cursorToStop = (int64)-1;
+			
 			threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
 			broadcaster.sendActionMessage(MsgTransport);
 			break;
@@ -506,7 +489,7 @@ void TopiaryModel::setRunState(int n)
 				else
 				{
 					Log("Cannot run because there is no variation enabled.", Topiary::LogType::Warning);
-					runState = remember;
+					runState = Topiary::Stopped;
 				}
 			}
 			break;
@@ -598,6 +581,7 @@ void TopiaryModel::processTransportControls(int buttonEnabled)  // buttonEnabled
 
 int TopiaryModel::getNumPatterns()
 {
+	// from 1 to number of patterns
 	return numPatterns;
 
 } // getNumPatterns

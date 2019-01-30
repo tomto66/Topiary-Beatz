@@ -135,7 +135,9 @@ void TOPIARYVARIATIONBUTTONSCOMPONENT::setModel(TOPIARYMODEL *m)
 void TOPIARYVARIATIONBUTTONSCOMPONENT::updateToggleState(TextButton* button)
 {
 	String buttonText = button->getButtonText();
-	model->setVariation(buttonText.getIntValue() - 1);
+	// only do this if the button is toggled on
+	if (variationButton[buttonText.getIntValue()-1]->getToggleState())
+		model->setVariation(buttonText.getIntValue() - 1);
 } // updateToggleState
 
 /////////////////////////////////////////////////////////////////////////////

@@ -55,7 +55,7 @@ public:
 	void setBPM(int bpm);
 	void setNumeratorDenominator(int n, int d);
 	void getTransportState(int& b, int& n, int& d, int& bs, bool& o, bool &waitFFN);
-	void setOverrideHostTransport(bool o);
+	virtual void setOverrideHostTransport(bool o);
 	void removeRecordButton();
 	void setRunState(int n);
 	int getRunState();
@@ -145,13 +145,13 @@ protected:
 	bool logMidiIn = false;
 	bool logMidiOut = false;
 	bool logDebug = false;
-	bool logTransport = true;
-	bool logVariations = true;
-	bool logInfo = true;
+	bool logTransport = false;
+	bool logVariations = false;
+	bool logInfo = false;
 	
 	/////////// Transport
 
-	bool overrideHostTransport;
+	bool overrideHostTransport = true;
 	int denominator = 0; // b in a/b
 	int numerator = 0;  // a in a/b
 	int BPM = 120;
@@ -170,7 +170,7 @@ protected:
 	int64 nextRTGenerationCursor;		// real time cursor of next event to generate
 	int blockSize;						// size of block to generate 
 	int patternCursor;					// patternCursor  to disappear in the future
-	int numPatterns;					// set to 1 in Presetz
+	int numPatterns = -1;				// set to 1 in Presetz (as long as it's not -1 in presetz :)
 	int variationStartQ = Topiary::Quantization::Immediate;			// when to switch variations
 	int runStopQ = Topiary::Quantization::Immediate;				// when to stop running
 	bool WFFN = false;												// start at first note in if true; otherwize immediate
