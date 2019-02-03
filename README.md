@@ -15,7 +15,7 @@ Careful: binary data is provided in the Topiary/JuceLibraryCode folder - make su
 
 * Tested/Compiled with Juce 5.3 / Visual Studio 2017 / VST2 / Windows10/X64.
 * Tested in Cantabile 3, Reaper and Cubase LE.
-* 1 known issue ( https://github.com/tomto66/Topiary-Beatz/issues )
+* 1 known issue ( https://github.com/tomto66/Topiary-Beatz/issues?q=is%3Aopen+is%3Aissue+label%3Abug )
 
 ## Installing binaries
 
