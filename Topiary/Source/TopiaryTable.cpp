@@ -18,15 +18,16 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <stdio.h>
-#include <string.h>
 #include "TopiaryTable.h"
 
+#if defined(BEATZ) || defined(CHORDZ)
 
 TopiaryTable::TopiaryTable()
 {
 	tableComponent.setColour(ListBox::outlineColourId, Colours::grey);
 	tableComponent.setOutlineThickness(1);
+	model = nullptr;
+	addAndMakeVisible(tableComponent);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +55,7 @@ void TopiaryTable::setDataLists(XmlElement *h, XmlElement *d)
 		else
 			numRows = 0; // this might be the case when initializing
 
-		addAndMakeVisible(tableComponent);
+		//addAndMakeVisible(tableComponent);
 
 		if ((columnList != nullptr) && !headerSet) // if the column has already been set, we are probably loading a new preset; ignore 
 		{
@@ -77,7 +78,7 @@ void TopiaryTable::setDataLists(XmlElement *h, XmlElement *d)
 		
 		tableComponent.setMultipleSelectionEnabled(false);
 		if (numRows > 0) selectRow(1);
-		//tableComponent.getHeader().setStretchToFitActive(true);
+		tableComponent.getHeader().setStretchToFitActive(true);
 	} // setDataLists
 
 
@@ -234,7 +235,7 @@ String TopiaryTable::setText(const int columnNumber, const int rowNumber, const 
 	auto columnDefinition = columnList->getChildByAttribute("name", columnName);
 
 	auto type = columnDefinition->getStringAttribute("type");
-
+	
 	if (type.compare("int") == 0)
 	{
 		// see if valid integer; if not make it 1 or minimum
@@ -246,31 +247,38 @@ String TopiaryTable::setText(const int columnNumber, const int rowNumber, const 
 
 		if (i >= min)
 		{
-			if (i > max) i = min;
+			if (i > max) i = max;
 		}
 		else i = min;
 		validatedText = String(i);
 	}
-	else {
-		if (type.compare("note") == 0)
-		{
-			validatedText = validateNote(newText);
-			int noteNumber = validNoteNumber(validatedText);
-			dataList->getChildElement(rowNumber)->setAttribute("NoteNumber", noteNumber);
-		}
-		else
-			validatedText = newText;
+	
+	else if (type.compare("noteLabel") == 0)
+	{
+		validatedText = validateNote(newText);
+		int noteNumber = validNoteNumber(validatedText);
+		dataList->getChildElement(rowNumber)->setAttribute("NoteNumber", noteNumber);
 	}
-	dataList->getChildElement(rowNumber)->setAttribute(columnName, validatedText);
+	else
+		validatedText = newText;
+	
 
-	//int noteNumber = validNoteNumber(validatedText);
-	//dataList->getChildElement(rowNumber)->setAttribute("NoteNumber", noteNumber);
+	dataList->getChildElement(rowNumber)->setAttribute(columnName, validatedText);
 
 	if (broadcaster != nullptr)
 	{
 		broadcaster->sendActionMessage(broadcastMessage);
 	}
 
+#ifdef TOPIARYMODEL
+	if (model != nullptr) // i.e. we are editing a pattern or pool notes (otherwise model == nullptr)
+	{
+		model->validateNoteEdit(pattern, dataList->getChildElement(rowNumber), columnName);
+		int remember = tableComponent.getSelectedRow(0);
+		setDataLists(columnList, dataList);  // force refresh
+		selectRow(remember);
+	}
+#endif
 	return validatedText;
 } // setText
 
@@ -300,3 +308,20 @@ void TopiaryTable::setBroadcaster(ActionBroadcaster *b, String msg)
 	broadcastMessage = msg;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+
+#if defined(BEATZ) || defined(CHORDZ)
+void TopiaryTable::setModel(TOPIARYMODEL* m)
+{
+	model = m;
+}
+
+void TopiaryTable::setPattern(int p)
+{
+	pattern = p;
+}
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+#endif // main #if defined

@@ -246,6 +246,7 @@ void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer&
 	model.getMidiLogSettings(logMidiIn, logMidiOut);
 	bool notePassThrough = model.getNotePassThrough();
 
+
 	// first see if there are (CC) messages to be output by the model
 	model.outputModelEvents(processedMidi);
 

@@ -244,9 +244,9 @@ int validNoteNumber(String inNote)
 		break;
 	case (int)'A': number = 9;
 		break;
-	case (int)'B': number = 11;
+	case (int)'B': number = 11; 
 		break;
-	default: jassert(0);
+		default: jassert(0);
 
 	}
 
@@ -285,5 +285,29 @@ TopiaryButton::~TopiaryButton()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////
 
+void boolSwap(bool &a, bool &b)
+{
+	bool r = a;
+	a = b;
+	b = r;
+}
 
+//////////////////////////////////////////////////////////////////////////
+
+void intSwap(int &a, int &b)
+{
+	int r = a;
+	a = b;
+	b = r;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+void stringSwap(String &a, String &b)
+{
+	String r = a;
+	a = b;
+	b = r;
+}

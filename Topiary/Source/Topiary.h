@@ -29,6 +29,9 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 
 String validateNote(String newNote);
 int validNoteNumber(String note);
+void boolSwap(bool &a, bool &b);
+void intSwap(int &a, int &b);
+void stringSwap(String &a, String &b);
 
 /////////////////////////////////////////////////////////////////////////////
 

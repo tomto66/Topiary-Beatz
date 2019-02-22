@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2019.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-19.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -79,6 +79,31 @@ void TOPIARYMODEL::setOverrideHostTransport(bool o)
 
 /////////////////////////////////////////////////////////////////////////////
 
+void TOPIARYMODEL::setNumeratorDenominator(int nu, int de)
+{
+	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	if ((numerator != nu) || (denominator != de))
+	{
+#ifndef PRESETZ
+		// check if there is data - if so do not allow meter changes!
+		if (numPatterns >0)
+		{
+			Log("Set meter first!", Topiary::LogType::Warning);
+			Log("Meter change not allowed when patterndata available.", Topiary::LogType::Warning);
+			return;
+		}
+#endif	
+		numerator = nu;
+		denominator = de;
+		recalcRealTime();
+		Log(String("Signature set to ") + String(numerator) + String("/") + String(denominator), Topiary::LogType::Transport);
+		broadcaster.sendActionMessage(MsgTransport);	
+	}
+
+} // setNumeratorDenominator
+
+/////////////////////////////////////////////////////////////////////////////
+
 void TOPIARYMODEL::getVariation(int& running, int& selected)
 {
 	running = variationRunning;
@@ -93,11 +118,11 @@ void TOPIARYMODEL::setVariation(int n)
 {
 	jassert(n < 8);
 	jassert(n >= 0);
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 
 	if ((n != variationSelected) || (runState == Topiary::Stopped))
 		// the || runState || is needed because we may need to re-set a waiting variation to non-waiting; in that case we want the update to happen otherwise the buttons stays orange
 	{
+		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 		variationSelected = n;
 		if (runState == Topiary::Stopped)  // otherwise the switch will be done when running depending on the variation switch Q
 			variationRunning = n;
@@ -344,7 +369,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer)
 	int64 rtCursorTo;				// we generate in principle till here
 	int64 rtCursor;					// where we are, between rtCursorFrom and rtCursorTo
 
-	int DEBUGpatCursor = 0;
+	//int DEBUGpatCursor = 0;
 
 	if (blockCursor == 0)			// blockCursor is updated at end of generation!
 	{
@@ -472,14 +497,14 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer)
 					if (midiType == Topiary::MidiType::NoteOn)
 					{
 						msg = MidiMessage::noteOn(channel, noteNumber, (float)noteChild->getIntAttribute("Velocity") / 128);
-						if (noteNumber == debugLastNoteOn)
-							jassert(false);
-						debugLastNoteOn = noteNumber;
+						//if (noteNumber == debugLastNoteOn)
+						//	jassert(false);
+						//debugLastNoteOn = noteNumber;
 					}
 					else
 					{
 						msg = MidiMessage::noteOff(channel, noteNumber, (float)noteChild->getIntAttribute("Velocity") / 128);
-						debugLastNoteOn = 0;
+						//debugLastNoteOn = 0;
 					}
 
 					// DEBUG LOGIC !!!!!!!!!
@@ -569,7 +594,42 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer)
 
 } // generateMidi
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+#ifndef PRESETZ
+
+void TOPIARYMODEL::cleanPattern(int p)
+{
+	// if there were edits done, recalculate stuff
+	// check the length; if turns out to be longer than what the length should be; delete unneeded event
+	// redo the Ids (might have added or deleted somthing
+	// recalculate timestamps based on meabure, beat and tick
+	// set the note number as the note label may have changed
+	// regenerate any variations that depend on this pattern
+
+	jassert(p < 8);
+
+	XmlElement *child = patternData[p].noteData->getFirstChildElement();
+
+	while (child != nullptr)
+	{
+
+		child = child->getNextElement();
+	}
+} // cleanPattern
+#endif
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+/*
+void TOPIARYMODEL::setLength(int p, l)
+{
+	// set LinInTicks, based on l in measures
+	// delete all events possbily after the ticklength
+
+	l = TOPIARY::TICKS_PER_QUARTER * denominator;
 
 
 
+} // setLength
+*/
 #endif

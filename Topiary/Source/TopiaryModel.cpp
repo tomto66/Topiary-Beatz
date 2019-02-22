@@ -21,7 +21,6 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 #include "Topiary.h"
 #include "TopiaryModel.h"
 
-
 void TopiaryModel::saveStateToMemoryBlock(MemoryBlock& destData)
 {
 	// virtual
@@ -90,9 +89,6 @@ void TopiaryModel::loadPreset(String msg, String extension)
 } //loadPreset
 
 /////////////////////////////////////////////////////////////////////////
-
-#define xstr(s) str(s)
-#define str(s) #s
 
 TopiaryModel::TopiaryModel()
 {
@@ -376,17 +372,9 @@ void TopiaryModel::getTransportState(int& b, int& n, int& d, int& bs, bool& over
 
 void TopiaryModel::setNumeratorDenominator(int nu, int de)
 {
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
-	if ((numerator != nu) || (denominator != de))
-	{
-		numerator = nu;
-		denominator = de;
-		recalcRealTime();
-		Log(String("Signature set to ") + String(numerator) + String("/") + String(denominator), Topiary::LogType::Transport);
-		broadcaster.sendActionMessage(MsgTransport);
-		//if (numPatterns > 0)
-		//	beatsLog("Careful: if you have data loaded in the patterns and you change time signature, results may be unexpected", Topiary::LogType::Warning);
-	}
+	UNUSED(nu);
+	UNUSED(de);
+	jassert(false); // virtual
 
 } // setNumeratorDenominator
 
@@ -677,7 +665,7 @@ bool TopiaryModel::processVariationSwitch() // called just before generateMidi -
 
 void TopiaryModel::outputModelEvents(MidiBuffer& buffer)
 {	
-	// outputs what is in modelWorkBuffer
+	// outputs what is in modelEventBuffer
 	MidiMessage msg;
 	int position;
 	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
@@ -1010,6 +998,85 @@ void TopiaryModel::processAutomation(MidiMessage& msg)
 ActionBroadcaster* TopiaryModel::getBroadcaster()
 {
 	return &broadcaster;
+
 }
 
 ///////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::cleanPattern(int p)
+{
+	// virtual
+	// if there were edits done, recalculate stuff
+	// check the length; if turns out to be longer than what the length should be; delete unneeded event
+	// redo the Ids (might have added or deleted somthing
+	// recalculate timestamps based on meabure, beat and tick
+	// set the note number as the note label may have changed
+	// regenerate any variations that depend on this pattern
+
+	jassert(false); // should have been overridden
+	UNUSED(p)
+
+} // cleanPattern
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::copyVariation(int from, int to)
+{
+	// virtual
+	UNUSED(from);
+	UNUSED(to);
+
+} // copyVariation
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::swapVariation(int from, int to)
+{
+	// virtual
+	UNUSED(from);
+	UNUSED(to);
+
+} // swapVariation
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::swapPreset(int from, int to)
+{
+	// virtual
+	UNUSED(from);
+	UNUSED(to);
+
+} // swapPreset
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::copyPreset(int from, int to)
+{
+	// virtual
+	UNUSED(from);
+	UNUSED(to);
+
+} // copyPreset
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::swapPattern(int from, int to)
+{
+	// virtual
+	UNUSED(from);
+	UNUSED(to);
+
+} // swapPattern
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::copyPattern(int from, int to)
+{
+	// virtual
+	UNUSED(from);
+	UNUSED(to);
+
+} // copyPattern
+
+///////////////////////////////////////////////////////////////////////
+

@@ -17,10 +17,14 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "Topiary.h"
+
+#if defined (BEATZ) || defined(CHORDZ)
+
+class TOPIARYMODEL;
+
 
 class TopiaryTable : public Component, 
 					 public TableListBoxModel
@@ -29,42 +33,28 @@ public:
 	TopiaryTable();
 
 	int getNumRows() override;
-
 	void paintRowBackground(Graphics& g, int, int, int, bool) override;
-
 	void paintCell(Graphics&, int, int, int, int, bool) override;
-
 	void sortOrderChanged(int, bool) override;
-
 	Component* refreshComponentForCell(int, int, bool, Component*) override;
-
 	int getColumnAutoSizeWidth(int) override;
-
 	int getSelectedRow();
-
 	void selectRow(int i);
-
 	int getSelection(const int) const;
-
 	void setSelection(const int, const int);
-
 	String getText(const int, const int) const;
-
 	String setText(const int, const int, const String&);
-
-	void resized() override;
-	
+	void resized() override;	
 	void setDataLists(XmlElement *h, XmlElement *d);
-	
 	void updateContent();
-
 	bool isHeaderSet();
-
 	void setHeader();
-
 	void setBroadcaster(ActionBroadcaster *b, String msg);
 
-	//void paint(Graphics&) override;
+#ifdef BEATZ
+	void setModel(TOPIARYMODEL* m);
+	void setPattern(int p); // so the table knows which pattern is loaded into it
+#endif
 
 private:
 	TableListBox tableComponent{ {}, this };
@@ -76,6 +66,11 @@ private:
 	bool headerSet = false;
 	ActionBroadcaster* broadcaster = nullptr;
 	String broadcastMessage = "";
+	int pattern; // needed to the table can know which pattern we are editing (only when editing patterns of course)
+
+#ifdef BEATZ
+	TOPIARYMODEL* model;
+#endif
 
 	class EditableTextCustomComponent : public Label
 	{
@@ -148,6 +143,10 @@ private:
 		TopiaryTable& owner;
 		ToggleButton toggleButton;
 		int row, columnId;
+
+#ifdef BEATZ
+
+#endif
 	};  // class SelectionColumnCustomComponent
 
 	/////////////////////////////////////////////////////////////////////////
@@ -196,3 +195,4 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryTable)
 };
 
+#endif  // of the top #if defined statement
