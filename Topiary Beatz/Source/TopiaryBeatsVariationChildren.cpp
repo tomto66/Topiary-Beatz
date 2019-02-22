@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,14 +18,15 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "../../Topiary/Source/Topiary.h"
+//#include "../JuceLibraryCode/JuceHeader.h"
+//#include "../../Topiary/Source/Topiary.h"
 #include "TopiaryBeatsModel.h"
 #include "TopiaryBeatsVariationChildren.h"
 #include "TopiaryBeatsVariationComponent.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // PoolTimingComponent
+// One line of measure / beat / tick editors
 /////////////////////////////////////////////////////////////////////////////
 
 PoolTimingComponent::PoolTimingComponent()

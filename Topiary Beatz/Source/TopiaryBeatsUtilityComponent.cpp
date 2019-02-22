@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 /*
 This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
@@ -17,6 +17,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#include "BeatsPluginProcessor.h"
-#include "BeatsPluginEditor.h"
-#include "../../Topiary/Source/PluginProcessor.cpp"
+#pragma once
+#include "TopiaryBeatsUtilityComponent.h"
+#include "../../Topiary/Source/TopiaryUtilityComponent.cpp"
+

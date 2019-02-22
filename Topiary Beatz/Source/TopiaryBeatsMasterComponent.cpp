@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,23 +18,12 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "../../Topiary/Source/Topiary.h"
 #include "TopiaryBeatsModel.h"
 #include "TopiaryBeatsMasterComponent.h"
 
 
 TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 {   // size set by TabbedComponent!
-
-	GMDrumMapButton.setSize(buttonW, buttonH);
-	GMDrumMapButton.setButtonText("GM Drum Map");
-	GMDrumMapButton.onClick = [this] {
-		beatsModel->setGMDrumMapLabels();
-		poolTable.updateContent();
-	};
-	addAndMakeVisible(GMDrumMapButton);
-
 
 	////////////////////////////////////////
 	// Pattern stuff
@@ -110,7 +99,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 		auto selection = poolTable.getSelectedRow();
 		jassert(selection > -1);
 		
-		beatsModel->deleteNote(selection);
+		beatsModel->deletePoolNote(selection);
 		beatsModel->generateAllVariations();
 		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
 		poolTable.updateContent();
@@ -123,7 +112,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	addAndMakeVisible(newPoolButton);
 	newPoolButton.setButtonText("Add note");
 	newPoolButton.onClick = [this] {
-		beatsModel->addNote();
+		beatsModel->addPoolNote();
 		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
 		poolTable.selectRow(beatsModel->getNumPatterns()-1 );   // select the new row
 	};
@@ -138,6 +127,13 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
 	};
 
+	GMDrumMapButton.setSize(buttonW, buttonH);
+	GMDrumMapButton.setButtonText("GM Drum Map");
+	GMDrumMapButton.onClick = [this] {
+		beatsModel->setGMDrumMapLabels();
+		poolTable.updateContent();
+	};
+	addAndMakeVisible(GMDrumMapButton);
 
 	setButtonStates();
 
@@ -224,7 +220,8 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	loadButton.onClick = [this]
 	{		
 		beatsModel->loadPreset("Please select Topiary Beats file to load...", "*.tbe");
-		setModel(beatsModel); // does this make sense?
+		//setModel(beatsModel); // does this make sense? NO it doesn't - replaced by actionlistener for MsgLoad
+		actionListenerCallback(MsgLoad);
 		getSettings();
 		patternsTable.updateContent();
 		poolTable.updateContent();
@@ -278,7 +275,7 @@ void TopiaryBeatsMasterComponent::setModel(TopiaryBeatsModel* m)
 	patternsTable.setBroadcaster(beatsModel->getBroadcaster(), MsgMaster);
 
 	poolTable.setDataLists(poolListHeader, poolListData);
-
+	poolTable.setModel(beatsModel); // because it will have to validate note data!
 	beatsModel->setListener((ActionListener*)this);
 
 	// trick to call the model and read 
@@ -315,10 +312,10 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 	g.drawRoundedRectangle((float)lineSize + 440, (float)labelOffset + 10, (float)545, (float)patternTH + (2 * lineSize + 5), (float)4, (float)lineSize);
 	poolTable.setBounds(455, 30, poolTW - 5, poolTH);
 
-	newPoolButton.setBounds(patternButtonOffsetX + 400, 70, buttonW, buttonH);
-	deletePoolButton.setBounds(patternButtonOffsetX + 400, 100, buttonW, buttonH);
-	GMDrumMapButton.setBounds(patternButtonOffsetX + 400, 130, buttonW, buttonH);
-	regeneratePoolButton.setBounds(patternButtonOffsetX + 400, 160, buttonW, buttonH);
+	newPoolButton.setBounds(patternButtonOffsetX + 450, 70, buttonW, buttonH);
+	deletePoolButton.setBounds(patternButtonOffsetX + 450, 100, buttonW, buttonH);
+	GMDrumMapButton.setBounds(patternButtonOffsetX + 450, 130, buttonW, buttonH);
+	regeneratePoolButton.setBounds(patternButtonOffsetX + 450, 160, buttonW, buttonH);
 	
 	//// Settings
 
@@ -356,7 +353,15 @@ void TopiaryBeatsMasterComponent::resized()
 
 void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
 {
-	if (message.compare(MsgMaster) == 0)
+	if (message.compare(MsgLoad) == 0)
+	{
+		// refresh the tables because data adresses may have changed
+		beatsModel->getMasterModel(&patternListHeader, &patternListData, &poolListHeader, &poolListData);
+		patternsTable.setDataLists(patternListHeader, patternListData);
+		poolTable.setDataLists(poolListHeader, poolListData);
+	}
+
+	else if (message.compare(MsgMaster) == 0)
 	{
 		// trigger update of pooltable & masterTable
 		int remember = patternsTable.getSelectedRow();

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -234,7 +234,8 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 			{
 				found = true;
 				if (variationDefinitionComponent.patternCombo.getSelectedId() != selectedId)
-								variationDefinitionComponent.patternCombo.setSelectedId(selectedId, dontSendNotification);
+					variationDefinitionComponent.patternCombo.setSelectedId(selectedId, dontSendNotification);
+				
 			}
 		}
 	}

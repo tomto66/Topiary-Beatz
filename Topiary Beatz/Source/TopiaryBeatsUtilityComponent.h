@@ -18,35 +18,36 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include"TopiaryBeatsModel.h"
+#define TOPIARYMODEL TopiaryBeatsModel
+#define TOPIARYUTILITYCOMPONENT TopiaryBeatsUtilityComponent
+#include "../../Topiary/Source/TopiaryUtilityComponent.h"
 
-#include "TopiaryBeatsMasterComponent.h"
-#include "TopiaryBeatsLogComponent.h"
-#include "TopiaryBeatsVariationComponent.h"
-#include "TopiaryBeatsComponent.h"
-#include "TopiaryBeatsUtilityComponent.h"
-#include "TopiaryBeatsPatternComponent.h"
-
-class TopiaryBeatsTabbedComponent:  public Component, ActionListener
+/*
+class TopiaryBeatsUtilityComponent : public Component, ActionListener
 {
 public:
-	TopiaryBeatsTabbedComponent();
-    ~TopiaryBeatsTabbedComponent();
-	void setModel(TopiaryBeatsModel* model);
-    void paint (Graphics&) override;
-    void resized() override;  
+	TopiaryBeatsUtilityComponent();
+	~TopiaryBeatsUtilityComponent();
+
+	void paint(Graphics&) override;
+	void resized() override;
+	void setModel(TopiaryBeatsModel* m);
 	void actionListenerCallback(const String &message) override;
+	void getVariationControl();
+	void setVariationControl();
 
 private:
 	TopiaryBeatsModel* beatsModel;
-	TabbedComponent beatsTabs;
-	TopiaryBeatsMasterComponent masterComponent;
-	TopiaryBeatsVariationComponent variationComponent;
-	TopiaryBeatsLogComponent logComponent;
-	TopiaryBeatsUtilityComponent utilityComponent;
-	TopiaryBeatsPatternComponent patternComponent;
 
-	int tabHeight;
-	int height;
+	TopiaryButton notesButton;
+	TopiaryButton ccButton;
+	TextEditor variationChannelEditor;
+	TextEditor variationControlEditor[8];
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TopiaryBeatsTabbedComponent)
+	
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsUtilityComponent)
 };
+
+/////////////////////////////////////////////////////////////////////
+*/

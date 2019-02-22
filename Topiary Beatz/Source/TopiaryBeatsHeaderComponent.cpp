@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,11 +18,11 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "TopiaryBeatsHeaderComponent.h"
-#include "../../Topiary/Source/Topiary.h"
-#include "TopiaryBeatsTransportComponent.h"
-#include "TopiaryBeatsVariationButtonsComponent.h"
+//#include "../JuceLibraryCode/JuceHeader.h"
+//#include "TopiaryBeatsHeaderComponent.h"
+//#include "../../Topiary/Source/Topiary.h"
+//#include "TopiaryBeatsTransportComponent.h"
+//#include "TopiaryBeatsVariationButtonsComponent.h"
 #include "TopiaryBeatsComponent.h"
 
 TopiaryBeatsHeaderComponent::TopiaryBeatsHeaderComponent()
@@ -33,9 +33,11 @@ TopiaryBeatsHeaderComponent::TopiaryBeatsHeaderComponent()
 	addAndMakeVisible(warningEditor);
 	warningEditor.setReadOnly(true);
 	warningEditor.setColour(TextEditor::backgroundColourId, TopiaryColour::orange);
-	warningEditor.setColour(TextEditor::textColourId, Colours::lightyellow  );
+	warningEditor.setColour(TextEditor::textColourId, Colours::lightyellow);
 	warningEditor.setColour(TextEditor::outlineColourId, TopiaryColour::orange);
-		
+	addAndMakeVisible(timeEditor);
+	timeEditor.setVisible(false);
+	timeEditor.setEnabled(false);
 
 }
 
@@ -46,6 +48,8 @@ TopiaryBeatsHeaderComponent::~TopiaryBeatsHeaderComponent()
 	beatsModel->removeListener((ActionListener*)this);
 }
 
+/////////////////////////////////////////////////////////////////////////
+
 void TopiaryBeatsHeaderComponent::setModel(TopiaryBeatsModel* m)
 {
 	beatsModel = m;
@@ -55,7 +59,8 @@ void TopiaryBeatsHeaderComponent::setModel(TopiaryBeatsModel* m)
 	variationButtonsComponent.checkModel();
 	transportComponent.checkModel();
 	warningEditor.setVisible(false);
-}
+} // setModel
+
 /////////////////////////////////////////////////////////////////////////
 
 void TopiaryBeatsHeaderComponent::resized()
@@ -75,17 +80,26 @@ void TopiaryBeatsHeaderComponent::paint(Graphics& g) {
 	transportComponent.setBounds(295, 30, 350,45);
 
 	warningEditor.setBounds(645, 5, 330, 18);
-	warningEditor.setText(beatsModel->getLastWarning());
+	timeEditor.setBounds(402, 17, 70, 18);
 
 }
+
+/////////////////////////////////////////////////////////////////////////
 
 void TopiaryBeatsHeaderComponent::actionListenerCallback(const String &message)
 {
 	
 	if (message.compare(MsgWarning) == 0)
 	{
+		warningEditor.setText(beatsModel->getLastWarning());
 		warningEditor.setVisible(true);
 		startTimer(3000);
+	}
+	else if (message.compare(MsgTiming) == 0) 
+	{
+		timeEditor.setVisible(true);
+		getTime();
+		startTimer(5000);
 	}
 	else
 	{
@@ -100,9 +114,14 @@ void TopiaryBeatsHeaderComponent::actionListenerCallback(const String &message)
 	}
 }
 
+/////////////////////////////////////////////////////////////////////////
+
 void TopiaryBeatsHeaderComponent::timerCallback()
 {
-	warningEditor.setVisible(false);
+	if (warningEditor.isVisible())
+		warningEditor.setVisible(false);
+	else if (timeEditor.isVisible())
+		timeEditor.setVisible(false);
 	stopTimer();
 }
 

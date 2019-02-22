@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,11 +19,10 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 
 #pragma once
-#include"../../Topiary/Source/TopiaryTable.h"  
+//#include"../../Topiary/Source/TopiaryTable.h"  // included in model.h
 #include"TopiaryBeatsModel.h"
 
-class TopiaryBeatsMasterComponent;
-
+//class TopiaryBeatsMasterComponent;
 
 class TopiaryBeatsMasterComponent : public Component, ActionListener
 {
@@ -64,7 +63,7 @@ private:
 	TextButton GMDrumMapButton;
 	TextButton regeneratePoolButton;
 
-	int poolTW = 225;
+	int poolTW = 250;
 	int poolTH = 240;
 
 
@@ -111,6 +110,15 @@ private:
 		if (patternsTable.getNumRows() == 8)
 			newPatternButton.setEnabled(false);
 		else newPatternButton.setEnabled(true);
+
+		if (poolTable.getNumRows() == 0)
+		{
+			deletePoolButton.setEnabled(false);
+		}
+		else
+		{
+			deletePoolButton.setEnabled(true);
+		}
 	}
 
 	//////////////////////////////////////////////////////

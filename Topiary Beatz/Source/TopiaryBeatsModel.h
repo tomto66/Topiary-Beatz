@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,7 +20,9 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "../../Topiary/Source/TopiaryModel.h"
+#define TOPIARYMODEL TopiaryBeatsModel
 #define BEATZ
+#include "../../Topiary/Source/TopiaryTable.h"
 
 class TopiaryBeatsModel : public TopiaryModel
 {
@@ -34,11 +36,20 @@ public:
 	void getPatternModel(int patternIndex, XmlElement** h, XmlElement** d);
 	void getPatterns(String pats[8]);
 	int getPatternLengthInMeasures(int i);  // needed in variationComponent for validating pool length values;
+	void setPatternLengthInMeasures(int i, int l);
 	void deletePattern(int i);
 	void addPattern();
+	void setPatternTableHeaders(int p); // set measure & beat limits in patterntable headers
 
-	void addNote();
-	void deleteNote(int i);
+	void cleanPattern(int p) override;
+	void setPatternLength(int p, int l, bool keepTail);
+	void deleteNote(int p, int n);				// deletes the note with ID n from pattern p
+	void getNote(int p, int ID, int& note, int &velocity, int &timestamp, int &length);  // get note with id ID from pattern p
+	void addNote(int p, int n, int v, int l, int t);	// adds note n in pattern p, with velocity v at time t
+	void regenerateVariationsForPattern(int p);
+
+	void addPoolNote();
+	void deletePoolNote(int i);
 	void rebuildPool();
 	void setGMDrumMapLabels();
 	bool insertPatternFromFile(int patternIndex);
@@ -46,8 +57,8 @@ public:
 	XmlElement* addToModel(char *type, int index);
 	void removeFromModel(char *type, XmlElement *child);
 	
-	//void savePreset(File f) override;
-	//void loadPreset(File f) override;
+	void validateNoteEdit(int p, XmlElement* child, String attribute); // see if user edits to this attribute make sense and do housekeeping
+
 	void saveStateToMemoryBlock(MemoryBlock& destData) override;
 	void restoreStateFromMemoryBlock(const void* data, int sizeInBytes) override;
 	bool processVariationSwitch() override;
@@ -82,6 +93,7 @@ public:
 	void threadRunner() override;
 
 	void setOverrideHostTransport(bool o) override;
+	void setNumeratorDenominator(int nu, int de) override;
 
 	struct Variation {
 
@@ -135,6 +147,11 @@ public:
 
 	};
 
+	void swapVariation(int from, int to) override;
+	void copyVariation(int from, int to) override;
+	//void swapPattern(int from, int to) override;
+	//void copyPattern(int from, int to) override;
+
 	
 #define NUMBEROFQUANTIZERS 10
 
@@ -168,7 +185,7 @@ private:
 
 	void renumberPool(XmlElement *list)
 	{  // resort by timestamp and set the Ids in that order
-		DataSorter sorter("NoteNumber", true);
+		DataSorter sorter("Note", true);
 		list->sortChildElements(sorter);
 		XmlElement* child = list->getFirstChildElement();
 		int id = 1;
@@ -259,7 +276,7 @@ private:
 					newNote->setAttribute("REALID", noteCounter + 1); // because noteCounter starts at 0 (it will be renumbered at the end) but REALID has to start at 1
 					newNote->setAttribute("Note", message.getNoteNumber());
 					newNote->setAttribute("Velocity", message.getVelocity());
-
+					newNote->setAttribute("Label", MidiMessage::getMidiNoteName(message.getNoteNumber(), true, true, 5));
 					// calculate start markers
 					// duration will follow @noteoff event
 
@@ -344,63 +361,6 @@ private:
 		return true;
 	}; // loadMidiDrumPattern
 
-	//////////////////////////////////////////////////////////////////////////////////////////
-
-	char* GMDrumMap(int i)
-	{
-		switch (i) {
-		case 35: return "Acoustic Bass Drum";
-		case 36: return "Bass Drum ";
-		case 37: return "Side Stick";
-		case 38: return "Acoustic Snare";
-		case 39: return"Hand Clap";
-		case 40: return "Electric Snare";
-		case 41: return "Low Floor Tom";
-		case 42: return "Closed Hi Hat";
-		case 43: return "Closed Hi Hat";
-		case 44: return "Pedal Hi Hat";
-		case 45: return "Low Tom";
-		case 46: return "Open Hi Hat";
-		case 47: return "Low-mid Tom";
-		case 48: return "Hi-mid Tom";
-		case 49: return"Crash Cymbal 1";
-		case 50: return "High Tom";
-		case 51: return "Ride Cymbal 1";
-		case 52: return "Chinese Cymbal";
-		case 53: return "Ride Bell";
-		case 54: return "Tambourine";
-		case 55: return "Splash Cymbal";
-		case 56: return "Cowbell";
-		case 57: return "Crash Cymbal2";
-		case 58: return "Vibraslap";
-		case 59: return "Ride Cymbal 2";
-		case 60: return "Hi Bongo";
-		case 61: return "Low Bongo";
-		case 62: return "Mute Hi Conga";
-		case 63: return "Open Hi Conga";
-		case 64: return "Low Conga";
-		case 65: return "High Timbale";
-		case 66: return "Low Timbale";
-		case 67: return "High Agogo";
-		case 68: return "Low Agogo";
-		case 69: return "Cabasa";
-		case 70: return "Maracas";
-		case 71: return "Short Whistle";
-		case 72: return "Long Whistle";
-		case 73: return "Short Guiro";
-		case 74: return "Long Guiro";
-		case 75: return "Claves";
-		case 76: return "Hi Wood Block";
-		case 77: return "Low Wood Block";
-		case 78: return "Mute Cuica";
-		case 79: return "Open Cuica";
-		case 80: return "Mute Triangle";
-		case 81: return "Open Triangle";
-		default: return "-------";
-		}
-	} // GMDrumMap
-
-
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	// load & save stuff stuff	
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -411,7 +371,8 @@ private:
 		parameter->setAttribute("Name", iname);
 		parameter->setAttribute("Value", i);
 		p->addChildElement(parameter);
-	}
+
+	} //addIntToModel
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -422,7 +383,8 @@ private:
 		parameter->setAttribute("Value", i);
 		parameter->setAttribute("Index", index);
 		p->addChildElement(parameter);
-	}
+
+	} // addIntToModel
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -432,7 +394,8 @@ private:
 		parameter->setAttribute("Name", bname);
 		parameter->setAttribute("Value", (int)b);
 		p->addChildElement(parameter);
-	}
+
+	} // addBoolToModel
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -443,7 +406,8 @@ private:
 		parameter->setAttribute("Value", (int)b);
 		parameter->setAttribute("Index", index);
 		p->addChildElement(parameter);
-	}
+
+	} // addBoolToModel
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -453,7 +417,8 @@ private:
 		parameter->setAttribute("Name", sname);
 		parameter->setAttribute("Value", value);
 		p->addChildElement(parameter);
-	}
+
+	} // addStringToModel
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -464,7 +429,8 @@ private:
 		parameter->setAttribute("Value", value);
 		parameter->setAttribute("Index", index);
 		p->addChildElement(parameter);
-	}
+
+	} // addStringToModel
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -601,13 +567,28 @@ private:
 		overrideHostTransport = true; // otherwise we might get very weird effects if the host were running
 		setRunState(Topiary::Stopped);
 
+		// preliminary housekeeping
+		// restore some of the pointers
+		auto child = model->getFirstChildElement();
+		patternHeader = child;
+		child = child->getNextElement();
+		patternListHeader = child;
+		child = child->getNextElement();
+		patternListData = child;
+		child = child->getNextElement();
+		poolListData = child;
+		child = child->getNextElement();
+		poolListHeader = child;
+		child = child->getNextElement();
+		for (int i = 0; i < 8; i++)
+		{
+			patternData[i].noteData = child;
+			child = child->getNextElement();
+		}
+
 		bool rememberOverride = true; // we do not want to set that right away!
 
 		{
-			// block protected by lock	
-			const GenericScopedLock<SpinLock> myScopedLock(lockModel);
-
-			auto child = model->getFirstChildElement();
 			while (child != nullptr)
 			{
 				String tagName = child->getTagName();
@@ -805,6 +786,7 @@ private:
 			generateAllVariations();
 		
 		// inform editor
+		broadcaster.sendActionMessage(MsgLoad); // tell everyone we've just loaded something (table headers need to be re-set
 		broadcaster.sendActionMessage(MsgTransport);
 		broadcaster.sendActionMessage(MsgLog);
 		broadcaster.sendActionMessage(MsgMaster);
@@ -1033,7 +1015,7 @@ private:
 
 		while (patternChild->getIntAttribute("ID") != variation[v].poolIdCursor[p])
 		{
-			Logger::outputDebugString("ID =" + patternChild->getStringAttribute("ID") + " -- look for -- " + String(variation[v].poolIdCursor[p]));
+			//Logger::outputDebugString("ID =" + patternChild->getStringAttribute("ID") + " -- look for -- " + String(variation[v].poolIdCursor[p]));
 			patternChild = patternChild->getNextElement();
 		}
 
@@ -1070,7 +1052,7 @@ private:
 					newChild->setAttribute("Channel", variation[v].poolChannel[p]);
 					newChild->setAttribute("Length", patternChild->getStringAttribute("Length"));
 
-					if (variation[v].randomizeVelocity && (variation[v].velocityPlus || variation[v].velocityMin))
+					if (variation[v].randomizeVelocity && (variation[v].velocityPlus || variation[v].velocityMin)  && variation[v].velocityPool[p])
 					{
 						int vel = patternChild->getIntAttribute("Velocity");
 						float rnd;
@@ -1089,7 +1071,7 @@ private:
 
 						rnd = randomizer.nextFloat();
 						//int debug = direction * rnd * 128 * variation[v].velocityValue /100;
-						vel = vel + (int) (direction * rnd * 128 * variation[v].velocityValue/100);
+						vel = vel + (int) (direction * rnd * 128 * variation[v].velocityValue/50);   // originally / 100 but I want more of an effect
 						if (vel > 127) vel = 127;
 						if (vel < 0) vel = 0;
 						newChild->setAttribute("Velocity", vel);
@@ -1141,11 +1123,11 @@ private:
 
 					// we apply timing randomization AFTER possible swing !!!
 
-					if (variation[v].randomizeTiming && (variation[v].timingPlus || variation[v].timingMin))
+					if (variation[v].randomizeTiming && (variation[v].timingPlus || variation[v].timingMin) && variation[v].timingPool[p])
 					{
 						int timestamp = newChild->getIntAttribute("Timestamp");
 						float rnd;
-						int direction;
+						int direction = -1;
 						if (variation[v].velocityPlus & variation[v].velocityMin)
 						{
 							rnd = randomizer.nextFloat();
@@ -1154,13 +1136,11 @@ private:
 						}
 						else if (variation[v].velocityPlus)
 							direction = 1;
-						else 
-							direction = -1;
-							direction = -1;
+													
 
 						rnd = randomizer.nextFloat();
 						//int debug = direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].timingValue /100;
-						timestamp = timestamp + (int)(direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].velocityValue / 800);
+						timestamp = timestamp + (int)(direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].timingValue / 800);
 						if (timestamp < 0) timestamp = 0;
 
 						if (timestamp > (variation->lenInTicks-1)) timestamp = variation->lenInTicks - 1; // lenInTicks -1 because we need time for the note off event
@@ -1259,17 +1239,6 @@ private:
 
 	///////////////////////////////////////////////////////////////////////
 
-	void swapXmlElementPointers(XmlElement** a, XmlElement** b)
-	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
-		XmlElement* remember;
-		remember = *a;
-		*a = *b;
-		*b = remember;
-	} // swapXmlElementPointers
-
-	///////////////////////////////////////////////////////////////////////
-
 	int swing(int value, int deviation)
 	{ 
 		// value between 0 - ticksPerBeat; deviation -100 to 100
@@ -1281,7 +1250,8 @@ private:
 
 		// This is our control point for the quadratic bezier curve
 		// We want this to be between 0 (min) and 63.5 (max)
-		double controlPointX = midMidiValue + ((deviation / 100) * midMidiValue);
+		double dev = (double)deviation;
+		double controlPointX = (double) midMidiValue + ((dev / 100) * midMidiValue);
 
 		// Get the percent position of the incoming value in relation to the max
 		double t = (double)value / maxMidiValue;
@@ -1298,7 +1268,8 @@ private:
 		// B(t) = ((1 - t) * (1 - t) * minMidiValue) + (2 * (1 - t) * t * controlPointX) + (t * t * maxMidiValue)
 
 		// What is the deviation from our value?
-		int delta = (int) round((2 * (1 - t) * t * controlPointX) + (t * t * maxMidiValue));
+		
+		int delta = (int) round((2.0 * (1 - t) * t * controlPointX) + (t * t * (double)maxMidiValue));
 
 		//Logger::outputDebugString("swing delta: " + String(delta));
 		return (value - delta) + value;

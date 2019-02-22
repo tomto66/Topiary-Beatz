@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,8 +19,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "../../Topiary/Source/Topiary.h"
 #include "TopiaryBeatsComponent.h"
 #include "TopiaryBeatsTabbedComponent.h"
 
@@ -45,11 +43,8 @@ TopiaryBeatsTabbedComponent::TopiaryBeatsTabbedComponent() : beatsTabs(TabbedBut
 	variationComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
 	beatsTabs.addTab("Variations", TopiaryColour::background, &variationComponent, true);
 	
-	realtimeComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
-	beatsTabs.addTab("Realtime", TopiaryColour::background, &realtimeComponent, true);
-
-	automationComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
-	beatsTabs.addTab("Automation", TopiaryColour::background, &automationComponent, true);
+	utilityComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
+	beatsTabs.addTab("Utility", TopiaryColour::background, &utilityComponent, true);
 
 	logComponent.setSize(TopiaryBeatsComponent::width, tabHeight);
 	beatsTabs.addTab("Log", TopiaryColour::background, &logComponent, true);
@@ -72,9 +67,8 @@ void TopiaryBeatsTabbedComponent::setModel(TopiaryBeatsModel* model)
 	beatsModel = model;
 	masterComponent.setModel(beatsModel);
 	logComponent.setModel(beatsModel);
-	realtimeComponent.setModel(beatsModel);
 	variationComponent.setModel(beatsModel);
-	automationComponent.setModel(beatsModel);
+	utilityComponent.setModel(beatsModel);
 	patternComponent.setModel(beatsModel);
 	beatsModel->setListener((ActionListener*)this);
 }
@@ -108,13 +102,13 @@ void TopiaryBeatsTabbedComponent::actionListenerCallback(const String &message)
 		{
 			masterComponent.setEnabled(false);
 			variationComponent.setEnabled(false);
-			automationComponent.setEnabled(false);
+			utilityComponent.setEnabled(false);
 		}
 		else
 		{
 			masterComponent.setEnabled(true);
 			variationComponent.setEnabled(true);
-			automationComponent.setEnabled(true);
+			utilityComponent.setEnabled(true);
 		}
 	}
 } // actionListenerCallback

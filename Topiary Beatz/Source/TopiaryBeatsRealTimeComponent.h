@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beats, Copyright Tom Tollenaere 2018-19.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,47 +18,47 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "TopiaryBeatsModel.h"
-#include "TopiaryBeatsTransportComponent.h"
-#include "TopiaryBeatsVariationButtonsComponent.h"
+#include"TopiaryBeatsModel.h"
+#define TOPIARYMODEL TopiaryBeatsModel
+#define TOPIARYREALTIMECOMPONENT TopiaryBeatsRealTimeComponent
+#include "../../Topiary/Source/TopiaryRealTimeComponent.h"
 
-class TopiaryBeatsHeaderComponent : public Component,  ActionListener, Timer
+/*
+#pragma once
+#include"TopiaryBeatsModel.h"
+
+class TopiaryBeatsRealtimeComponent : public Component, ActionListener
 {
 public:
+	TopiaryBeatsRealtimeComponent();
+	~TopiaryBeatsRealtimeComponent();
 
-	TopiaryBeatsHeaderComponent();
-	~TopiaryBeatsHeaderComponent();
-	void setModel(TopiaryBeatsModel* m);
-	void paint(Graphics& g) override;
+	void paint(Graphics&) override;
 	void resized() override;
+	void setModel(TopiaryBeatsModel* m);
 	void actionListenerCallback(const String &message) override;
-	void timerCallback();
 
 private:
-	TopiaryBeatsTransportComponent transportComponent;
-	TopiaryBeatsVariationButtonsComponent variationButtonsComponent;
+
 	TopiaryBeatsModel* beatsModel;
-	TextEditor warningEditor;
-	TextEditor timeEditor;
+	TextEditor measuresEditor;
+	TextEditor beatsEditor;
+	
 
 	//////////////////////////////////////////////////////
 
 	void getTime()
 	{
 		int m, b;
-		String timing;
 		
 		beatsModel->getTime(m, b);
-		timing = String(m) + " : " + String(b);
-
-		if (timeEditor.getText().compare(timing) !=0)
-			timeEditor.setText(timing);
+		if (m != measuresEditor.getText().getIntValue())
+			measuresEditor.setText(String(m));
+		if (b != beatsEditor.getText().getIntValue())
+			beatsEditor.setText(String(b));
 
 	} // getTime
-
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsHeaderComponent)
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsRealtimeComponent)
 };
 
-
-
+*/
