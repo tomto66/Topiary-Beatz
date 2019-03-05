@@ -19,7 +19,5 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include"TopiaryBeatsModel.h"
-#define TOPIARYMODEL TopiaryBeatsModel
-#define TOPIARYTRANSPORTCOMPONENT TopiaryBeatsTransportComponent
 #include "../../Topiary/Source/TopiaryTransportComponent.h"
 

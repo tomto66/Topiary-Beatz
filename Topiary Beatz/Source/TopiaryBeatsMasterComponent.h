@@ -62,6 +62,7 @@ private:
 	TextButton newPoolButton;
 	TextButton GMDrumMapButton;
 	TextButton regeneratePoolButton;
+	TextButton cleanPoolButton;
 
 	int poolTW = 250;
 	int poolTH = 240;

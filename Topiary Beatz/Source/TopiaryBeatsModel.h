@@ -21,8 +21,19 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include "../../Topiary/Source/TopiaryModel.h"
 #define TOPIARYMODEL TopiaryBeatsModel
+#define TOPIARYLOGCOMPONENT TopiaryBeatsLogComponent
+#define TOPIARYTRANSPORTCOMPONENT TopiaryBeatsTransportComponent
+#define TOPIARYUTILITYCOMPONENT TopiaryBeatsUtilityComponent
 #define BEATZ
 #include "../../Topiary/Source/TopiaryTable.h"
+
+enum TopiaryLearnMidiId
+{
+	variationSwitch = 0, // meaning any 0 <= ID < 8 is learn midi for variation switchers
+	other = 10
+};
+
+#include "../../Topiary/Source/TopiaryMidiLearnEditor.h"
 
 class TopiaryBeatsModel : public TopiaryModel
 {
@@ -39,6 +50,8 @@ public:
 	void setPatternLengthInMeasures(int i, int l);
 	void deletePattern(int i);
 	void addPattern();
+	void duplicatePattern(int p);
+
 	void setPatternTableHeaders(int p); // set measure & beat limits in patterntable headers
 
 	void cleanPattern(int p) override;
@@ -50,7 +63,8 @@ public:
 
 	void addPoolNote();
 	void deletePoolNote(int i);
-	void rebuildPool();
+	void rebuildPool(bool clean);
+	
 	void setGMDrumMapLabels();
 	bool insertPatternFromFile(int patternIndex);
 	XmlElement* addToModel(char* type);
@@ -66,7 +80,7 @@ public:
 	void getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended) override;
 	void initializeVariationsForRunning() override;
 	void setEnded() override;
-	void generateMidi(MidiBuffer* midiBuffer) override;
+	void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer) override;
 	
 	////// Variations
 
@@ -149,10 +163,11 @@ public:
 
 	void swapVariation(int from, int to) override;
 	void copyVariation(int from, int to) override;
-	//void swapPattern(int from, int to) override;
-	//void copyPattern(int from, int to) override;
+	bool midiLearn(MidiMessage m); // called by processor
+	void record(bool b) override; // tells model to record or not; at end of recording it processes the new notes
+	void processMidiRecording() override; // add recorded events to the pattern
 
-	
+
 #define NUMBEROFQUANTIZERS 10
 
 private:
@@ -834,7 +849,7 @@ private:
 	} // calcMeasureBeat
 
 	///////////////////////////////////////////////////////////////////////
-
+/*
 	bool walkToTick(XmlElement* parent, XmlElement** child, int toTick)
 	{ // find the first child on or after this tick, starting from current child; 
 	  // caller has to make sure that child is child of parent, or pass nullptr to initialize
@@ -867,19 +882,14 @@ private:
 		{
 			*child = parent->getFirstChildElement();
 			return true;
-			/* we only return true if first child is < blockSize away from where we are now; actually conservative, can be blockSize/samplesPerTick !!!
-			childTick = (*child)->getIntAttribute("Timestamp");
-			if (childTick <= (blockSize / samplesPerTick)*2)
-				return true;
-			else
-				return false; */
+			
 
 		}
 		return true;
 	} // walkToTick
-
+*/
 	///////////////////////////////////////////////////////////////////////
-
+/*
 	void nextTick(XmlElement* parent, XmlElement** child)
 	{	// assert that parent has at least 1 child of each!!! (do a walk to a tick first!)
 		// this one loops around the pattern
@@ -892,7 +902,7 @@ private:
 		}
 
 	}  // nextTick
-
+*/
 	///////////////////////////////////////////////////////////////////////
 
 	void initializeVariation(int i)

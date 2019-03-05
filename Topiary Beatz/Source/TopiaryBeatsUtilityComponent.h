@@ -19,35 +19,5 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include"TopiaryBeatsModel.h"
-#define TOPIARYMODEL TopiaryBeatsModel
-#define TOPIARYUTILITYCOMPONENT TopiaryBeatsUtilityComponent
 #include "../../Topiary/Source/TopiaryUtilityComponent.h"
 
-/*
-class TopiaryBeatsUtilityComponent : public Component, ActionListener
-{
-public:
-	TopiaryBeatsUtilityComponent();
-	~TopiaryBeatsUtilityComponent();
-
-	void paint(Graphics&) override;
-	void resized() override;
-	void setModel(TopiaryBeatsModel* m);
-	void actionListenerCallback(const String &message) override;
-	void getVariationControl();
-	void setVariationControl();
-
-private:
-	TopiaryBeatsModel* beatsModel;
-
-	TopiaryButton notesButton;
-	TopiaryButton ccButton;
-	TextEditor variationChannelEditor;
-	TextEditor variationControlEditor[8];
-
-	
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsUtilityComponent)
-};
-
-/////////////////////////////////////////////////////////////////////
-*/

@@ -103,12 +103,14 @@ void TopiaryBeatsTabbedComponent::actionListenerCallback(const String &message)
 			masterComponent.setEnabled(false);
 			variationComponent.setEnabled(false);
 			utilityComponent.setEnabled(false);
+			patternComponent.setEnabled(false);
 		}
 		else
 		{
 			masterComponent.setEnabled(true);
 			variationComponent.setEnabled(true);
 			utilityComponent.setEnabled(true);
+			patternComponent.setEnabled(true);
 		}
 	}
 } // actionListenerCallback

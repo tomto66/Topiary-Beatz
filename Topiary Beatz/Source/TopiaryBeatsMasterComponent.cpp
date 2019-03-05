@@ -50,6 +50,16 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	duplicatePatternButton.setSize(buttonW, buttonH);
 	addAndMakeVisible(duplicatePatternButton);
 	duplicatePatternButton.setButtonText("Duplicate pattern");
+	duplicatePatternButton.onClick = [this] {
+
+		auto selection = patternsTable.getSelectedRow();
+		jassert(selection >= 0);
+
+		//beatsModel->duplicatePattern(selection);
+		//patternsTable.updateContent();
+		
+		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
+	};
 
 	// Delete Pattern button
 	deletePatternButton.setSize(buttonW, buttonH);
@@ -122,7 +132,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	addAndMakeVisible(regeneratePoolButton);
 	regeneratePoolButton.setButtonText("Rebuild");
 	regeneratePoolButton.onClick = [this] {
-		beatsModel->rebuildPool();
+		beatsModel->rebuildPool(false);
 		beatsModel->generateAllVariations();
 		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
 	};
@@ -134,6 +144,16 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 		poolTable.updateContent();
 	};
 	addAndMakeVisible(GMDrumMapButton);
+
+	// Clean Pool Button
+	cleanPoolButton.setSize(buttonW, buttonH);
+	addAndMakeVisible(cleanPoolButton);
+	cleanPoolButton.setButtonText("Clean");
+	cleanPoolButton.onClick = [this] {
+		beatsModel->rebuildPool(true); // true makes it clean!
+		beatsModel->generateAllVariations();
+		beatsModel->sendActionMessage(MsgMaster); // tables resort the data!
+	};
 
 	setButtonStates();
 
@@ -312,6 +332,7 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 	g.drawRoundedRectangle((float)lineSize + 440, (float)labelOffset + 10, (float)545, (float)patternTH + (2 * lineSize + 5), (float)4, (float)lineSize);
 	poolTable.setBounds(455, 30, poolTW - 5, poolTH);
 
+	cleanPoolButton.setBounds(patternButtonOffsetX + 450, 40, buttonW, buttonH);
 	newPoolButton.setBounds(patternButtonOffsetX + 450, 70, buttonW, buttonH);
 	deletePoolButton.setBounds(patternButtonOffsetX + 450, 100, buttonW, buttonH);
 	GMDrumMapButton.setBounds(patternButtonOffsetX + 450, 130, buttonW, buttonH);
@@ -382,3 +403,5 @@ void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
 	if (message.compare(MsgTransport) == 0)
 		getSettings();
 } // actionListenerCallback
+
+///////////////////////////////////////////////////////////////////////////

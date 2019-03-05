@@ -71,6 +71,8 @@ private:
 		beatsModel->setPatternTableHeaders(patternCombo.getSelectedId() - 1); // make sure the table allow valid measure inputs
 		setButtonStates();
 
+		beatsModel->setPatternSelectedInPatternEditor(patternCombo.getSelectedId() - 1); // needed to that transport can check whether recording makes sense
+
 	} // processPatternCombo
 
 	///////////////////////////////////////////////////////////////////////////////////////
