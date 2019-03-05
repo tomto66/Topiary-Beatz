@@ -429,11 +429,12 @@ void TopiaryModel::setRunState(int n)
 			patternCursor = 0;
 			blockCursor = 0;
 			cursorToStop = (int64)-1;
+			
 			Log("Stopped.", Topiary::LogType::Transport);
 			broadcaster.sendActionMessage(MsgTransport);
 
 			// if there is a variation waiting, then we need to make sure it becomes boue again - do that outside this scoped lock otherwise we'll lock -- see below
-
+			
 			break;
 		case Topiary::Ending:
 			Log("Ending, cleaning up.", Topiary::LogType::Transport);
@@ -648,9 +649,10 @@ void TopiaryModel::setEnded()
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryModel::generateMidi(MidiBuffer *buffer)
+void TopiaryModel::generateMidi(MidiBuffer *buffer, MidiBuffer* recBuffer)
 {
 	UNUSED(buffer)
+	UNUSED(recBuffer)
 } // generateMidi
 
 ///////////////////////////////////////////////////////////////////////
@@ -946,7 +948,7 @@ void TopiaryModel::processCC(MidiMessage& msg)
 
 void TopiaryModel::processAutomation(MidiMessage& msg)
 {
-		
+	
 	// assert that called only calls this consistently: msg is CC if ccVariationSwithing; msg is NoteOn it not
 	if (ccVariationSwitching && !msg.isController())
 		return;
@@ -1080,3 +1082,52 @@ void TopiaryModel::copyPattern(int from, int to)
 
 ///////////////////////////////////////////////////////////////////////
 
+void TopiaryModel::learnMidi(int ID)
+{
+	learningMidi = true;  // signals processor of incoming midi that we want to learn
+	midiLearnID = ID;
+	Log("Learning MIDI.", Topiary::LogType::Warning);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::stopLearningMidi()
+{
+	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	learningMidi = false;
+} // stopLearningMidi
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::record(bool b)
+{
+	// carefulk - overridden in Beatsa & friends
+	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	
+	recordingMidi = b;
+	// inform transport
+	broadcaster.sendActionMessage(MsgTransport);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+bool TopiaryModel::getRecording()
+{
+	return recordingMidi;
+
+} // getRecording
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::setPatternSelectedInPatternEditor(int p)
+{
+	// needed to that when setting "record" we can check whether the pattern being edited is actually going to run 
+	patternSelectedInPatternEditor = p;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::processMidiRecording()
+{
+	// virtual
+}

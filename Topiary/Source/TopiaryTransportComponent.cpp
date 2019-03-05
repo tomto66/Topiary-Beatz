@@ -59,11 +59,15 @@ TOPIARYTRANSPORTCOMPONENT::TOPIARYTRANSPORTCOMPONENT()
 	recButton.setButtonText("O");
 	recButton.setSize(buttonW, buttonH);
 	recButton.setClickingTogglesState(true);
+	recButton.specialState = 7; // so it becomes red when recording
+
 	//recButton.setRadioGroupId(Topiary::TransportButtonIds::TransportButtons);
 	recButton.onClick = [this] 
 	{ 
 		updateToggleState(&recButton);
-		callProcessUIChanges();
+		//callProcessUIChanges();
+		model->record(recButton.getToggleState());
+		recButton.setToggleState(model->getRecording(), dontSendNotification);
 	};
 	addAndMakeVisible(recButton);
 
@@ -122,9 +126,6 @@ void TOPIARYTRANSPORTCOMPONENT::updateToggleState(TextButton* button)
 {
 	auto state = button->getToggleState();
 	String stateString = state ? "ON" : "OFF";
-	//String selectedString = state ? " (selected)" : "";
-
-	//Logger::outputDebugString(" Button " + button->getButtonText() + "  changed to " + stateString);
 
 } // updateToggleState
 
@@ -234,6 +235,7 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		stopButton.setToggleState(false, dontSendNotification); // dirty trick to force repaint
 		stopButton.setToggleState(true, dontSendNotification);
 		overrideButton.setEnabled(true);
+		recButton.setEnabled(true);
 		break;
 
 	case 1: // Running
@@ -242,6 +244,7 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		startButton.setToggleState(false, dontSendNotification); // dirty trick to force repaint
 		startButton.setToggleState(true, dontSendNotification);
 		overrideButton.setEnabled(false);
+		recButton.setEnabled(false);
 		break;
 
 	case 3: // Armed
@@ -249,6 +252,7 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		stopButton.specialState = 0;
 		startButton.setToggleState(true, dontSendNotification);
 		overrideButton.setEnabled(false);
+		recButton.setEnabled(false);
 		break;
 
 	case 2: 
@@ -289,6 +293,10 @@ void TOPIARYTRANSPORTCOMPONENT::checkModel()
 	bool waitFFN;
 	model->getTransportState(BPM, n, d, transportState, override, waitFFN);
 	updateState(override, BPM, n, d, transportState, true); // the true shows the record button
+	if (model->getRecording())
+		recButton.setToggleState(true, dontSendNotification);
+	else
+		recButton.setToggleState(false, dontSendNotification);
 
 
 } // checkModel

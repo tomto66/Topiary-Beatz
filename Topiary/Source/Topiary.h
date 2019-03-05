@@ -163,6 +163,7 @@ public:
 	static const Colour warning;
 	static const Colour brightBlue;
 	static const Colour orange;
+	static const Colour rec;
 	static const Colour green;
 	static const Colour yellow;
 	static const Colour lightBlue;

@@ -48,7 +48,8 @@ private:
 	TopiaryButton notesButton;
 	TopiaryButton ccButton;
 	TextEditor variationChannelEditor;
-	TextEditor variationControlEditor[8];
+	TopiaryMidiLearnEditor variationControlEditor[8];
+	//TextEditor variationControlEditor[8];
 
 	// copy variation objects
 	TextButton vCopyGoButton;
@@ -67,15 +68,7 @@ private:
 	ComboBox pSwapFromCombo, pSwapToCombo;
 
 
-#ifndef PRESETZ
-	// copy pattern objects
-	TextButton pCopyGoButton;
-	ComboBox pCopyFromCombo, pCopyToCombo;
 
-	// swap variation objects
-	TextButton pSwapGoButton;
-	ComboBox pSwapFromCombo, pSwapToCombo;
-#endif
 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TOPIARYUTILITYCOMPONENT)

@@ -229,7 +229,8 @@ void TOPIARYUTILITYCOMPONENT::setModel(TOPIARYMODEL* m)
 	model = m;
 	model->setListener((ActionListener*)this);
 	actionListenerCallback(MsgVariationAutomation);  // find variation automation values
-
+	for (int i = 0; i < 8; i++)
+		variationControlEditor[i].setModel(m, TopiaryLearnMidiId::variationSwitch+i);
 } // setModel
 
 /////////////////////////////////////////////////////////////////////////

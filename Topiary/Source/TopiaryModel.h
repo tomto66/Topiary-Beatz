@@ -78,7 +78,7 @@ public:
 	bool processEnding();
 	void outputModelEvents(MidiBuffer& buffer);		// see if anything needs to be done by model; e.g. output non-generation stuff like CC messages (can be out-IFDEFed for plugins that don't need it
 	virtual void outputVariationEvents();			// potentially generate events when variation button is pressed (outside of running) - certainly needed for presetz
-	virtual void generateMidi(MidiBuffer* midiBuffer);
+	virtual void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer);
 	virtual bool processVariationSwitch();
 	virtual bool switchingVariations();
 	virtual void getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended);
@@ -98,6 +98,7 @@ public:
 	String getName();
 	void setName(String n);
 	void getTime(int& b, int& m);
+	virtual void processMidiRecording();
 
 	////////// Broadcasters & Listeners
 
@@ -125,6 +126,12 @@ public:
 	void setVariationControl(bool ccSwitching, int channel, int switches[8]);
 	void getVariationControl(bool& ccSwitching, int& channel, int switches[8]);
 	void processAutomation(MidiMessage& msg);
+
+	void learnMidi(int ID); // get a midi learn instruction from a MidiLearnEditor
+	void stopLearningMidi(); // called by timeout
+	virtual void record(bool b); // tells model to record or not; at end of recording it processes the new notes; overloaded in Beatz!
+	bool getRecording();
+
 	virtual void processCC(MidiMessage& msg, MidiBuffer* midiBuffer) ;
 	virtual void processCC(MidiMessage& msg);
 
@@ -137,6 +144,7 @@ public:
 	virtual void swapPattern(int from, int to);
 	virtual void copyPattern(int from, int to);
 	
+	void setPatternSelectedInPatternEditor(int p);  // needed to that when setting "record" we can check whether the pattern being edited is actually going to run 
 
 protected:
 
@@ -208,6 +216,10 @@ protected:
 	int variationSwitch[8];				// either notes for each variation, of CC numbers
 	bool ccVariationSwitching = true;	// if false then we're using notes
 	int variationSwitchChannel = 0;		// midi channel for variation switching; 0 == omni
+	bool learningMidi = false;
+	int midiLearnID = 0;
+	bool recordingMidi = false;
+	int patternSelectedInPatternEditor = -1; // needed to that when setting "record" we can check whether the pattern being edited is actually going to run 
 
 	String filePath;
 
@@ -401,15 +413,18 @@ protected:
 
 	///////////////////////////////////////////////////////////////////////
 
-	bool walkToTick(XmlElement* parent, XmlElement** child, int toTick)
+	bool walkToTick(XmlElement* parent, XmlElement** child, int toTick, int& childIndex, XmlElement** prevChild)
 	{ 
 		// find the first child on or after this tick, starting from current child; 
 		// caller has to make sure that child is child of parent, or pass nullptr to initialize
 		// return false if pattern is empty or nothing to do within the blockSize; if empty then child == nullptr; 
-		// This loops around the pattern! To avoid infinite loop, take blockSize into account; only loop over pattern
-		// if the amount of ticks walked is less than blocksize
+		// This loops around the pattern! 
+		// returns childIndex when called from recording (before record we set nextPatternChild to nullptr to make this correct)
+		// returns correct prevChild if there is one
 
 		int childTick;
+		childIndex = 0;
+		*prevChild = nullptr;
 
 		if (*child == nullptr)
 		{
@@ -423,22 +438,19 @@ protected:
 
 		while (childTick < toTick)
 		{   // as long as our child is behind time we're looking for
+			*prevChild = *child;
 			*child = (*child)->getNextElement();
+			childIndex++;
 			if (*child == nullptr) break; // there are no events afther the given time
 			childTick = (*child)->getIntAttribute("Timestamp");
 		}
 
 		if (*child == nullptr)
 		{
+			*prevChild = *child;
 			*child = parent->getFirstChildElement();
 			return true;
-			/* we only return true if first child is < blockSize away from where we are now; actually conservative, can be blockSize/samplesPerTick !!!
-			childTick = (*child)->getIntAttribute("Timestamp");
-			if (childTick <= (blockSize / samplesPerTick)*2)
-				return true;
-			else
-				return false; */
-
+			
 		}
 		return true;
 	} // walkToTick

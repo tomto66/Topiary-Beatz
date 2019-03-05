@@ -24,7 +24,7 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 const Colour TopiaryColour::background = Colour(47, 50, 52);
 const Colour TopiaryColour::foreground = Colour(115, 115, 115);
 const Colour TopiaryColour::warning = Colour(127, 10, 10);
-//const Colour Topiary::REC_COLOUR = Colour(127, 10, 10);
+const Colour TopiaryColour::rec = Colour(127, 10, 10); // for record button
 const Colour TopiaryColour::green = Colour(4, 99, 10);  //green
 const Colour TopiaryColour::brightBlue = Colour(3, 100, 165); // blue, also used for slider trace
 const Colour TopiaryColour::lightBlue = Colour(0, 150, 250); // blue (thumb)
@@ -60,9 +60,10 @@ void TopiaryLookAndFeel::drawTopiaryButtonBackground(Graphics& g,
 	if (isButtonDown) {
 		baseColour = TopiaryColour::brightBlue;
 		
-		// if specialState == armed (3) or ending(5) we do something special
+		// if specialState == armed (3) or ending(5) or recording (7) we do something special
 		if (button.specialState == 3) 		baseColour = TopiaryColour::orange;
 		else if (button.specialState == 5)  baseColour = TopiaryColour::yellow;
+		else if (button.specialState == 7)  baseColour = TopiaryColour::rec; // recording
 		
 	}
 	if (isButtonDown || isMouseOverButton)
@@ -74,6 +75,8 @@ void TopiaryLookAndFeel::drawTopiaryButtonBackground(Graphics& g,
 		// if specialState == armed (3) or ending(5) we do something special
 		if (button.specialState == Topiary::TopiaryButtonSpecialState::waitToApply) 		
 			baseColour = TopiaryColour::orange;
+		else if (button.specialState == 7)
+			baseColour = TopiaryColour::rec;
 		else
 		{
 			if (button.specialState == Topiary::TopiaryButtonSpecialState::waitToEnd)		
