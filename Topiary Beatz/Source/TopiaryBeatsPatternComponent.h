@@ -39,7 +39,8 @@ public:
 	void addNote(); // adds a note at the position selected in table
 	void copyNote();
 	void pasteNote();
-
+	void clearPattern();
+	void deleteAllNotes(); // deletes all notes equal to selected one from pattern
 
 private:
 	TopiaryBeatsModel* beatsModel;
@@ -98,17 +99,20 @@ private:
 		{		
 			actionButtonsComponent.deleteButton.setEnabled(false);
 			actionButtonsComponent.copyButton.setEnabled(false);
+			actionButtonsComponent.deleteAllNotesButton.setEnabled(false);
 		}
 		else if (patternTable.getSelectedRow() >= 0)
 		{
 			actionButtonsComponent.deleteButton.setEnabled(true);
 			actionButtonsComponent.copyButton.setEnabled(true);
+			actionButtonsComponent.deleteAllNotesButton.setEnabled(true);
 		}
 		else
 		{
 			// nothing selected
 			actionButtonsComponent.deleteButton.setEnabled(false);
 			actionButtonsComponent.copyButton.setEnabled(false);
+			actionButtonsComponent.deleteAllNotesButton.setEnabled(false);
 		}
 
 	}  // setButtonStates

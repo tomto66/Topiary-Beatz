@@ -54,7 +54,7 @@ void TopiaryBeatsPatternComponent::setModel(TopiaryBeatsModel* m)
 {
 	beatsModel = m;
 	beatsModel->setListener((ActionListener*)this);
-	beatsModel->getPatternModel(0, &patternListHeader, &patternListData);  // @ initialization this will simply be an empty pattern
+	beatsModel->getPatternModel(-1, &patternListHeader, &patternListData);  // @ initialization this will simply be an empty pattern
 
 	patternTable.setDataLists(patternListHeader, patternListData);
 	patternTable.setModel(beatsModel); // because it will have to validate note data!
@@ -65,7 +65,7 @@ void TopiaryBeatsPatternComponent::setModel(TopiaryBeatsModel* m)
 
 	// trick to call the model and read 
 	
-	actionListenerCallback(MsgMaster); // among other things, set the pattern combobox;
+	actionListenerCallback(MsgPatternList); // among other things, set the pattern combobox;
 
 } // setModel
 
@@ -106,13 +106,13 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 	}
 	else if (message.compare(MsgPattern) == 0)
 	{
-		// pattern (may have) changed; set the table such that the 
+		// pattern (may have) changed; update the table
 		int rememberSelectedRow = patternTable.getSelectedRow();
 		patternTable.updateContent();
 		patternTable.selectRow(rememberSelectedRow);
-		setButtonStates(); // is in inlude file
+		setButtonStates(); // is in include file
 	}
-	else if (message.compare(MsgMaster) == 0)
+	else if (message.compare(MsgPatternList) == 0)
 	{
 		// find the list of patterns loaded
 		String patterns[8];
@@ -134,6 +134,8 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 		{
 			this->setEnabled(true);
 			patternCombo.setSelectedItemIndex(0);
+			beatsModel->getPatternModel(0, &patternListHeader, &patternListData);
+			patternTable.setDataLists(patternListHeader, patternListData);
 			patternTable.setPattern(-1);
 			actionListenerCallback(MsgPattern);  // force reload of patterndata
 		}
@@ -246,3 +248,25 @@ void TopiaryBeatsPatternComponent::pasteNote()
 	
 
 }  // pasteNote
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsPatternComponent::clearPattern()
+{
+	beatsModel->clearPattern(patternCombo.getSelectedId() - 1);
+	actionListenerCallback(MsgPattern);
+
+} // clearPattern
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsPatternComponent::deleteAllNotes()
+{
+	// deletes all notes equal to selected one from the pattern
+	beatsModel->deleteAllNotes(patternCombo.getSelectedId() - 1, patternTable.getSelectedRow() + 1);
+	actionListenerCallback(MsgPattern);
+
+} // deleteAllNotes
+
+/////////////////////////////////////////////////////////////////////////
+

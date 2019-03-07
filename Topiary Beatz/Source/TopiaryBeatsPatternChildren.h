@@ -70,8 +70,8 @@ public:
 	TextButton addButton;		// adds at current selection; adds at 0 0 0 if nothing selected
 	TextButton copyButton;		// copies selected note
 	TextButton pasteButton;		// pastes at current selection; disabled when nothing in paste buffer
-	//TextButton record1Note;		// records a note at current position (overwrites what is there
-	//TextButton deleteAllNoteOccurence  // deletes all notes in the pattern that are same as selected one; disabled if nothing selected
+	TextButton clearButton;		// clears the pattern
+	TextButton deleteAllNotesButton;  // deletes all notes in the pattern that are same as selected one; disabled if nothing selected
 
 private:
 	TopiaryBeatsPatternComponent* parent;

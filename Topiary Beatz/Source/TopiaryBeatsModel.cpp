@@ -268,7 +268,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 
 		for (int j = 0; j < 4; j++)
 		{
-			variation[i].enablePool[j] = false;
+			variation[i].enablePool[j] = true;
 			variation[i].poolChannel[j] = 10;
 			variation[i].measureFrom[j] = 0;
 			variation[i].measureTo[j] = -1;
@@ -285,17 +285,25 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	}
 
 	/////////////////////////////////////
-	// Patterndata initialization
+	// PatternData initialization
+	/////////////////////////////////////
+
+
+	for (int i = 0; i < 8; ++i)
+	{
+		patternData[i].noteData = nullptr;
+	}
+	/////////////////////////////////////
+	// VariationSwitch initialization
 	/////////////////////////////////////
 
 	int ccStart = 22;
 
 	for (int i = 0; i < 8; ++i)
 	{
-		auto ch = new XmlElement("Pattern");
-		patternData[i].noteData = ch;
-		patternData[i].noteData->setAttribute("Index", String(i));
-
+		//auto ch = new XmlElement("Pattern");
+		//patternData[i].noteData = ch;
+		//patternData[i].noteData->setAttribute("Index", String(i));
 		variationSwitch[i] = ccStart;
 		ccStart++;
 	}
@@ -305,14 +313,18 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 
 	model.reset(new XmlElement("beatsModel")); // keep all lists under the main model object to avoid leaking
 	model->setAttribute("Version", JucePlugin_VersionString);
-	model->addChildElement(patternHeader);
-	model->addChildElement(patternListHeader);
+
+	headerParent.reset(new XmlElement("headers")); // keep headerlist under the main model object to avoid leaking
+	headerParent->addChildElement(patternHeader);
+	headerParent->addChildElement(patternListHeader);
 	model->addChildElement(patternListData);
 	model->addChildElement(poolListData);
-	model->addChildElement(poolListHeader);
+	headerParent->addChildElement(poolListHeader);
+
+	/*
 	for (int i = 0; i < 8; i++) {
 		model->addChildElement(patternData[i].noteData);
-	}
+	} */
 
 	threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
 	topiaryThread.notify();
@@ -415,61 +427,32 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 	
 	// remove from the patternlist - find it first
 	auto child = patternListData->getChildElement(deletePattern);
-	removeFromModel("PatternData", child);
+	removeFromModel("PatternData", child); // this lowers numPatterns
 
-	// now delete the pattern itself (the NOTEDATA in patternData[i])
-	// careful! the pattern noteData and noteOffData now needs to be reshuffled - we do that a bit further down!
+	// remove the noteData from the model
+	model->removeChildElement(patternData[deletePattern].noteData, true); // true deletes the data!
 
-	//String myXmlDoc2;
-
-	//Logger::outputDebugString("Pattern[" + String(deletePattern) + "] before delete children --------------------------------------");
-	//myXmlDoc2 = patternData[deletePattern].noteData->createDocument(String());
+	//Logger::writeToLog("Notedata  ---------------------------------------------------->");
+	//String myXmlDoc2 = patternData[deletePatte].noteData->createDocument(String());
 	//Logger::writeToLog(myXmlDoc2);
-	//Logger::outputDebugString("Pattern[" + String(deletePattern+1) + "] before delete children --------------------------------------");
-	//myXmlDoc2 = patternData[deletePattern+1].noteData->createDocument(String());
-	//Logger::writeToLog(myXmlDoc2);
+	//Logger::writeToLog("Notedata ---------------------------------------------------->");
 
-	patternData[deletePattern].noteData->deleteAllChildElements();
+	patternData[deletePattern].noteData = nullptr;
 	patternData[deletePattern].patLenInTicks = 0; 
-	patternData[deletePattern].notesRealID = 1;
+	//patternData[deletePattern].notesRealID = 1;
 	patternData[deletePattern].numNotes = 0;
 
-	//Logger::outputDebugString("Pattern[" + String(deletePattern) + "] AFTER delete children --------------------------------------");
-	//myXmlDoc2 = patternData[deletePattern].noteData->createDocument(String());
-	//Logger::writeToLog(myXmlDoc2);
-	//Logger::outputDebugString("Pattern[" + String(deletePattern + 1) + "] AFTER delete children --------------------------------------");
-	//myXmlDoc2 = patternData[deletePattern + 1].noteData->createDocument(String());
-	//Logger::writeToLog(myXmlDoc2);
-	
-	// shift all patterns above the one deleted, down by 1
-
-	for (int j = deletePattern; j < 7; j++) // <7 because we are swapping  with pattern j+1 !!!
+	// shift all patternData down
+	for (int j = deletePattern; j < (numPatterns); j++) 
 	{
-		//Logger::outputDebugString("Pattern[" + String(j) + "] before swap");
-		//myXmlDoc2 = patternData[j].noteData->createDocument(String());
-		//Logger::writeToLog(myXmlDoc2);
 		swapXmlElementPointers(&(patternData[j].noteData), &(patternData[j + 1].noteData));
-		patternData[j].patLenInTicks = patternData[j+1].patLenInTicks;
-		patternData[j].notesRealID = patternData[j+1].notesRealID;
-		patternData[j].numNotes = patternData[j+1].numNotes;
-
-		// also lower the index attribute in the patterndata!!!
-		// patternData[j].noteData->setAttribute("Index", patternData[j].noteData->getIntAttribute("Index") - 1);
-
-		//Logger::outputDebugString("-------------------------------------------");
-		//Logger::outputDebugString("Pattern[" + String(j) + "] after swap");
-		//myXmlDoc2 = patternData[j].noteData->createDocument(String());
-		//Logger::writeToLog(myXmlDoc2);
-		//Logger::outputDebugString("===========================================");
+		patternData[j].patLenInTicks = patternData[j + 1].patLenInTicks;
+		//patternData[j].notesRealID = patternData[j + 1].notesRealID;
+		patternData[j].numNotes = patternData[j + 1].numNotes;
 	}
-
-	// and clean  up the indexes in the patterndata
-	for (int p=0; p<8; p++)
-		patternData[p].noteData->setAttribute("Index", p);
-
-
+	
 	Log("Pattern "+String(deletePattern)+" deleted.", Topiary::LogType::Info);
-	// broadcaster.sendActionMessage(MsgMasterTables); not needed done in editor
+	
 
 	// if there are variations that use this pattern, they need to be re-initialized (send in -1 in the initialize code)
 	for (int j = 0; j < 8; j++)
@@ -481,8 +464,7 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 	broadcaster.sendActionMessage(MsgVariationEnables); // may need to disable the variation!
 
 	// if there are variations that use patterns higher than this one, lower their patternToUse by -1!
-	// patternToUse  is pattern number, not index i// and also shift the noteOn/Off data down!
-
+	
 	for (int j = 0; j < 8; j++)
 	{
 		if (variation[j].patternToUse > (deletePattern))
@@ -490,6 +472,7 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 			variation[j].patternToUse--;
 		}
 	}
+
 	broadcaster.sendActionMessage(MsgVariationDefinition);  // something may have changed to the currently shown variation (it might be disabled)
 	
 
@@ -499,32 +482,34 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 
 void TopiaryBeatsModel::addPattern()
 {
-	int i = patternListData->getNumChildElements();
+	numPatterns = patternListData->getNumChildElements();
 	
-	if (i == 8)
+	if (numPatterns == 8)
 	{
 		Log("Number of patterns is limited to 8.", Topiary::LogType::Warning);
 		return;
 	}
 
-	XmlElement *newPattern = addToModel("PatternData");
-	newPattern->setAttribute("ID", String(i + 1));
+	XmlElement *newPattern = addToModel("PatternData"); // this ups numPatterns
+	newPattern->setAttribute("ID", String(numPatterns)); 
 	newPattern->setAttribute("Name", "-- empty --");
 	newPattern->setAttribute("Measures", "1");
-	patternData[i].patLenInTicks = Topiary::TICKS_PER_QUARTER*numerator;
-
+	patternData[numPatterns-1].patLenInTicks = Topiary::TICKS_PER_QUARTER*numerator;  // numPatterns-1 because AddToModel increased it!
+	patternData[numPatterns-1].noteData = new XmlElement("Pattern");
+	model->addChildElement(patternData[numPatterns-1].noteData);
 	Log("New empty pattern created.", Topiary::LogType::Info);
+	
 
-	if (i == 0)
+	if (numPatterns == 0)
 		initializeVariations();
 
-	//broadcaster.sendActionMessage(MsgMasterTables); not needed done in editor
 } // addPattern
 
 ///////////////////////////////////////////////////////////////////////
 
-bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex)
+bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex, bool overload)
 {   // patternIndex starts at 0
+	// overload = true means do not delete pattern contents
 	jassert(patternIndex > -1);  // nothing selected in the model
 
 	auto directory = File::getSpecialLocation(File::userHomeDirectory);
@@ -552,7 +537,7 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex)
 		// now the pattern of the DATA objects; i.e; the PATTERN object is in patternData[patternIndex].noteData;
 		auto pattern = patternData[patternIndex].noteData;
 		// if there is data in the parent, delete it!
-		if (pattern->getNumChildElements() != 0) pattern->deleteAllChildElements();
+		if ((pattern->getNumChildElements() != 0) && !overload) pattern->deleteAllChildElements();
 
 		int patternMeasures = 0;
 		int lenInTicks = 0;
@@ -562,12 +547,29 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex)
 		{
 			// all OK now, so we set the length and the name now
 			// CAREFUL - len in measures & name are in XML, patlenInTicks is in the pattern[] structure!! (because that one is not edited in a table !!!!
-			patternData[patternIndex].patLenInTicks = lenInTicks;
-			patternParent->setAttribute("Name", f.getFileName());
-			patternParent->setAttribute("Measures", patternMeasures);
 			
+			patternParent->setAttribute("Name", f.getFileName());
+			if ((lenInTicks != patternData[patternIndex].patLenInTicks) && overload)
+			{
+				if (lenInTicks > patternData[patternIndex].patLenInTicks)
+				{
+					patternParent->setAttribute("Measures", patternMeasures);
+					patternData[patternIndex].patLenInTicks = lenInTicks;
+					Log("New pattern longer than existing one.", Topiary::LogType::Warning);
+					Log("Patterns has been stretched but second part does not contain original note data.", Topiary::LogType::Warning);
+				}
+				else
+				{
+					Log("New pattern shorter than existing one.", Topiary::LogType::Warning);
+					Log("Second pattern part does not contain overloaded note data.", Topiary::LogType::Warning);
+				}
+			}
+			else
+			{
+				patternParent->setAttribute("Measures", patternMeasures);
+				patternData[patternIndex].patLenInTicks = lenInTicks;
+			}
 			rebuildPool(true);
-			//broadcaster.sendActionMessage(MsgMasterTables); not needed; done in the editor
 
 			bool deassigned = false;
 
@@ -600,46 +602,26 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex)
 
 ///////////////////////////////////////////////////////////////////////
 
-
-XmlElement* TopiaryBeatsModel::addToModel(char* type, int index)
-{   // this one has an int parameter, because note data is stored in array[8] !!!
-	if (!strcmp(type, "NOTEDATA"))
-	{
-		XmlElement *child = new XmlElement("DATA");
-		child->setAttribute("REALID", patternData[index].notesRealID);
-		patternData[index].noteData->addChildElement(child);
-
-		patternData[index].numNotes++;
-		patternData[index].notesRealID++;
-		return child;
-	}
-
-	jassert(false); // wrong type as input!!!
-	return nullptr;
-} // addToModel
-
-///////////////////////////////////////////////////////////////////////
-
 XmlElement* TopiaryBeatsModel::addToModel(char* type)
 {
 	if (!strcmp(type, "PatternData"))
 	{
 		XmlElement *child = new XmlElement("PatternData");
-		child->setAttribute("REALID", patternsRealID);
+		//child->setAttribute("REALID", patternsRealID);
 		patternListData->addChildElement(child);
 		numPatterns = patternListData->getNumChildElements();
 		
-		patternsRealID++;
+		//patternsRealID++;
 		return child;
 	}
 	if (!strcmp(type, "PoolData"))
 	{
 		XmlElement *child = new XmlElement("PoolData");
-		child->setAttribute("REALID", poolNotesRealID);
+		//child->setAttribute("REALID", poolNotesRealID);
 		poolListData->addChildElement(child);
 
 		numPoolNotes++;
-		poolNotesRealID++;
+		//poolNotesRealID++;
 		return child;
 	}
 
@@ -693,7 +675,7 @@ void TopiaryBeatsModel::deletePoolNote(int i)
 	//remove from the poollist - find it first
 	auto child = poolListData->getChildElement(i);
 	removeFromModel("PoolData", child);
-	broadcaster.sendActionMessage(MsgMaster);
+	broadcaster.sendActionMessage(MsgPattern);
 	Log("Note deleted.", Topiary::LogType::Info);
 	//String myXmlDoc = poolListData->createDocument(String());
 	//Logger::writeToLog(myXmlDoc);
@@ -716,7 +698,7 @@ void TopiaryBeatsModel::addPoolNote()
 	newPool->setAttribute("Channel", "10");
 	//newPool->setAttribute("NoteNumber", "1");
 	rebuildPool(false);
-	broadcaster.sendActionMessage(MsgMaster);
+	broadcaster.sendActionMessage(MsgNotePool);
 	Log("Note created.", Topiary::LogType::Info);
 
 } //addPoolNote
@@ -734,7 +716,7 @@ void TopiaryBeatsModel::rebuildPool(bool clean)
 	SortedSet<int> set;
 	// loop over all patterns and make set of unique ones
 
-	for (int p = 0; p < 8; p++)
+	for (int p = 0; p < numPatterns; p++)
 	{
 		if (patternData[p].noteData->getNumChildElements() != 0)
 			forEachXmlChildElement(*patternData[p].noteData, child)
@@ -794,7 +776,7 @@ void TopiaryBeatsModel::rebuildPool(bool clean)
 	poolListData->deleteAllChildElementsWithTagName("DELETE"); // the remaining ones!
 	// refesh the pool table!
 	renumberPool(poolListData);
-	broadcaster.sendActionMessage(MsgMaster);
+	broadcaster.sendActionMessage(MsgNotePool);
 
 
 	// warn if there are duplicate notes in the set
@@ -809,7 +791,7 @@ void TopiaryBeatsModel::rebuildPool(bool clean)
 		else
 			set.add(child->getIntAttribute("Note"));
 	}
-}
+} // rebuildPool
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -1474,6 +1456,30 @@ void TopiaryBeatsModel::getNote(int p, int ID, int& note, int &velocity, int &ti
 
 ////////////////////////////////////////////////////////////////////////////////////
 
+void TopiaryBeatsModel::deleteAllNotes(int p, int n)  // delete all notes equal to ID n from pattern
+{
+	// get note with id ID from pattern p
+	XmlElement* child = patternData[p].noteData->getChildByAttribute("ID", String(n));
+	jassert(child != nullptr);
+	int note = child->getIntAttribute("Note");
+
+	child = patternData[p].noteData->getFirstChildElement();
+	while (child != nullptr)
+	{
+		if (child->getIntAttribute("Note") == note) {
+			// delete the child
+			patternData[p].noteData->removeChildElement(child, true); // true deletes the child
+			// restart; because child is gone we cannot do getNextElement
+			child = patternData[p].noteData->getFirstChildElement();
+		}
+		else
+			child = child->getNextElement();
+	}
+
+} // get Note
+
+////////////////////////////////////////////////////////////////////////////////////
+
 void TopiaryBeatsModel::setPatternTableHeaders(int p)
 {
 	// called when pattern p is selected
@@ -1491,7 +1497,7 @@ void TopiaryBeatsModel::setPatternTableHeaders(int p)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::validateNoteEdit(int p, XmlElement* child, String attribute)
+void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attribute)
 {
 	// called by TopiaryTable
 	// careful - can be called when editing patterns but also when editing note pool entries!!
@@ -1539,7 +1545,17 @@ void TopiaryBeatsModel::validateNoteEdit(int p, XmlElement* child, String attrib
 		rebuildPool(false);
 		broadcaster.sendActionMessage(MsgPattern);
 	}
-} // validateNoteEdit
+	else if (child->hasAttribute("Note"))
+	{
+		// edited the note pool
+		broadcaster.sendActionMessage(MsgNotePool);
+	}
+	else if (child->hasAttribute("Measures"))
+	{
+		// edited the patternlist
+		broadcaster.sendActionMessage(MsgPatternList);
+	}
+} // validateTableEdit
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1603,7 +1619,7 @@ void TopiaryBeatsModel::swapVariation(int from, int to)
 	} // end scope of lock
 
 	generateAllVariations();
-	broadcaster.sendActionMessage(MsgMaster);
+	
 	broadcaster.sendActionMessage(MsgVariationEnables);
 	Log("Variation " + String(from + 1) + " swapped with " + String(to + 1) + ".", Topiary::LogType::Info);
 
@@ -1664,7 +1680,7 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 	} // end oif lock scope
 
 	generateAllVariations();
-	broadcaster.sendActionMessage(MsgMaster);
+	
 	broadcaster.sendActionMessage(MsgVariationEnables);
 	Log("Variation " + String(from + 1) + " copied to " + String(to + 1) + ".", Topiary::LogType::Info);
 
@@ -1715,12 +1731,13 @@ bool TopiaryBeatsModel::midiLearn(MidiMessage m)
 
 void TopiaryBeatsModel::record(bool b)
 {
-	
+	// set the recording state (does not record = recording happens in the processor!
+
 	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 
 	// check if pattern being recorded is also the one in the variation selected!
 
-	if (patternSelectedInPatternEditor != variation[variationSelected].patternToUse)
+	if ((patternSelectedInPatternEditor != variation[variationSelected].patternToUse) &&b)
 	{
 		Log("Pattern is not in variation selected.", Topiary::LogType::Warning);
 		return;
@@ -1749,7 +1766,8 @@ void TopiaryBeatsModel::record(bool b)
 	recordingMidi = b;
 	// inform transport
 	broadcaster.sendActionMessage(MsgTransport);
-}
+
+} // record
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1831,7 +1849,7 @@ void TopiaryBeatsModel::processMidiRecording()
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::duplicatePattern(int p)
+void TopiaryBeatsModel::duplicatePattern(int p)  
 {
 	jassert(p > -1); // has to be a valid row to delete
 
@@ -1841,21 +1859,40 @@ void TopiaryBeatsModel::duplicatePattern(int p)
 		return;
 	}
 	
-	patternData[numPatterns].numNotes = patternData[p].numNotes;
-	patternData[numPatterns].notesRealID = patternData[p].notesRealID;
-	patternData[numPatterns].patLenInTicks = patternData[p].patLenInTicks;
+	addPattern(); // ups numPatterns
+	
+	patternData[numPatterns-1].numNotes = patternData[p].numNotes;
+	//patternData[numPatterns-1].notesRealID = patternData[p].notesRealID;
+	patternData[numPatterns-1].patLenInTicks = patternData[p].patLenInTicks;
 
-	XmlElement *newPattern = addToModel("PatternData");
-	patternData[numPatterns].noteData = newPattern;
-	newPattern->setAttribute("ID", String(p + 1));
-	newPattern->setAttribute("Name", patternData[p].noteData->getStringAttribute("Name")+"(copy)");
-	newPattern->setAttribute("Measures", patternData[p].noteData->getIntAttribute("Measures"));
-	numPatterns++;
+	auto newPattern = patternListData->getChildByAttribute("ID", String(numPatterns));
+	auto origPattern = patternListData->getChildByAttribute("ID", String(p+1));
+	
+	newPattern->setAttribute("Name", origPattern->getStringAttribute("Name")+"(copy)");
+	newPattern->setAttribute("Measures", origPattern->getIntAttribute("Measures"));
+	
+	// delete the old (empty) noteData from the model
+	model->removeChildElement(patternData[numPatterns-1].noteData, true); // true deletes the data!
+	patternData[numPatterns - 1].noteData = new XmlElement(*(patternData[p].noteData));
+	// and add new one to the model
+	model->addChildElement(patternData[numPatterns-1].noteData);
 
 	Log("Duplicate pattern created.", Topiary::LogType::Info);
 
 } // duplicatePattern
 
 ///////////////////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::clearPattern(int p)
+{
+	jassert(p > -1); // has to be a valid row to delete
+	jassert(p < numPatterns);
+
+	patternData[p].noteData->deleteAllChildElements();
+	generateAllVariations();
+
+	Log("Pattern cleared.", Topiary::LogType::Info);
+
+} // clearPattern
 
 #include "../../Topiary/Source/TopiaryMidiLearnEditor.cpp"

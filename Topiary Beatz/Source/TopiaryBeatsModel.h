@@ -51,6 +51,7 @@ public:
 	void deletePattern(int i);
 	void addPattern();
 	void duplicatePattern(int p);
+	void clearPattern(int p);
 
 	void setPatternTableHeaders(int p); // set measure & beat limits in patterntable headers
 
@@ -59,6 +60,8 @@ public:
 	void deleteNote(int p, int n);				// deletes the note with ID n from pattern p
 	void getNote(int p, int ID, int& note, int &velocity, int &timestamp, int &length);  // get note with id ID from pattern p
 	void addNote(int p, int n, int v, int l, int t);	// adds note n in pattern p, with velocity v at time t
+	void deleteAllNotes(int p, int n);  // deletes all occurrence of note n (id of event) in the pattern
+
 	void regenerateVariationsForPattern(int p);
 
 	void addPoolNote();
@@ -66,12 +69,12 @@ public:
 	void rebuildPool(bool clean);
 	
 	void setGMDrumMapLabels();
-	bool insertPatternFromFile(int patternIndex);
+	bool insertPatternFromFile(int patternIndex, bool overload);
 	XmlElement* addToModel(char* type);
-	XmlElement* addToModel(char *type, int index);
+	//XmlElement* addToModel(char *type, int index);
 	void removeFromModel(char *type, XmlElement *child);
 	
-	void validateNoteEdit(int p, XmlElement* child, String attribute); // see if user edits to this attribute make sense and do housekeeping
+	void validateTableEdit(int p, XmlElement* child, String attribute); // see if user edits to this attribute make sense and do housekeeping
 
 	void saveStateToMemoryBlock(MemoryBlock& destData) override;
 	void restoreStateFromMemoryBlock(const void* data, int sizeInBytes) override;
@@ -179,18 +182,22 @@ private:
 	XmlElement *poolListData = new XmlElement("PoolListData");
 
 	XmlElement *patternHeader = new XmlElement("PatternHeader");
+
+	std::unique_ptr<XmlElement> headerParent;
+	
+
 	struct Pattern
 	{
 		XmlElement *noteData;
 		
 		int numNotes = 0;
-		int notesRealID = 1;
+		//int notesRealID = 1;
 		int patLenInTicks = 0;
 	} patternData[8];
 
-	int patternsRealID = 1;
+	//int patternsRealID = 1;
 	int numPoolNotes = 0;
-	int poolNotesRealID = 1;
+	//int poolNotesRealID = 1;
 	
 	int debugLastNoteOn = 0; // delete - for debugging duplicate notes
 
@@ -348,7 +355,7 @@ private:
 			}
 
 			patternData[patternIndex].numNotes = noteList->getNumChildElements();
-			patternData[patternIndex].notesRealID = patternData[patternIndex].numNotes;
+			//patternData[patternIndex].notesRealID = patternData[patternIndex].numNotes;
 
 			measures = timeStampMeasure; // because that gets passed on to  caller !! and we do +1 at the end!
 			measures++;
@@ -476,9 +483,9 @@ private:
 		addStringToModel(parameters, filePath, "filePath");
 
 		//addIntToModel(parameters, numPatterns, "numPatterns"); NOT SAVED BUT COUNTED
-		addIntToModel(parameters, patternsRealID, "patternsRealID");
+		//addIntToModel(parameters, patternsRealID, "patternsRealID");
 		addIntToModel(parameters, numPoolNotes, "numPoolNotes");
-		addIntToModel(parameters, poolNotesRealID, "poolNotesRealId");
+		//addIntToModel(parameters, poolNotesRealID, "poolNotesRealId");
 
 		addIntToModel(parameters, variationSwitchChannel, "variationSwitchChannel");
 		addBoolToModel(parameters, ccVariationSwitching, "ccVariationSwitching");
@@ -486,7 +493,7 @@ private:
 		for (int i = 0; i < 8; i++) {
 			// pattern variables
 			addIntToModel(parameters, patternData[i].numNotes, "numNotes", i);
-			addIntToModel(parameters, patternData[i].notesRealID, "notesRealID", i);
+			//addIntToModel(parameters, patternData[i].notesRealID, "notesRealID", i);
 			addIntToModel(parameters, patternData[i].patLenInTicks, "patLenInTicks", i);
 
 			// Variations
@@ -582,23 +589,19 @@ private:
 		overrideHostTransport = true; // otherwise we might get very weird effects if the host were running
 		setRunState(Topiary::Stopped);
 
-		// preliminary housekeeping
-		// restore some of the pointers
 		auto child = model->getFirstChildElement();
-		patternHeader = child;
-		child = child->getNextElement();
-		patternListHeader = child;
-		child = child->getNextElement();
 		patternListData = child;
 		child = child->getNextElement();
 		poolListData = child;
 		child = child->getNextElement();
-		poolListHeader = child;
-		child = child->getNextElement();
-		for (int i = 0; i < 8; i++)
+				
+		// first load all patternData
+		int p = 0;
+		while (child->getTagName().compare("Pattern") == 0)
 		{
-			patternData[i].noteData = child;
+			patternData[p].noteData = child;
 			child = child->getNextElement();
+			p++;
 		}
 
 		bool rememberOverride = true; // we do not want to set that right away!
@@ -643,12 +646,12 @@ private:
 						if (parameterName.compare("filePath") == 0)	filePath = parameter->getStringAttribute("Value");
 
 						//if (parameterName.compare("numPatterns") == 0) numPatterns = parameter->getIntAttribute("Value");
-						if (parameterName.compare("patternsRealID") == 0) patternsRealID = parameter->getIntAttribute("Value");
+						//if (parameterName.compare("patternsRealID") == 0) patternsRealID = parameter->getIntAttribute("Value");
 						if (parameterName.compare("numPoolNotes") == 0) numPoolNotes = parameter->getIntAttribute("Value");
-						if (parameterName.compare("poolNotesRealID") == 0) poolNotesRealID = parameter->getIntAttribute("Value");
+						//if (parameterName.compare("poolNotesRealID") == 0) poolNotesRealID = parameter->getIntAttribute("Value");
 
 						if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
-						if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
+						//if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
 
 						if (parameterName.compare("lenInTicks") == 0) variation[parameter->getIntAttribute("Index")].lenInTicks = parameter->getIntAttribute("Value");
 						if (parameterName.compare("lenInMeasures") == 0) variation[parameter->getIntAttribute("Index")].lenInMeasures = parameter->getIntAttribute("Value");
@@ -732,7 +735,7 @@ private:
 						// patterndata array variables
 						if (parameterName.compare("patLenInTicks") == 0)  patternData[parameter->getIntAttribute("Index")].patLenInTicks = parameter->getIntAttribute("Value");
 						if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
-						if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
+						//if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
 
 						// automation
 						if (parameterName.compare("variationSwitch") == 0)  variationSwitch[parameter->getIntAttribute("Index")] = parameter->getIntAttribute("Value");
@@ -743,6 +746,7 @@ private:
 					}
 					break;
 				}
+				/*
 				if (tagName.compare("PatternHeader") == 0)
 					patternHeader = child;
 				if (tagName.compare("PatternListHeader") == 0)
@@ -753,7 +757,7 @@ private:
 					poolListData = child;
 				if (tagName.compare("PoolListHeader") == 0)
 					poolListHeader = child;
-
+					*/
 				if (tagName.compare("Pattern") == 0) patternData[child->getIntAttribute("Index")].noteData = child;
 
 				//if (tagName.compare("ShadowPatternOn") == 0) variation[child->getIntAttribute("Index")].shadowPatternOn = child;  LEAK
@@ -804,7 +808,9 @@ private:
 		broadcaster.sendActionMessage(MsgLoad); // tell everyone we've just loaded something (table headers need to be re-set
 		broadcaster.sendActionMessage(MsgTransport);
 		broadcaster.sendActionMessage(MsgLog);
-		broadcaster.sendActionMessage(MsgMaster);
+		broadcaster.sendActionMessage(MsgNotePool);
+		broadcaster.sendActionMessage(MsgPatternList);
+		broadcaster.sendActionMessage(MsgPattern);
 		broadcaster.sendActionMessage(MsgVariationEnables);		// so that if needed variationbuttons are disabled/enabled
 		broadcaster.sendActionMessage(MsgVariationDefinition);	// inform editor of variation settings;
 		broadcaster.sendActionMessage(MsgVariationAutomation);	// inform editor of variation automation settings;	
@@ -1138,7 +1144,7 @@ private:
 						int timestamp = newChild->getIntAttribute("Timestamp");
 						float rnd;
 						int direction = -1;
-						if (variation[v].velocityPlus & variation[v].velocityMin)
+						if (variation[v].velocityPlus && variation[v].velocityMin)
 						{
 							rnd = randomizer.nextFloat();
 							if (rnd > 0.5)

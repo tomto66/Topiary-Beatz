@@ -145,6 +145,22 @@ ActionButtonsComponent::ActionButtonsComponent()
 		parent->pasteNote();
 	};
 
+	addAndMakeVisible(clearButton);
+	clearButton.setSize(bW, bH);
+	clearButton.setButtonText("Clear Pattern");
+	clearButton.onClick = [this]
+	{
+		parent->clearPattern();
+	};
+
+	addAndMakeVisible(deleteAllNotesButton);
+	deleteAllNotesButton.setSize(bW, bH);
+	deleteAllNotesButton.setButtonText("Delete Notes");
+	deleteAllNotesButton.onClick = [this]
+	{
+		parent->deleteAllNotes();
+	};
+
 	setSize(width, heigth);
 
 } // ActionButtonsComponent
@@ -203,6 +219,13 @@ void ActionButtonsComponent::paint(Graphics& g)
 	columnBounds.removeFromTop(2 * lineWidth);
 	bBounds = columnBounds.removeFromTop(bH);
 	pasteButton.setBounds(bBounds);
+
+	columnBounds.removeFromTop(2 * lineWidth);
+	bBounds = columnBounds.removeFromTop(bH);
+	clearButton.setBounds(bBounds);
 	
+	columnBounds.removeFromTop(2 * lineWidth);
+	bBounds = columnBounds.removeFromTop(bH);
+	deleteAllNotesButton.setBounds(bBounds);
 
 } // paint

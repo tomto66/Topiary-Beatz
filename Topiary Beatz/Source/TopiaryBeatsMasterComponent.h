@@ -46,6 +46,8 @@ private:
 	TextButton duplicatePatternButton;
 	TextButton deletePatternButton;
 	TextButton newPatternButton;
+	TextButton overloadPatternButton;
+
 	int buttonH = 20;
 	int buttonW = 100;
 	int patternButtonOffsetX = 280;
@@ -88,7 +90,7 @@ private:
 			insertPatternButton.setEnabled(false);
 			duplicatePatternButton.setEnabled(false);
 			deletePatternButton.setEnabled(false);
-			
+			overloadPatternButton.setEnabled(false);
 		}
 		else
 		{
@@ -97,13 +99,15 @@ private:
 				 // nothing selected
 				insertPatternButton.setEnabled(false);
 				duplicatePatternButton.setEnabled(false);
-				deletePatternButton.setEnabled(false);			
+				deletePatternButton.setEnabled(false);
+				overloadPatternButton.setEnabled(false);
 			}
 			else
 			{
 				insertPatternButton.setEnabled(true);
 				duplicatePatternButton.setEnabled(true);
 				deletePatternButton.setEnabled(true);	
+				overloadPatternButton.setEnabled(true);
 			}
 				
 		}

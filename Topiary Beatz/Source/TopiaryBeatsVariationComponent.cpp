@@ -69,7 +69,7 @@ void TopiaryBeatsVariationComponent::setModel(TopiaryBeatsModel* m)
 {
 	beatsModel = m;	
 	beatsModel->setListener((ActionListener*)this);
-	actionListenerCallback(MsgMaster); // need to call this so we can fill the patternCombo !!!
+	actionListenerCallback(MsgPatternList); // need to call this so we can fill the patternCombo !!!
 	
 	variationDefinitionComponent.variationCombo.setSelectedId(1);  // this will trigger a call to getVariationDefinition which gets the data
 	
@@ -87,7 +87,7 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 		return;
 	}
 	
-	if ((beatsModel->getNumPatterns() == 1) & (initializing==true))
+	if ((beatsModel->getNumPatterns() == 1) && (initializing==true))
 	{
 		initializing = false; // don't do anything but un-set initializing
 	}
@@ -420,7 +420,7 @@ void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &messa
 		getVariationDefinition();  
 		// be sure that the mastertables are read first so the patternCombo is set correctly !!!
 	}
-	else if (message.compare(MsgMaster) == 0)
+	else if (message.compare(MsgPatternList) == 0)
 	{
 		// fill the patternCombo; careful, there may already be stuff there so clear it and then set it back where it was
 		int remember = variationDefinitionComponent.patternCombo.getSelectedId();
