@@ -116,7 +116,8 @@ public:
 #define MsgWarning "w"
 #define MsgPattern "p"
 #define MsgTiming "T"
-#define MsgMaster "m"
+#define MsgNotePool "n"
+#define MsgPatternList "L"
 #define MsgLoad "l" //signal that new preset was loaded; e.g. to have the patternstab re-set the model
 #define MsgVariationDefinition "d" // 
 #define MsgRealTimeParameter "r" // signal that something in realtime needs updating in editor

@@ -49,7 +49,7 @@ public:
 	void updateContent();
 	bool isHeaderSet();
 	void setHeader();
-	void setBroadcaster(ActionBroadcaster *b, String msg);
+	//void setBroadcaster(ActionBroadcaster *b, String msg);
 
 #ifdef BEATZ
 	void setModel(TOPIARYMODEL* m);
@@ -62,10 +62,12 @@ private:
 	std::unique_ptr<XmlElement> tableData;
 	XmlElement* columnList = nullptr;
 	XmlElement* dataList = nullptr;
+	std::unique_ptr<XmlElement>  dummyDataList; // to be used in case dataList @ init is empty
+
 	int numRows = 0;
 	bool headerSet = false;
-	ActionBroadcaster* broadcaster = nullptr;
-	String broadcastMessage = "";
+	//ActionBroadcaster* broadcaster = nullptr;
+	//String broadcastMessage = "";
 	int pattern; // needed to the table can know which pattern we are editing (only when editing patterns of course)
 
 #ifdef BEATZ

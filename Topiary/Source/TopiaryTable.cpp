@@ -27,6 +27,9 @@ TopiaryTable::TopiaryTable()
 	tableComponent.setColour(ListBox::outlineColourId, Colours::grey);
 	tableComponent.setOutlineThickness(1);
 	model = nullptr;
+	dummyDataList.reset(new XmlElement("dummyDataList"));
+	XmlElement* child = new XmlElement("dummyDataList");
+	dummyDataList->addChildElement(child);
 	addAndMakeVisible(tableComponent);
 }
 
@@ -50,10 +53,13 @@ void TopiaryTable::setDataLists(XmlElement *h, XmlElement *d)
 {
 		columnList = h;
 		dataList = d;
-		if (dataList != nullptr) 
+		if (dataList == nullptr)
+			dataList = dummyDataList->getFirstChildElement(); // may happen at initialization - dummyDataList is just a temporary XmlElement
+
+		if (dataList != nullptr)
 			numRows = dataList->getNumChildElements();
 		else
-			numRows = 0; // this might be the case when initializing
+			jassert(false);
 
 		//addAndMakeVisible(tableComponent);
 
@@ -265,15 +271,15 @@ String TopiaryTable::setText(const int columnNumber, const int rowNumber, const 
 
 	dataList->getChildElement(rowNumber)->setAttribute(columnName, validatedText);
 
-	if (broadcaster != nullptr)
-	{
-		broadcaster->sendActionMessage(broadcastMessage);
-	}
+	//if (broadcaster != nullptr)
+	//{
+	//	broadcaster->sendActionMessage(broadcastMessage);
+	//}
 
 #ifdef TOPIARYMODEL
 	if (model != nullptr) // i.e. we are editing a pattern or pool notes (otherwise model == nullptr)
 	{
-		model->validateNoteEdit(pattern, dataList->getChildElement(rowNumber), columnName);
+		model->validateTableEdit(pattern, dataList->getChildElement(rowNumber), columnName);
 		int remember = tableComponent.getSelectedRow(0);
 		setDataLists(columnList, dataList);  // force refresh
 		selectRow(remember);
@@ -302,11 +308,12 @@ void TopiaryTable::resized()
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-void TopiaryTable::setBroadcaster(ActionBroadcaster *b, String msg) 
-{
-	broadcaster = b;
-	broadcastMessage = msg;
-}
+//void TopiaryTable::setBroadcaster(ActionBroadcaster *b, String msg) 
+//{
+//	jassert(false); // think no longer needed
+//	broadcaster = b;
+//	broadcastMessage = msg;
+//}
 
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -316,8 +323,11 @@ void TopiaryTable::setModel(TOPIARYMODEL* m)
 	model = m;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+
 void TopiaryTable::setPattern(int p)
 {
+	// set pattern index
 	pattern = p;
 }
 #endif
