@@ -20,22 +20,18 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #include "TopiaryBeatsModel.h"
 
 // following has std model code that can be included (cannot be in TopiaryModel because of variable definitions)
-#include "../../Topiary/Source/TopiaryTable.cpp"
 #include"../../Topiary/Source/TopiaryModelIncludes.cpp"
-
 
 void TopiaryBeatsModel::saveStateToMemoryBlock(MemoryBlock& destData)
 {
 	addParametersToModel();  // this adds an XML element "Parameters" to the model
 	AudioProcessor::copyXmlToBinary(*model, destData);
-	model->deleteAllChildElementsWithTagName("Parameters");
 }
 
 /////////////////////////////////////////////////////////////////////////
 
 void TopiaryBeatsModel::restoreStateFromMemoryBlock(const void* data, int sizeInBytes)
 {
-	//return; 
 	model.reset(AudioProcessor::getXmlFromBinary(data, sizeInBytes));
 	restoreParametersToModel();
 }
@@ -60,170 +56,12 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	Log(String("VST PlugIn Technology by Steinberg Media Technologies."), Topiary::LogType::License);
 	Log(String(""), Topiary::LogType::License);
 
-	/////////////////////////////////////
-	// patternListHeader initialization
-	/////////////////////////////////////
-
-	patternListHeader->setTagName("PatternListHeader");
-	XmlElement* child = new XmlElement("COLUMN");
-	child->setAttribute("columnId", "1");
-	child->setAttribute("name", "ID");
-	child->setAttribute("width", "20");
-	child->setAttribute("type", "int");
-	patternListHeader->addChildElement(child);
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "2");
-	child->setAttribute("name", "Name");
-	child->setAttribute("width", "140");
-	child->setAttribute("type", "char");
-	patternListHeader->addChildElement(child);
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "3");
-	child->setAttribute("name", "Measures");
-	child->setAttribute("width", "70");
-	child->setAttribute("type", "int");
-	child->setAttribute("min", "0");
-	child->setAttribute("max", "100");
-	child->setAttribute("editable", "false");
-	patternListHeader->addChildElement(child);
+	// give some of the childres yourself as model
+	poolList.setBeatsModel(this);
+	for (int p = 0; p < 8; p++)
+		patternData[p].setBeatsModel(this);
 
 
-	/////////////////////////////////////
-	// notepoolHeader initialisation
-	/////////////////////////////////////
-
-	poolListHeader->setTagName("PoolListHeader");
-	child = new XmlElement("COLUMN");
-	child->setAttribute("columnId", "1");
-	child->setAttribute("name", "ID");
-	child->setAttribute("width", "20");
-	child->setAttribute("type", "int");
-	poolListHeader->addChildElement(child);
-
-	child = new XmlElement("COLUMN");
-	child->setAttribute("columnId", "2");
-	child->setAttribute("name", "Note"); // actually the keybd index, eg A#3
-	child->setAttribute("width", "50");
-	child->setAttribute("type", "note");
-	child->setAttribute("editable", "false");
-	poolListHeader->addChildElement(child);
-
-	child = new XmlElement("COLUMN");
-	child->setAttribute("columnId", "3");
-	child->setAttribute("name", "Label"); // actually the keybd index, eg A#3
-	child->setAttribute("width", "50");
-	child->setAttribute("type", "noteLabel");
-	poolListHeader->addChildElement(child);
-
-	child = new XmlElement("COLUMN");
-	child->setAttribute("columnId", "4");
-	child->setAttribute("name", "Description");
-	child->setAttribute("width", "110");
-	child->setAttribute("type", "char");
-	poolListHeader->addChildElement(child);
-
-	child = new XmlElement("COLUMN");
-	child->setAttribute("columnId", "5");
-	child->setAttribute("name", "Pool"); // which of the 4 pools this one is in
-	child->setAttribute("width", "40");
-	child->setAttribute("type", "int");
-	child->setAttribute("min", "1");
-	child->setAttribute("max", "4");
-	poolListHeader->addChildElement(child);
-
-
-	/////////////////////////////////////
-	// patternHeader initialisation
-	/////////////////////////////////////
-
-	patternHeader->setTagName("PatternHeader");
-	child = new XmlElement("COLUMN");
-	child->setAttribute("columnId", "1");
-	child->setAttribute("name", "ID");
-	child->setAttribute("width", "20");
-	child->setAttribute("type", "int");
-	patternHeader->addChildElement(child);
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "2");
-	child->setAttribute("name", "Measure");
-	child->setAttribute("width", "70");
-	child->setAttribute("type", "int");
-	//child->setAttribute("editable", "false");
-	child->setAttribute("min", "0");
-	child->setAttribute("max", "15");
-	patternHeader->addChildElement(child);
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "3");
-	child->setAttribute("name", "Beat");
-	child->setAttribute("width", "40");
-	child->setAttribute("type", "int");
-	//child->setAttribute("editable", "false");
-	child->setAttribute("min", "0");
-	child->setAttribute("max", String(numerator - 1));
-	patternHeader->addChildElement(child);
-	
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "4");
-	child->setAttribute("name", "Tick");
-	child->setAttribute("width", "40");
-	child->setAttribute("type", "int");
-	child->setAttribute("min", "0");
-	child->setAttribute("max", String(Topiary::TICKS_PER_QUARTER - 1));
-	//child->setAttribute("editable", "false");
-	patternHeader->addChildElement(child);
-
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "5");
-	child->setAttribute("name", "Note");
-	child->setAttribute("width", "40");
-	child->setAttribute("type", "note");
-	child->setAttribute("editable", "false");
-	patternHeader->addChildElement(child);
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "6");
-	child->setAttribute("name", "Label");
-	child->setAttribute("width", "40");
-	child->setAttribute("type", "noteLabel");
-	//child->setAttribute("editable", "false");
-	patternHeader->addChildElement(child);
-
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "7");
-	child->setAttribute("name", "Length");
-	child->setAttribute("width", "50");
-	child->setAttribute("type", "int");
-	child->setAttribute("min", "0");
-	child->setAttribute("max", String(10000));
-	//child->setAttribute("editable", "false");
-	patternHeader->addChildElement(child);
-
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "8");
-	child->setAttribute("name", "Velocity");
-	child->setAttribute("width", "50");
-	child->setAttribute("type", "int");
-	//child->setAttribute("editable", "false");
-	child->setAttribute("min", "0");
-	child->setAttribute("max", "127");
-
-	patternHeader->addChildElement(child);
-
-	/*
-	child = new XmlElement((char*)"COLUMN");
-	child->setAttribute("columnId", "8");
-	child->setAttribute("name", "Timestamp");
-	child->setAttribute("width", "80");
-	child->setAttribute("type", "int");
-	child->setAttribute("editable", "false");
-	patternHeader->addChildElement(child);
-	*/
 	/////////////////////////////////////
 	// variations initialisation
 	/////////////////////////////////////
@@ -231,22 +69,20 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	for (int i = 0; i < 8; ++i)
 	{
 		variation[i].patternToUse = -1;				// index in patterndata
-		variation[i].pattern = nullptr;			// will be set when editing the variation, or when loading state
 		
-
 		for (int j = 0; j < 4; j++)
 		{
 			variation[i].enablePool[j] = true;
-			variation[i].measureTo[j] = -1;
+			/*riation[i].measureTo[j] = -1;
 			variation[i].beatFrom[j] = -1;
 			variation[i].beatTo[j] = -1;
 			variation[i].tickFrom[j] = -1;
 			variation[i].tickTo[j] = -1;
 			variation[i].poolIdCursor[j] = 1;
-			variation[i].poolTickCursor[j] = 0;
+			variation[i].poolTickCursor[j] = 0;*/
 		}
 		variation[i].lenInMeasures = 0;
-		variation[i].lenInTicks = 0;
+		variation[i].pattern.patLenInTicks = 0;
 		variation[i].ending = false;									// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended) till done
 		variation[i].ended = false;
 
@@ -270,13 +106,6 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 		{
 			variation[i].enablePool[j] = true;
 			variation[i].poolChannel[j] = 10;
-			variation[i].measureFrom[j] = 0;
-			variation[i].measureTo[j] = -1;
-			variation[i].beatFrom[j] = 0;
-			variation[i].beatTo[j] = -1;
-			variation[i].tickFrom[j] = 0;
-			variation[i].tickTo[j] = -1;
-
 			variation[i].randomizeNotePool[j] = false;
 			variation[i].swingPool[j] = false;
 			variation[i].velocityPool[j] = false;
@@ -291,7 +120,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 
 	for (int i = 0; i < 8; ++i)
 	{
-		patternData[i].noteData = nullptr;
+		patternData[i].numItems = 0;
 	}
 	/////////////////////////////////////
 	// VariationSwitch initialization
@@ -301,9 +130,6 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 
 	for (int i = 0; i < 8; ++i)
 	{
-		//auto ch = new XmlElement("Pattern");
-		//patternData[i].noteData = ch;
-		//patternData[i].noteData->setAttribute("Index", String(i));
 		variationSwitch[i] = ccStart;
 		ccStart++;
 	}
@@ -311,94 +137,27 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	ccVariationSwitching = true;
 	variationSwitchChannel = 0;
 
-	model.reset(new XmlElement("beatsModel")); // keep all lists under the main model object to avoid leaking
-	model->setAttribute("Version", JucePlugin_VersionString);
-
-	headerParent.reset(new XmlElement("headers")); // keep headerlist under the main model object to avoid leaking
-	headerParent->addChildElement(patternHeader);
-	headerParent->addChildElement(patternListHeader);
-	model->addChildElement(patternListData);
-	model->addChildElement(poolListData);
-	headerParent->addChildElement(poolListHeader);
-
-	/*
-	for (int i = 0; i < 8; i++) {
-		model->addChildElement(patternData[i].noteData);
-	} */
-
-	threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
-	topiaryThread.notify();
-
 } // TopiaryBeatsModel
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 TopiaryBeatsModel::~TopiaryBeatsModel()
 {
-	XmlElement toDelete("toDelete");
 
-	for (int i = 0; i < 8; ++i)
-	{
-		// avoid dangling pointers
-		variation[i].currentPatternChild = nullptr;
-		
-		// ensure these will get destroyed
-		toDelete.addChildElement(variation[i].pattern);
-		
-	}
 } //~TopiaryBeatsModel
 
-
-/////////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::getMasterModel(XmlElement** h, XmlElement** d, XmlElement** ph, XmlElement** pd) {
-	// returns the data andheaderlists
-	*h = patternListHeader;
-	*d = patternListData;
-	*ph = poolListHeader;
-	*pd = poolListData;
-
-} // getMasterModelModel
-
-/////////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::getPatternModel(int patternIndex, XmlElement** h, XmlElement** d)
-{
-	jassert(patternIndex >= -1);
-	if (numPatterns > 0)
-	{
-		jassert(patternIndex < numPatterns);
-	}
-
-	*h = patternHeader;
-	if (patternIndex == -1)
-		*d = nullptr;
-	else
-		*d = patternData[patternIndex].noteData;
-
-	//Logger::writeToLog("Notedata ["+String(patternIndex)+"] ---------------------------------------------------->");
-	//String myXmlDoc2 = patternData[patternIndex].noteData->createDocument(String());
-	//Logger::writeToLog(myXmlDoc2);
-	//Logger::writeToLog("Notedata ---------------------------------------------------->");
-
-} // getPatternModel
-
 ///////////////////////////////////////////////////////
-// pattern methods
+// Pattern methods
 ///////////////////////////////////////////////////////
 
 int TopiaryBeatsModel::getPatternLengthInMeasures(int i)
 {
 	// length of pattern in Measures
 
-	jassert( (i<8) && (i>=-1));
+	jassert( (i<patternList.getNumItems()) && (i>=-1));
 
-	auto pattern = patternListData->getChildByAttribute("ID", String(i+1)); // pattern IDS are 1-8
-	if (pattern != nullptr)
-		return pattern->getIntAttribute("Measures");
-	else
-		return 1;  // this should only happen during initialisation, before data is initialized (or restored from state)
+	return patternList.dataList[i].measures;
+
 } // getPatternLengthInMeasures
 
 //////////////////////////////////////////////////////////////////////
@@ -408,13 +167,9 @@ void TopiaryBeatsModel::setPatternLengthInMeasures(int i, int l)
 	// l: length of pattern in Measures
 	// i: pattern index
 
-	jassert((i < 8) && (i >= 0));
+	jassert((i < patternList.getNumItems()) && (i >= 0));
 
-	auto pattern = patternListData->getChildByAttribute("ID", String(i + 1)); // pattern IDS are 1-8
-	if (pattern != nullptr)
-		return pattern->setAttribute("Measures",l);
-	else
-		jassert(false);  // this should only happen during initialisation, before data is initialized (or restored from state)
+	patternList.dataList[i].measures = l;
 
 } // setPatternLengthInMeasures
 
@@ -423,37 +178,22 @@ void TopiaryBeatsModel::setPatternLengthInMeasures(int i, int l)
 void TopiaryBeatsModel::deletePattern(int deletePattern)
 {
 	jassert(deletePattern > -1); // has to be a valid row to delete
-	jassert(deletePattern < patternListData->getNumChildElements()); // number has to be smaller than number of children (it starts at 0)
+	jassert(deletePattern < patternList.getNumItems()); // number has to be smaller than number of children (it starts at 0)
 	
-	// remove from the patternlist - find it first
-	auto child = patternListData->getChildElement(deletePattern);
-	removeFromModel("PatternData", child); // this lowers numPatterns
+	patternList.del(deletePattern);
+	patternData[deletePattern].numItems = 0; // make sure it's classified as empty
 
-	// remove the noteData from the model
-	model->removeChildElement(patternData[deletePattern].noteData, true); // true deletes the data!
-
-	//Logger::writeToLog("Notedata  ---------------------------------------------------->");
-	//String myXmlDoc2 = patternData[deletePatte].noteData->createDocument(String());
-	//Logger::writeToLog(myXmlDoc2);
-	//Logger::writeToLog("Notedata ---------------------------------------------------->");
-
-	patternData[deletePattern].noteData = nullptr;
-	patternData[deletePattern].patLenInTicks = 0; 
-	//patternData[deletePattern].notesRealID = 1;
-	patternData[deletePattern].numNotes = 0;
-
-	// shift all patternData down
-	for (int j = deletePattern; j < (numPatterns); j++) 
+	// now shift down any other patterns in patternData
+	for (int p = deletePattern; p < (patternList.numItems); p++)
 	{
-		swapXmlElementPointers(&(patternData[j].noteData), &(patternData[j + 1].noteData));
-		patternData[j].patLenInTicks = patternData[j + 1].patLenInTicks;
-		//patternData[j].notesRealID = patternData[j + 1].notesRealID;
-		patternData[j].numNotes = patternData[j + 1].numNotes;
+		TopiaryPattern dummy;
+		dummy = patternData[p];
+		patternData[p] = patternData[p + 1];
+		patternData[p + 1] = dummy;
 	}
-	
+
 	Log("Pattern "+String(deletePattern)+" deleted.", Topiary::LogType::Info);
 	
-
 	// if there are variations that use this pattern, they need to be re-initialized (send in -1 in the initialize code)
 	for (int j = 0; j < 8; j++)
 	{
@@ -482,25 +222,18 @@ void TopiaryBeatsModel::deletePattern(int deletePattern)
 
 void TopiaryBeatsModel::addPattern()
 {
-	numPatterns = patternListData->getNumChildElements();
-	
-	if (numPatterns == 8)
+	if (patternList.getNumItems() >= patternList.maxItems) // num
 	{
 		Log("Number of patterns is limited to 8.", Topiary::LogType::Warning);
 		return;
 	}
 
-	XmlElement *newPattern = addToModel("PatternData"); // this ups numPatterns
-	newPattern->setAttribute("ID", String(numPatterns)); 
-	newPattern->setAttribute("Name", "-- empty --");
-	newPattern->setAttribute("Measures", "1");
-	patternData[numPatterns-1].patLenInTicks = Topiary::TICKS_PER_QUARTER*numerator;  // numPatterns-1 because AddToModel increased it!
-	patternData[numPatterns-1].noteData = new XmlElement("Pattern");
-	model->addChildElement(patternData[numPatterns-1].noteData);
+	patternList.add();
+
 	Log("New empty pattern created.", Topiary::LogType::Info);
 	
 
-	if (numPatterns == 0)
+	if (getNumPatterns() == 0)
 		initializeVariations();
 
 } // addPattern
@@ -528,32 +261,26 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex, bool overload)
 		filePath = f.getParentDirectory().getFullPathName();
 
 		jassert(patternIndex > -1);  // nothing selected in the model
+		jassert(patternIndex < getNumPatterns());
 
-		numPatterns = patternListData->getNumChildElements();
-		jassert(patternIndex < numPatterns);
-
-		XmlElement* patternParent = patternListData->getChildElement(patternIndex);
-
-		// now the pattern of the DATA objects; i.e; the PATTERN object is in patternData[patternIndex].noteData;
-		auto pattern = patternData[patternIndex].noteData;
-		// if there is data in the parent, delete it!
-		if ((pattern->getNumChildElements() != 0) && !overload) pattern->deleteAllChildElements();
+		// if there is data in the parent, delete it unless we are overloading
+		if ((patternData[patternIndex].numItems != 0) && !overload) patternData[patternIndex].numItems = 0;
 
 		int patternMeasures = 0;
 		int lenInTicks = 0;
-		success = loadMidiDrumPattern(f, patternData[patternIndex].noteData, patternIndex, patternMeasures, lenInTicks);
+		success = loadMidiDrumPattern(f, patternIndex, patternMeasures, lenInTicks);
 
 		if (success)
 		{
 			// all OK now, so we set the length and the name now
-			// CAREFUL - len in measures & name are in XML, patlenInTicks is in the pattern[] structure!! (because that one is not edited in a table !!!!
-			
-			patternParent->setAttribute("Name", f.getFileName());
+			// CAREFUL - len in measures & name are in patternList, patlenInTicks is in the pattern[] structure!! (because that one is not edited in a table !!!!
+			patternList.dataList[patternIndex].name = f.getFileName();
+
 			if ((lenInTicks != patternData[patternIndex].patLenInTicks) && overload)
 			{
 				if (lenInTicks > patternData[patternIndex].patLenInTicks)
 				{
-					patternParent->setAttribute("Measures", patternMeasures);
+					patternList.dataList[patternIndex].measures = patternMeasures;
 					patternData[patternIndex].patLenInTicks = lenInTicks;
 					Log("New pattern longer than existing one.", Topiary::LogType::Warning);
 					Log("Patterns has been stretched but second part does not contain original note data.", Topiary::LogType::Warning);
@@ -566,7 +293,7 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex, bool overload)
 			}
 			else
 			{
-				patternParent->setAttribute("Measures", patternMeasures);
+				patternList.dataList[patternIndex].measures = patternMeasures;
 				patternData[patternIndex].patLenInTicks = lenInTicks;
 			}
 			rebuildPool(true);
@@ -600,67 +327,6 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex, bool overload)
 
 } // insertPatternFromFile
 
-///////////////////////////////////////////////////////////////////////
-
-XmlElement* TopiaryBeatsModel::addToModel(char* type)
-{
-	if (!strcmp(type, "PatternData"))
-	{
-		XmlElement *child = new XmlElement("PatternData");
-		//child->setAttribute("REALID", patternsRealID);
-		patternListData->addChildElement(child);
-		numPatterns = patternListData->getNumChildElements();
-		
-		//patternsRealID++;
-		return child;
-	}
-	if (!strcmp(type, "PoolData"))
-	{
-		XmlElement *child = new XmlElement("PoolData");
-		//child->setAttribute("REALID", poolNotesRealID);
-		poolListData->addChildElement(child);
-
-		numPoolNotes++;
-		//poolNotesRealID++;
-		return child;
-	}
-
-	jassert(false); // wrong type as input!!!
-	return nullptr;
-} // addToModel
-
-///////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::removeFromModel(char *type, XmlElement *child)
-{
-	if (!strcmp(type, "PatternData"))
-	{
-		//auto patternDataID = child->getIntAttribute("ID");
-		patternListData->removeChildElement(child, true);
-		//now renumber by REALID
-		renumberByID(patternListData);
-		numPatterns = patternListData->getNumChildElements();
-		// removing the patterns  NOT DONE HERE - DONE BY CALLER !!!!
-		
-		return;
-	}
-	if (!strcmp(type, "PoolData"))
-	{
-		auto poolDataID = child->getStringAttribute("ID");
-
-		poolListData->removeChildElement(child, true);
-
-		//now renumber by REALID
-		renumberByID(poolListData);
-		numPoolNotes--;
-
-		return;
-	}
-	jassert(false); // wrong type as input!!!
-
-}
-
-
 //////////////////////////////////////////////////////////////////////////////////
 // NOTE POOL METHODS
 //////////////////////////////////////////////////////////////////////////////////
@@ -670,16 +336,14 @@ void TopiaryBeatsModel::deletePoolNote(int i)
 	// deletes a note from the note list
 
 	jassert(i > -1); // has to be a valid row to delete
-	jassert(i < poolListData->getNumChildElements()); // number has to be smaller than number of children (it starts at 0 
+	jassert(i < poolList.getNumItems()); // number has to be smaller than number of children (it starts at 0) 
 
 	//remove from the poollist - find it first
-	auto child = poolListData->getChildElement(i);
-	removeFromModel("PoolData", child);
+	poolList.del(i);
+
 	broadcaster.sendActionMessage(MsgPattern);
 	Log("Note deleted.", Topiary::LogType::Info);
-	//String myXmlDoc = poolListData->createDocument(String());
-	//Logger::writeToLog(myXmlDoc);
-
+	
 } // deletePoolNote
 
 ///////////////////////////////////////////////////////////////////////
@@ -688,16 +352,8 @@ void TopiaryBeatsModel::addPoolNote()
 {
 	// adds a note to the pool list
 
-	int i = poolListData->getNumChildElements();
-
-	XmlElement *newPool = addToModel("PoolData");
-	newPool->setAttribute("ID", String(i + 1));
-	newPool->setAttribute("Note", 1);
-	newPool->setAttribute("Label", MidiMessage::getMidiNoteName(1, true, true, 5));
-	newPool->setAttribute("Pool", "1");
-	newPool->setAttribute("Channel", "10");
-	//newPool->setAttribute("NoteNumber", "1");
-	rebuildPool(false);
+	poolList.add();
+	//rebuildPool(false);
 	broadcaster.sendActionMessage(MsgNotePool);
 	Log("Note created.", Topiary::LogType::Info);
 
@@ -714,82 +370,85 @@ void TopiaryBeatsModel::rebuildPool(bool clean)
 	// generate a warning if there are duplicate notes in the pool
 
 	SortedSet<int> set;
+	int numItems = poolList.getNumItems();
+
 	// loop over all patterns and make set of unique ones
 
-	for (int p = 0; p < numPatterns; p++)
+	for (int p = 0; p < getNumPatterns(); p++)
 	{
-		if (patternData[p].noteData->getNumChildElements() != 0)
-			forEachXmlChildElement(*patternData[p].noteData, child)
+		if (patternData[p].numItems != 0)
+			for (int i=0;i< patternData[p].numItems; i++)
 			{
-				set.add(child->getIntAttribute("Note"));
+				set.add(patternData[p].dataList[i].note);
 			}
 	}
 
 	// loop over the pool and add "**" to descriptions (indicating note not used)
-	forEachXmlChildElement(*poolListData, child)
+	for (int p=0; p< numItems; p++)
 	{
-		auto label = child->getStringAttribute("Description");
-		if (!label.contains("**"))
-			child->setAttribute("Description", String("**") + label);
+
+		if (poolList.dataList[p].description.substring(0, 2).compare("**") != 0)
+			poolList.dataList[p].description = String("**") +poolList.dataList[p].description;
 		if (clean)
-			child->setTagName("DELETE"); // se we can delete is hereafter
+			poolList.dataList[p].ID = -99; // so we can maybe delete it later
 	}
 
 	
-
 	// loop over the set, see if in the pool
 	// if so do housekeeping (note names and GM drum map names), if needed remove "**" from label 
 	// if not, add to pool
 	for (auto it = set.begin(); it != set.end(); ++it)
 	{
-		auto poolNote = poolListData->getChildByAttribute("Note", String(*it));
-		if (poolNote != nullptr)
+		int index = poolList.isNoteInPool(*it);
+		if (index != -1)
 		{
-			// cleanup; translate noteNumber into readable note
-			if (poolNote->getStringAttribute("Label").compare("")==0) // if no label, just add the note name
-				poolNote->setAttribute("Label", MidiMessage::getMidiNoteName(*it, true, true, 5));
+			// note was already in the pool
+			// cleanup; ensure label is correct
+			poolList.dataList[index].label = MidiMessage::getMidiNoteName(*it, true, true, 5);
 
-			String debug2 = poolNote->getStringAttribute("Description");
-			String debug1 = poolNote->getStringAttribute("Description").substring(0, 1);
-			String debug3 = poolNote->getStringAttribute("Description").substring(2);
-			if (poolNote->getStringAttribute("Description").substring(0, 2).compare("**") == 0) // if note in the pool, delete the ** and reset to poolnote
+			if (poolList.dataList[index].description.substring(0, 2).compare("**") == 0) // if note in the pool, delete the ** and reset to poolnote
 			{
-				poolNote->setAttribute("Description", poolNote->getStringAttribute("Description").substring(2));
-				debug2 = poolNote->getStringAttribute("Description");
-				poolNote->setTagName("PoolData");
+				poolList.dataList[index].description = poolList.dataList[index].description.substring(2);
+				poolList.dataList[index].ID = 0; // as long as it's not -99 - it will get renumbered at the end
 			}
 			
 		}
 		else
 		{
-			XmlElement *newPool = addToModel("PoolData");
-
-			newPool->setAttribute("Note", *it);
-			newPool->setAttribute("Label", MidiMessage::getMidiNoteName(*it, true, true, 5));
-			newPool->setAttribute("Pool", "1");
-			newPool->setAttribute("Channel", "10");
-			newPool->setAttribute("Description", "");
-			
+			// this note (it) was not in the pool yet - add it
+			poolList.add();
+			poolList.dataList[numItems].note = *it;
+			poolList.dataList[numItems].pool = 1;
+			poolList.dataList[numItems].label = MidiMessage::getMidiNoteName(*it, true, true, 5);
+			poolList.dataList[numItems].description = "";
+			poolList.dataList[numItems].ID = 0; // just make sure it is not -99
+			numItems++;
 		}
 	}
 
-	poolListData->deleteAllChildElementsWithTagName("DELETE"); // the remaining ones!
-	// refesh the pool table!
-	renumberPool(poolListData);
-	broadcaster.sendActionMessage(MsgNotePool);
+	if (clean)
+		// delete all IDs of -99
+		for (int p=0; p< numItems; p++)
+			if (poolList.dataList[p].ID == -99)
+			{
+				poolList.del(p);
+				numItems--; // because otherwise we jump over one!	
+			}
 
+	poolList.renumber(); 
+
+	broadcaster.sendActionMessage(MsgNotePool);
 
 	// warn if there are duplicate notes in the set
 
 	set.clear();
 
-	forEachXmlChildElement(*poolListData, child)
+	for (int p = 0; p < numItems; p++)
 	{
-		int note = child->getIntAttribute("Note");
-		if (set.contains(note))
-			Log("Note " + child->getStringAttribute("Label") + " is duplicate in the note pool.", Topiary::LogType::Warning);
+		if (set.contains(poolList.dataList[p].note))
+			Log("Note " + poolList.dataList[p].label + " is duplicate in the note pool.", Topiary::LogType::Warning);
 		else
-			set.add(child->getIntAttribute("Note"));
+			set.add(poolList.dataList[p].note);
 	}
 } // rebuildPool
 
@@ -797,14 +456,15 @@ void TopiaryBeatsModel::rebuildPool(bool clean)
 
 void TopiaryBeatsModel::setGMDrumMapLabels()
 {
-	for (int i = 0; i < poolListData->getNumChildElements(); i++) {
-		auto child = poolListData->getChildElement(i);
-		int note = child->getIntAttribute("Note");
+	for (int i = 0; i < poolList.getNumItems(); i++) 
+	{
+		int note = poolList.dataList[i].note;
+		
 		// remember if there was a ** in the description and keep that if it was there
-		String twoStars = child->getStringAttribute("Description").substring(0, 2);
+		String twoStars = poolList.dataList[i].description.substring(0, 2);
 		if (!twoStars.equalsIgnoreCase("**"))
-			twoStars == "";
-		child->setAttribute("Description", twoStars + String( MidiMessage::getRhythmInstrumentName(note)));
+			twoStars = "";
+		poolList.dataList[i].description = twoStars + String( MidiMessage::getRhythmInstrumentName(note));
 	}
 } // setGMDrumMapLabels
 
@@ -819,9 +479,7 @@ void TopiaryBeatsModel::initializeVariationsForRunning()
 	for (int v = 0; v < 8; v++)
 	{
 		variation[v].ended = false;
-		variation[v].currentPatternChild = nullptr;
-		for (int p=0;p<4;p++)
-			variation[v].poolTickCursor[p] = 0;
+		variation[v].currentPatternChild = 0;
 	}
 } // initializeVariationsForRunning
 
@@ -829,7 +487,7 @@ void TopiaryBeatsModel::initializeVariationsForRunning()
 // Variation Parameters
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4])
+void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4])
 {
 	jassert(i < 8); // goes from 0-7
 	vname = variation[i].name;
@@ -838,12 +496,6 @@ void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vna
 	for (int j = 0; j < 4; j++)
 	{
 		enables[j] = variation[i].enablePool[j];
-		poolLength[j][0][0] = variation[i].measureFrom[j];
-		poolLength[j][0][1] = variation[i].measureTo[j];
-		poolLength[j][1][0] = variation[i].beatFrom[j];
-		poolLength[j][1][1] = variation[i].beatTo[j];
-		poolLength[j][2][0] = variation[i].tickFrom[j];
-		poolLength[j][2][1] = variation[i].tickTo[j];
 		poolChannel[j] = variation[i].poolChannel[j];
 	}
 	// need to look up the ID in the items in the patternCombo, and set the patternCombo selection
@@ -852,20 +504,19 @@ void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vna
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4])
+void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4],  int poolChannel[4])
 {
 	// write to model
 	// assume the data has been validated first!
 	// make sure that overrideHost is set to TRUE if there are no enabled variations!!!
 
 	jassert(i < 8); // goes from 0-7
-
-	if (numPatterns == 0) return;  // should not really happen unless @ initialization - but in that case we shouldn't write to the model
+	if (getNumPatterns() == 0) return;  // should not really happen unless @ initialization - but in that case we shouldn't write to the model
 
 	// if patternId == -1 and that means we are not touching a not-initialized variation - do nothing
 	if (patternId == -1) return;
 
-	int lenInMeasures = getPatternLengthInMeasures(patternId);
+	//int lenInMeasures = getPatternLengthInMeasures(patternId);
 
 	variation[i].name = vname;
 	variation[i].enabled = enabled;
@@ -891,24 +542,7 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 		for (int j = 0; j < 4; j++)
 		{
 			variation[i].enablePool[j] = enables[j];
-			variation[i].measureFrom[j] = poolLength[j][0][0];
-			variation[i].measureTo[j] = poolLength[j][0][1];
-			variation[i].beatFrom[j] = poolLength[j][1][0];
-			variation[i].beatTo[j] = poolLength[j][1][1];
-			variation[i].tickFrom[j] = poolLength[j][2][0];
-			variation[i].tickTo[j] = poolLength[j][2][1];
-			if (variation[i].measureTo[j] == -1)
-			{
-				variation[i].tickTo[j] = Topiary::TICKS_PER_QUARTER - 1;
-				variation[i].beatTo[j] = numerator - 1;
-				variation[i].measureTo[j] = lenInMeasures - 1;
-			}
-
-			// calculate the above in ticks
-			variation[i].fullTickFrom[j] = variation[i].tickFrom[j] + variation[i].beatFrom[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureFrom[j] * Topiary::TICKS_PER_QUARTER;
-			variation[i].fullTickTo[j] = variation[i].tickTo[j] + variation[i].beatTo[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureTo[j] * Topiary::TICKS_PER_QUARTER;
-
-			variation[i].lenInTicks = patternData[variation[i].patternToUse].patLenInTicks;
+			variation[i].pattern.patLenInTicks = patternData[variation[i].patternToUse].patLenInTicks;
 		}
 	}
 	else
@@ -916,15 +550,12 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 
 	for (int j = 0; j < 4; j++)
 	{
-		// reset variation generation cursors
-		variation[i].poolIdCursor[j] = 1;
-		variation[i].poolTickCursor[j] = 0;
 		variation[i].poolChannel[j] = poolChannel[j];
 	}
 	
 	// regenerate!
 
-	generateVariation(i);
+	generateVariation(i, -1);
 	broadcaster.sendActionMessage(MsgVariationDefinition);
 	broadcaster.sendActionMessage(MsgVariationEnables);  // may need to update the enable buttons
 
@@ -932,7 +563,7 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 
 //////////////////////////////////////////////////////////////////////
 
-bool TopiaryBeatsModel::validateVariationDefinition(int i, bool enable, String vname, int patternId, int poolLength[4][3][2])
+bool TopiaryBeatsModel::validateVariationDefinition(int i, bool enable, String vname, int patternId)
 {
 	// return false if parameters do not make sense
 	// refuse to enable a variation if there are no patterns
@@ -941,7 +572,7 @@ bool TopiaryBeatsModel::validateVariationDefinition(int i, bool enable, String v
 
 	jassert(i < 8); // goes from 0-7
 
-	if (numPatterns == 0) return false;  // in this case the variations tab should be disabled anyway
+	if (getNumPatterns() == 0) return false;  // in this case the variations tab should be disabled anyway
 
 	bool refuse = false;
 
@@ -987,50 +618,7 @@ bool TopiaryBeatsModel::validateVariationDefinition(int i, bool enable, String v
 		Log("Pattern needs at least 1 measure in order to be used here.", Topiary::LogType::Warning);
 		return true;
 	}
-
-	for (int j = 0; j < 4; j++)
-	{
-		int measureFrom = poolLength[j][0][0];
-		int measureTo = poolLength[j][0][1];
-		int beatFrom = poolLength[j][1][0];
-		int beatTo = poolLength[j][1][1];
-		int tickFrom = poolLength[j][2][0];
-		int tickTo = poolLength[j][2][1];
-
-		if (measureTo == -1)
-		{
-			tickTo = Topiary::TICKS_PER_QUARTER - 1;
-			beatTo = numerator - 1;
-			measureTo = lenInMeasures - 1;
-		}
-
-		// calculate the above in ticks
-		int fullTickFrom = tickFrom + beatFrom * Topiary::TICKS_PER_QUARTER + numerator * measureFrom * Topiary::TICKS_PER_QUARTER;
-		int fullTickTo = tickTo + beatTo * Topiary::TICKS_PER_QUARTER + numerator * measureTo * Topiary::TICKS_PER_QUARTER;
-
-		if (fullTickTo < fullTickFrom)
-		{
-			Log("Pool " + String(j + 1) + " length does not make sense.", Topiary::LogType::Warning);
-			refuse = true;
-		}
-
-		if ((measureFrom < 0) || (measureFrom >= lenInMeasures) || (measureFrom < 0) || (measureTo >= lenInMeasures))
-		{
-			Log("Pool "+String(j)+": measure values should be >=0 and <" + String(lenInMeasures), Topiary::LogType::Warning);
-			refuse = true;
-		}
-		if ((beatFrom < 0) || (beatFrom >= numerator) || (beatFrom < 0) || (beatTo >= numerator))
-		{
-			Log("Beat values should be >=0 and <" + String(numerator), Topiary::LogType::Warning);
-			refuse = true;
-		}
-		if ((tickFrom < 0) || (tickFrom >= Topiary::TICKS_PER_QUARTER) || (tickFrom < 0) || (tickTo >= Topiary::TICKS_PER_QUARTER))
-		{
-			Log("Tick values should be >=0 and <" + String(Topiary::TICKS_PER_QUARTER), Topiary::LogType::Warning);
-			refuse = true;
-		}
-	}
-
+		
 	if (refuse) Log("Current values will not be remembered!", Topiary::LogType::Warning);
 
 	return refuse;
@@ -1047,7 +635,7 @@ void TopiaryBeatsModel::setRandomizeNotes(int v, bool enable, bool enablePool[4]
 	{
 		variation[v].randomizeNotePool[i] = enablePool[i];
 	}
-	generateVariation(v);
+	generateVariation(v, -1);
 	
 } // getRandomNotes
 
@@ -1075,7 +663,7 @@ void TopiaryBeatsModel::setSwing(int v, bool enable, bool enablePool[4], int val
 		variation[v].swingPool[i] = enablePool[i];
 	}
 
-	generateVariation(v);
+	generateVariation(v, -1);
 
 } // getSwing
 
@@ -1105,7 +693,7 @@ void TopiaryBeatsModel::setRandomizeVelocity(int v, bool enable, bool enablePool
 		variation[v].velocityPool[i] = enablePool[i];
 	}
 
-	generateVariation(v);
+	generateVariation(v, -1);
 
 } // getRandomizeVelocity
 
@@ -1137,7 +725,7 @@ void TopiaryBeatsModel::setRandomizeTiming(int v, bool enable, bool enablePool[4
 		variation[v].timingPool[i] = enablePool[i];
 	}
 
-	generateVariation(v);
+	generateVariation(v, -1);
 
 } // getRandomizeTiming
 
@@ -1161,34 +749,48 @@ void TopiaryBeatsModel::getRandomizeTiming(int v, bool &enable, bool enablePool[
 
 void TopiaryBeatsModel::getPatterns(String pats[8])
 {
-	XmlElement* pattern;
+	for (int i=0; i < 8; i++)
+		pats[i] = "";
 
-	pattern = patternListData->getFirstChildElement();
-	int i = 0;
-	while (pattern != nullptr)
+	for (int i=0; i< patternList.getNumItems(); i++)
 	{
-		pats[i] = String(i + 1) + " " + pattern->getStringAttribute("Name");
-		pattern = pattern->getNextElement();
-		i++;
+		pats[i] = String(i + 1) + " " + patternList.dataList[i].name;
 	}
-
+	
 } // getPatterns
+
+///////////////////////////////////////////////////////////////////////
+
+TopiaryPatternList* TopiaryBeatsModel::getPatternList()
+{
+	return &patternList;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+TopiaryPoolList* TopiaryBeatsModel::getPoolList()
+{
+	return &poolList;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::generateVariation(int i)
+void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 {
-	// (re)generates variation[i].pattern as a separate XmlElement
-	// when done, it locks the model and swaps it in with the shadowpattern and destroys the old one
-	// uses the variation's generation cursors, which need to be reset when the variation gets edited (and when program loads)
+	// (re)generates variation[i].pattern 
 
 	jassert((i < 8) && (i >= 0));
 
-	auto newPattern = new XmlElement("Pattern");
-	auto newOffPattern = new XmlElement("OffPattern");
+	if (!variation[i].enabled)
+		return;
 
-	XmlElement* pattern;
-	pattern = patternData[variation[i].patternToUse].noteData;
+	if (measureToGenerate == -1)
+	{
+		// meaning we regererate the lot
+		// reset numItems
+		variation[i].pattern.numItems = 0;
+	}
+
 
 	int poolNote[128];  // will contain the pool number for the note
 	bool poolHasNotes[4];
@@ -1201,34 +803,26 @@ void TopiaryBeatsModel::generateVariation(int i)
 	for (int j = 0; j < 128; j++) poolNote[j] = -1;
 	for (int j = 0; j < 4; j++) poolHasNotes[j] = false;
 
-	forEachXmlChildElement(*poolListData, child)
+	for (int x=0; x<poolList.getNumItems(); x++)
+
 	{
 		// loop over the pool notes and put them in the appropriate set
-		note = child->getIntAttribute("Note");
-		pool = child->getIntAttribute("Pool");
+		note = poolList.dataList[x].note;
+		pool = poolList.dataList[x].pool; 
 		poolNote[note] = pool - 1;
 		poolHasNotes[pool - 1] = true;
 	}
 
-	// set poolTo values if measureTo = -1;
+	// set every event in the variation to miditype::NOP
+	// (because if certain pools are off the notes should not be generated
 
-	if (variation[i].enabled) // otherwise it may not have valid settings!!!
-		for (int j = 0; j < 4; j++)
-		{
-			if (variation[i].measureTo[j] == -1)
-			{
-				XmlElement* patternToUse = patternListData->getChildByAttribute("ID", String(variation[i].patternToUse +1));
-				if (patternToUse == nullptr)
-				{
-					// a pattern got deleted and no longer exists; autocorrect - set to 1; there will always be at least 1 pattern otherwise te variation editor is disabled!
-					// this should never happen!
-					jassert(false);
-				}
-				variation[i].measureTo[j] = pattern->getIntAttribute("Measures") - 1;
-				variation[i].beatTo[j] = numerator - 1;
-				variation[i].tickTo[j] = Topiary::TICKS_PER_QUARTER - 1;
-			}
-		}
+	TopiaryVariation* pattern = &(variation[i].pattern);
+	for (int j = 0; j < pattern->numItems; j++)
+	{
+		int measre = (*pattern).dataList[i].timestamp % (numerator * Topiary::TICKS_PER_QUARTER);
+		if ((measre == measureToGenerate) || (measureToGenerate == -1))
+			pattern->dataList[j].midiType = Topiary::MidiType::NOP;
+	}
 
 	////////////////////////////
 	// GENERATE THE POOL NOTES
@@ -1238,87 +832,29 @@ void TopiaryBeatsModel::generateVariation(int i)
 	{
 		// only call generatePool if there are notes in the pool; otherwise generatePool will loop forever!!!) 
 		if (poolHasNotes[j])
-			generatePool(i, j, newPattern, poolNote);
+			generatePool(i, j, poolNote, measureToGenerate);
 	}
 
-	XmlElement* newChild = nullptr;
+	variation[i].pattern.sortByTimestamp();
+	//Logger::outputDebugString("------------------------");
+	//for (int j = 0; j < variation[i].pattern.numItems; j++)
+	//{
+	//	Logger::outputDebugString("Note: " + String(variation[i].pattern.dataList[j].note) + " timestamp " + String(variation[i].pattern.dataList[j].timestamp));
+	//}
+	//Logger::outputDebugString("------------------------");
 	
-	// generate the note off data 
-	
-	forEachXmlChildElement(*newPattern, child)
-	{
-		// create a copy of child with the variation parameters taken into account
-		newChild = newOffPattern->createNewChildElement("OFFDATA");
-
-		newChild->setAttribute("ID", child->getStringAttribute("ID"));
-		newChild->setAttribute("Note", child->getStringAttribute("Note"));
-		newChild->setAttribute("Velocity", child->getStringAttribute("Velocity"));
-		newChild->setAttribute("Timestamp", child->getIntAttribute("Timestamp") + child->getIntAttribute("Length"));
-		newChild->setAttribute("Measure", child->getStringAttribute("Measure"));
-		newChild->setAttribute("Channel", child->getStringAttribute("Channel"));
-	} 
-
-	// add the off notes to newPattern
-	
-	forEachXmlChildElement(*newOffPattern, child)
-	{
-		// create a copy of child with the variation parameters taken into account
-		newChild = newPattern->createNewChildElement("OFFDATA");
-		newChild->setAttribute("ID", child->getStringAttribute("ID"));
-		newChild->setAttribute("Note", child->getStringAttribute("Note"));
-		newChild->setAttribute("Velocity", child->getStringAttribute("Velocity"));
-		newChild->setAttribute("Timestamp", child->getIntAttribute("Timestamp") + child->getIntAttribute("Length"));
-		newChild->setAttribute("Measure", child->getStringAttribute("Measure"));
-		newChild->setAttribute("Channel", child->getStringAttribute("Channel"));
-		newChild->setAttribute("midiType", Topiary::MidiType::NoteOff);
-	}
-	
-	renumberByTimestamp(newPattern);
-
-	Logger::writeToLog("-------------------- VARIATION " + String(i) + " GENERATED ---------------------");
-	//Logger::writeToLog("Measures: " + String(lenInMeasures) + " --- Ticks " + String(lenInTicks));
-
-	String myXmlDoc2 = newPattern->createDocument(String());
-	Logger::writeToLog(myXmlDoc2); 
-
-	// swap the patterns; 
-	// TODO - set the variation[i].currentPatternChild - or set those to nullptr and generateMidi will figure it out???
-
-	swapXmlElementPointers(&(variation[i].pattern), &newPattern);
-
-	delete newPattern;
-	delete newOffPattern;
-
 } // generateVariation
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void  TopiaryBeatsModel::generateAllVariations()
+void  TopiaryBeatsModel::generateAllVariations(int measureToGenerate)
 {
 	for (int v = 0; v < 8; v++)
-		for (int p = 0; p < 4; p++) variation[v].poolTickCursor[p] = 0;
-
-	for (int v = 0; v < 8; v++)
 	{
-		generateVariation(v);
+		if (variation[v].enabled)
+			generateVariation(v, measureToGenerate);
 	}
 } // generateAllVariations()
-
-////////////////////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::threadRunner()
-{	
-	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
-		threadRunnerState = Topiary::ThreadRunnerState::Generating;
-	}
-	generateAllVariations(); // this one swaps in the variations using the spinlock
-	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
-		threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
-	}
-
-} // threadRunner
 
 ////////////////////////////////////////////////////////////////////////////////////
 // move to modelincludes when done
@@ -1329,7 +865,7 @@ void TopiaryBeatsModel::regenerateVariationsForPattern(int p)
 	for (int v = 0; v < 8; v++)
 	{
 		if (variation[v].enabled && (variation[v].patternToUse == p))
-			generateVariation(v);
+			generateVariation(v, -1);
 	}
 
 } // regenerateVariationsForPattern
@@ -1338,8 +874,9 @@ void TopiaryBeatsModel::regenerateVariationsForPattern(int p)
 
 void TopiaryBeatsModel::setPatternLength(int p, int l, bool keepTail)
 {
-	// set LinInTicks, based on l in measures
+	// set LenInTicks, based on l in measures
 	// delete all events possbily after the ticklength
+	
 	bool warned = false;
 
 	int newLenInTicks = l * Topiary::TICKS_PER_QUARTER * denominator;
@@ -1348,55 +885,55 @@ void TopiaryBeatsModel::setPatternLength(int p, int l, bool keepTail)
 
 	if (patternData[p].patLenInTicks != newLenInTicks)
 	{
-		// delete late note events
-		XmlElement *child = patternData[p].noteData->getFirstChildElement();
-		XmlElement *remember = nullptr;
 		bool deleted;
 
-		while (child != nullptr)
+		for (int i=0; i<patternData[p].numItems; i++)
+
 		{
 			deleted = false;
 			if (tickDelta >0) // only delete notes if the pattern gets shorter
-				if ( ((newLenInTicks <= child->getIntAttribute("Timestamp")) && !keepTail) ||
-					 (keepTail && (child->getIntAttribute("Timestamp")< tickDelta))  )
+				if ( ((newLenInTicks <= patternData[p].dataList[i].timestamp) && !keepTail) ||
+					 (keepTail && (patternData[p].dataList[i].timestamp < tickDelta))  )
 				{
-					// delete the event
-					remember = child; // cannot delete the child here; we still need its nextElement; use bool deleted  & remember for that!
+					// flag to delete the event
+
 					warned = true;
 					deleted = true;
 				
-					//int debugTS = child->getIntAttribute("Timestamp");
-					//int debugL = child->getIntAttribute("Length");	
-					if ((child->getIntAttribute("Timestamp") + child->getIntAttribute("Length")) > newLenInTicks)
-						child->setAttribute("Length", child->getIntAttribute("Length") - child->getIntAttribute("Timestamp"));
+					if ((patternData[p].dataList[i].timestamp + patternData[p].dataList[i].length) > newLenInTicks)
+						patternData[p].dataList[i].length = patternData[p].dataList[i].length - patternData[p].dataList[i].timestamp;
 				}
 
 			if (keepTail)
 			{
 				// correct measure, beat, tick & timestamps
-				child->setAttribute("Timestamp", child->getIntAttribute("Timestamp") - tickDelta);
-				child->setAttribute("Measure", child->getIntAttribute("Measure") - measureDelta);
+				patternData[p].dataList[i].timestamp = patternData[p].dataList[i].timestamp - tickDelta;
+				patternData[p].dataList[i].measure = patternData[p].dataList[i].measure - measureDelta;
 			}
 
-			// make sure note lenght never runs over total patternlength
-			if ((child->getIntAttribute("Timestamp") + child->getIntAttribute("Length")) >= newLenInTicks)
-				child->setAttribute("Length", String(newLenInTicks - child->getIntAttribute("Timestamp") -1));
+			// make sure note length never runs over total patternlength
+			if (patternData[p].dataList[i].timestamp + patternData[p].dataList[i].length >= newLenInTicks)
+				patternData[p].dataList[i].length =  newLenInTicks - patternData[p].dataList[i].timestamp -1;
 
-			child = child->getNextElement();
 			if (deleted)
-				patternData[p].noteData->removeChildElement(remember, true);  // true deletes the child
+			{
+				patternData[p].del(i);
+				i--;
+			}
 		}
 
 		patternData[p].patLenInTicks = newLenInTicks;
-		setPatternLengthInMeasures(p, l);
-		renumberByTimestamp(patternData[p].noteData);
+		setPatternLengthInMeasures(p, l);  
+		patternData[p].sortByTimestamp();
+
 		// regenerate variations using this pattern
 		regenerateVariationsForPattern(p);
 		if (warned)
 			Log("Pattern was shortened and MIDI events were lost.", Topiary::LogType::Warning);
+		broadcaster.sendActionMessage(MsgPattern);
 
 	}
-
+	
 } // setPatternLength
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -1404,37 +941,25 @@ void TopiaryBeatsModel::setPatternLength(int p, int l, bool keepTail)
 void TopiaryBeatsModel::deleteNote(int p ,int n)
 {
 	// deletes note with ID n from pattern p
-	
-	auto child = patternData[p].noteData->getChildElement(n);
-	patternData[p].noteData->removeChildElement(child, true);
+	patternData[p].del(n);
 	broadcaster.sendActionMessage(MsgPattern);
 
 	Log("Note deleted.", Topiary::LogType::Info);
 	regenerateVariationsForPattern(p);
 	rebuildPool(false);
-
-	//String myXmlDoc = poolListData->createDocument(String());
-	//Logger::writeToLog(myXmlDoc);
-}
+	
+} // deleteNote
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 void TopiaryBeatsModel::addNote(int p, int n, int v, int l, int t) 
-{
-	// adds note n in pattern p, with velocity v at time t
-	XmlElement* newNote = new XmlElement("Note");
-	newNote->setAttribute("Note", n);
-	newNote->setAttribute("Timestamp", t);
-	newNote->setAttribute("Velocity", v);
-	newNote->setAttribute("Length", l);
-	newNote->setAttribute("Measure", (int) (t / (denominator*Topiary::TICKS_PER_QUARTER)));
+{   
+	int measuree = (int)(t / (denominator*Topiary::TICKS_PER_QUARTER));
 	t = t % (denominator*Topiary::TICKS_PER_QUARTER);
-	newNote->setAttribute("Beat", (int)(t / Topiary::TICKS_PER_QUARTER));
+	int beatt = (int)(t / Topiary::TICKS_PER_QUARTER);
 	t = t % Topiary::TICKS_PER_QUARTER;
-	newNote->setAttribute("Tick", t);
-	newNote->setAttribute("Label", MidiMessage::getMidiNoteName(n, true, true, 5));
-	patternData[p].noteData->prependChildElement(newNote);
-	renumberByTimestamp(patternData[p].noteData); // will create the ID
+	patternData[p].add(measuree, beatt, t, n, l, v);
+	patternData[p].sortByTimestamp(); // will create the ID
 	broadcaster.sendActionMessage(MsgPattern);
 	regenerateVariationsForPattern(p);
 
@@ -1445,55 +970,30 @@ void TopiaryBeatsModel::addNote(int p, int n, int v, int l, int t)
 void TopiaryBeatsModel::getNote(int p, int ID, int& note, int &velocity, int &timestamp, int &length)  // get note with id ID from pattern p
 {
 	// get note with id ID from pattern p
-	XmlElement* child = patternData[p].noteData->getChildByAttribute("ID", String(ID));
-	jassert(child != nullptr);
-	note = child->getIntAttribute("Note");
-	velocity = child->getIntAttribute("Velocity");
-	length = child->getIntAttribute("Length");
-	timestamp = child->getIntAttribute("Timestamp");
+	note = patternData[p].dataList[ID].note;
+	velocity = patternData[p].dataList[ID].velocity;
+	length = patternData[p].dataList[ID].length;
+	timestamp = patternData[p].dataList[ID].timestamp;
 
-} // get Note
+} // getNote
 
 ////////////////////////////////////////////////////////////////////////////////////
 
 void TopiaryBeatsModel::deleteAllNotes(int p, int n)  // delete all notes equal to ID n from pattern
 {
 	// get note with id ID from pattern p
-	XmlElement* child = patternData[p].noteData->getChildByAttribute("ID", String(n));
-	jassert(child != nullptr);
-	int note = child->getIntAttribute("Note");
+	int note = patternData[p].dataList[n].note;
 
-	child = patternData[p].noteData->getFirstChildElement();
-	while (child != nullptr)
+	for (int i=0; i<patternData[p].numItems; i++)
 	{
-		if (child->getIntAttribute("Note") == note) {
+		if (patternData[p].dataList[i].note == note) {
 			// delete the child
-			patternData[p].noteData->removeChildElement(child, true); // true deletes the child
-			// restart; because child is gone we cannot do getNextElement
-			child = patternData[p].noteData->getFirstChildElement();
+			patternData[p].del(i);
+			i--;
 		}
-		else
-			child = child->getNextElement();
 	}
 
-} // get Note
-
-////////////////////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::setPatternTableHeaders(int p)
-{
-	// called when pattern p is selected
-	// called when pattern length changed
-	// adapts the max values for measure & beat
-
-	XmlElement *child;
-
-	child = patternHeader->getChildByAttribute("name", "Beat");
-	child->setAttribute("max", String(numerator - 1));
-	child = patternHeader->getChildByAttribute("name", "Measure");
-	child->setAttribute("max", String((int) (patternData[p].patLenInTicks / Topiary::TICKS_PER_QUARTER / denominator) -1));
-
-} // setPatternTableHeaders
+} // deleteAllNotes
 
 ////////////////////////////////////////////////////////////////////////////////////
 
@@ -1502,6 +1002,10 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 	// called by TopiaryTable
 	// careful - can be called when editing patterns but also when editing note pool entries!!
 	// do processing of user edits to notes and make sure all is consistent
+	
+
+	int index = child->getIntAttribute("ID")-1;  // ID 1 is in position [0]
+	
 
 	if (attribute.compare("Label") == 0) 
 	{
@@ -1509,19 +1013,42 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 		//int debug = validNoteNumber(child->getStringAttribute("Label"));
 		child->setAttribute("Note", validNoteNumber(child->getStringAttribute("Label")));
 		child->setAttribute("Label", validateNote(child->getStringAttribute("Label")));
+		if (p != -1)
+		{
+			patternData[p].dataList[index].note = child->getIntAttribute("Note");
+			patternData[p].dataList[index].label = child->getStringAttribute("Label");
+		}
+		else
+		{
+			poolList.dataList[index].note = child->getIntAttribute("Note");
+			poolList.dataList[index].label = child->getStringAttribute("Label");
+		}
 	}
 	else if ((attribute.compare("Measure") == 0) || (attribute.compare("Beat") == 0) || (attribute.compare("Tick") == 0))
 	{
 		// recalculate timestamp
+
+		if (child->getIntAttribute("Beat") >= denominator)
+		{
+			child->setAttribute("Beat", 0);
+			Log("Beat should be between 0 and " + String(denominator) + ".", Topiary::LogType::Warning);
+		}
+
+
 		int timestamp = child->getIntAttribute("Tick") +
 			child->getIntAttribute("Beat")* Topiary::TICKS_PER_QUARTER +
 			child->getIntAttribute("Measure") * Topiary::TICKS_PER_QUARTER * denominator;
 
 		child->setAttribute("Timestamp", String(timestamp));
-		renumberByTimestamp(patternData[p].noteData);
+
+		patternData[p].dataList[index].timestamp = timestamp;
+		patternData[p].dataList[index].measure = child->getIntAttribute("Measure");
+		patternData[p].dataList[index].beat = child->getIntAttribute("Beat");
+		patternData[p].dataList[index].tick = child->getIntAttribute("Tick");
+		patternData[p].sortByTimestamp();
 	}
 
-	// what follows only if we are editing patterns, i.e, the element has Timestamp as an attribute
+	// what follows detects what we are editint (pattern, notepool or patternlist)
 
 	if (child->hasAttribute("Timestamp"))
 	{
@@ -1531,16 +1058,17 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 		if ((child->getIntAttribute("Timestamp") + child->getIntAttribute("Length")) >= patternData[p].patLenInTicks)
 		{
 			child->setAttribute("Length", String(patternData[p].patLenInTicks - child->getIntAttribute("Timestamp") - 1));
+			patternData[p].dataList[index].timestamp = child->getIntAttribute("Timestamp");
 			Log("Note shortened so it does not run over pattern end.", Topiary::LogType::Warning);
 		}
 
-		renumberByTimestamp(patternData[p].noteData);
+		patternData[p].sortByTimestamp();
 
 		// regenerate variations that depend on this one
 		for (int v = 0; v < 8; v++)
 		{
 			if (variation[v].patternToUse == p)
-				generateVariation(v);
+				generateVariation(v, -1);
 		}
 		rebuildPool(false);
 		broadcaster.sendActionMessage(MsgPattern);
@@ -1555,7 +1083,16 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 		// edited the patternlist
 		broadcaster.sendActionMessage(MsgPatternList);
 	}
+	
 } // validateTableEdit
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+int TopiaryBeatsModel::getNumPatterns()
+{
+	// needed for TopiaryModelIncludes
+	return patternList.numItems;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -1567,14 +1104,11 @@ void TopiaryBeatsModel::swapVariation(int from, int to)
 		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 
 		intSwap(variation[from].patternToUse, variation[to].patternToUse);
-		intSwap(variation[from].lenInTicks, variation[to].lenInTicks);
+		//intSwap(variation[from].lenInTicks, variation[to].lenInTicks);
 		intSwap(variation[from].lenInMeasures, variation[to].lenInMeasures);
 		boolSwap(variation[from].ended, variation[to].ended);
 		boolSwap(variation[from].ending, variation[to].ending);
 		boolSwap(variation[from].enabled, variation[to].enabled);
-
-		//XmlElement* pattern;				// pattern  events
-		//XmlElement* currentPatternChild;    // where we are in generation 
 
 		stringSwap(variation[from].name, variation[to].name);
 		boolSwap(variation[from].randomizeNotes, variation[to].randomizeNotes);
@@ -1598,19 +1132,7 @@ void TopiaryBeatsModel::swapVariation(int from, int to)
 		for (int i = 0; i < 4; i++)
 		{
 			boolSwap(variation[from].enablePool[i], variation[to].enablePool[i]);
-			intSwap(variation[from].measureFrom[i], variation[to].measureFrom[i]);
-			intSwap(variation[from].measureTo[i], variation[to].measureTo[i]);
-			intSwap(variation[from].beatFrom[i], variation[to].beatFrom[i]);
-			intSwap(variation[from].beatTo[i], variation[to].beatTo[i]);
-			intSwap(variation[from].tickFrom[i], variation[to].tickFrom[i]);
-			intSwap(variation[from].tickTo[i], variation[to].tickTo[i]);
-			intSwap(variation[from].fullTickFrom[i], variation[to].fullTickFrom[i]);
-			intSwap(variation[from].fullTickTo[i], variation[to].fullTickTo[i]);
-
 			intSwap(variation[from].poolChannel[i], variation[to].poolChannel[i]);
-			intSwap(variation[from].poolTickCursor[i], variation[to].poolTickCursor[i]);
-			intSwap(variation[from].poolIdCursor[i], variation[to].poolIdCursor[i]);
-
 			boolSwap(variation[from].randomizeNotePool[i], variation[to].randomizeNotePool[i]);
 			boolSwap(variation[from].swingPool[i], variation[to].swingPool[i]);
 			boolSwap(variation[from].velocityPool[i], variation[to].velocityPool[i]);
@@ -1618,7 +1140,7 @@ void TopiaryBeatsModel::swapVariation(int from, int to)
 		}		
 	} // end scope of lock
 
-	generateAllVariations();
+	generateAllVariations(-1);
 	
 	broadcaster.sendActionMessage(MsgVariationEnables);
 	Log("Variation " + String(from + 1) + " swapped with " + String(to + 1) + ".", Topiary::LogType::Info);
@@ -1636,7 +1158,7 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 
 		variation[to].patternToUse = variation[from].patternToUse;
-		variation[to].lenInTicks = variation[from].lenInTicks;
+		//variation[to].lenInTicks = variation[from].lenInTicks;
 		variation[to].lenInMeasures = variation[from].lenInMeasures;
 		variation[to].ending = variation[from].ending;
 		variation[to].ended = variation[from].ended;
@@ -1657,29 +1179,18 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 		for (int i = 0; i < 4; i++)
 		{
 			variation[to].enablePool[i] = variation[from].enablePool[i];
-			variation[to].beatFrom[i] = variation[from].beatFrom[i];
-			variation[to].beatTo[i] = variation[from].beatTo[i];
-			variation[to].measureFrom[i] = variation[from].measureFrom[i];
-			variation[to].measureTo[i] = variation[from].measureTo[i];
-			variation[to].tickFrom[i] = variation[from].tickFrom[i];
-			variation[to].tickTo[i] = variation[from].tickTo[i];
-			variation[to].fullTickFrom[i] = variation[from].fullTickFrom[i];
-			variation[to].fullTickTo[i] = variation[from].fullTickTo[i];
-
 			variation[to].poolChannel[i] = variation[from].poolChannel[i];
-			variation[to].poolTickCursor[i] = variation[from].poolTickCursor[i];
-			variation[to].poolIdCursor[i] = variation[from].poolIdCursor[i];
 			variation[to].randomizeNotePool[i] = variation[from].randomizeNotePool[i];
 			variation[to].swingPool[i] = variation[from].swingPool[i];
 			variation[to].velocityPool[i] = variation[from].velocityPool[i];
 			variation[to].timingPool[i] = variation[from].timingPool[i];
 		}
 
-		variation[to].currentPatternChild = nullptr;
+		variation[to].currentPatternChild = 0;
 		// pattern and currentPatternChild are not copied; former is recreated @generateVariation and latter is nullptr;
 	} // end oif lock scope
 
-	generateAllVariations();
+	generateAllVariations(-1);
 	
 	broadcaster.sendActionMessage(MsgVariationEnables);
 	Log("Variation " + String(from + 1) + " copied to " + String(to + 1) + ".", Topiary::LogType::Info);
@@ -1775,107 +1286,78 @@ void TopiaryBeatsModel::processMidiRecording()
 {
 	// process recorded events and add to pattern
 	
-	XmlElement*event = variation[variationSelected].pattern->getFirstChildElement();
-	XmlElement *patternParent = patternData[variation[variationSelected].patternToUse].noteData;
-
-	//String myXmlDoc = patternParent->createDocument(String());
-	//Logger::writeToLog(myXmlDoc);
-	//Logger::outputDebugString("RECORDING in non-empty pattern --> inserted!");
-
-	while (event != nullptr)
+	// loop over the variation and look for IDs == -1
+	
+	int loopLen = variation[variationSelected].pattern.numItems; 
+	int patPos; // where to inser the new events
+	TopiaryPattern* pat = &(patternData[variation[variationSelected].patternToUse]);
+	TopiaryVariation *var = &(variation[variationSelected]);
+	for (int v=0; v < loopLen; v++)
 	{
-		if (event->hasTagName("RECDATA"))
+		if (variation[variationSelected].pattern[v].ID == -1)
 		{
-			if (event->getIntAttribute("midiType") == Topiary::MidiType::NoteOn)
+			if (variation[variationSelected].pattern[v].midiType == Topiary::MidiType::NoteOn)
 			{
-				XmlElement* newChild;
-				newChild = new XmlElement("INSERTED");  // the RECDATA elements will get inserted in the pattern when recording done; use tag insertes do we van find the note off for it
-				newChild->setAttribute("ID", 0); // dummy
-				newChild->setAttribute("Note", event->getIntAttribute("Note"));
-				newChild->setAttribute("Label", MidiMessage::getMidiNoteName(event->getIntAttribute("Note"), true, true, 5));
+				patPos = pat->numItems;
+				pat->add();
 
-				newChild->setAttribute("Velocity", event->getIntAttribute("Velocity"));
-				int timestamp = event->getIntAttribute("Timestamp");
-				newChild->setAttribute("Timestamp", timestamp);
-				newChild->setAttribute("Length", 30);
+				//newChild = new XmlElement("INSERTED");  // the RECDATA elements will get inserted in the pattern when recording done; use tag insertes do we van find the note off for it
+				pat->dataList[patPos].ID = -1; // will be renumbered later
+				pat->dataList[patPos].note = var->dataList[v].note;
+				pat->dataList[patPos].label = MidiMessage::getMidiNoteName(var->dataList[v].note, true, true, 5);
+				pat->dataList[patPos].velocity = var->dataList[v].velocity;
+				pat->dataList[patPos].timestamp = var->dataList[v].timestamp;
+				pat->dataList[patPos].length = 0;
 				int measur = (int)floor(timestamp / (numerator * Topiary::TICKS_PER_QUARTER));
-				newChild->setAttribute("Measure", measur);
-
+				pat->dataList[patPos].measure = measur;
 				timestamp = timestamp - measur * (numerator * Topiary::TICKS_PER_QUARTER);
 				int bea = (int)floor(timestamp / Topiary::TICKS_PER_QUARTER);
-				newChild->setAttribute("Beat", bea);
-
+				pat->dataList[patPos].beat = bea;
 				int tic = timestamp - bea * Topiary::TICKS_PER_QUARTER;
-				newChild->setAttribute("Tick", tic);
-
-				patternParent->prependChildElement(newChild);
-				//String myXmlDoc = patternParent->createDocument(String());
-				//Logger::writeToLog(myXmlDoc);
-				//Logger::outputDebugString("RECORDING in non-empty pattern --> inserted!");
+				pat->dataList[patPos].tick = tic;
 			}
 			else if (event->getIntAttribute("midiType") == Topiary::MidiType::NoteOff)
 			{
 				// find the note and set the length
-				int timestamp = event->getIntAttribute("Timestamp"); // timestamp of end of note
-				int note = event->getIntAttribute("Note");
-				XmlElement *patChild = patternParent->getFirstChildElement();
-				bool cont = true;
+				int timestamp = var->dataList[v].timestamp; // timestamp of end of note
+				int note = var->dataList[v].note; 
+				book cont = true;
+				int pIndex = 0;
+				numPats = pat->numItems;
 
-				while (cont && (patChild != nullptr))
+				while (cont && (pIndex<numPats))
 				{
-					if (patChild->hasTagName("INSERTED") && (patChild->getIntAttribute("Note") == note))
+					if (pat->dataList[pIndex].ID == -1) && (pat->dataList[pIndex].note  == note))
 					{
 						// we found the note to end
-						patChild->setAttribute("Length", timestamp - patChild->getIntAttribute("Timestamp"));
-						patChild->setTagName("Note"); //so we don't cover it again
+						pat->dataList[pIndex].length = timstamp - pat->dataList[pIndex].timestamp;
+						pat->dataList[pIndex].ID == -2; // so we don't cover it again
 						cont = false;
 					}
-					patChild = patChild->getNextElement();
+					pIndex++;
 				}
 			}
 			else jassert(false); // should not happen; should be note on or note off event for now
 		}
-		event = event->getNextElement();
+		
 	}
 	// resort 
-	renumberByTimestamp(patternParent);
+	pat->renumberByTimestamp();
 
 	// rebuild the pool list
 	rebuildPool(false);
 	// inform pattern tab
 	broadcaster.sendActionMessage(MsgPattern);
-
+	
 }  // processMidiRecording
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
 void TopiaryBeatsModel::duplicatePattern(int p)  
 {
-	jassert(p > -1); // has to be a valid row to delete
+	jassert(p > -1); // has to be a valid row 
 
-	if (patternListData->getNumChildElements() == 8)
-	{
-		Log("Number of patterns is limited to 8.", Topiary::LogType::Warning);
-		return;
-	}
-	
-	addPattern(); // ups numPatterns
-	
-	patternData[numPatterns-1].numNotes = patternData[p].numNotes;
-	//patternData[numPatterns-1].notesRealID = patternData[p].notesRealID;
-	patternData[numPatterns-1].patLenInTicks = patternData[p].patLenInTicks;
-
-	auto newPattern = patternListData->getChildByAttribute("ID", String(numPatterns));
-	auto origPattern = patternListData->getChildByAttribute("ID", String(p+1));
-	
-	newPattern->setAttribute("Name", origPattern->getStringAttribute("Name")+"(copy)");
-	newPattern->setAttribute("Measures", origPattern->getIntAttribute("Measures"));
-	
-	// delete the old (empty) noteData from the model
-	model->removeChildElement(patternData[numPatterns-1].noteData, true); // true deletes the data!
-	patternData[numPatterns - 1].noteData = new XmlElement(*(patternData[p].noteData));
-	// and add new one to the model
-	model->addChildElement(patternData[numPatterns-1].noteData);
+	patternList.duplicate(p);
 
 	Log("Duplicate pattern created.", Topiary::LogType::Info);
 
@@ -1886,13 +1368,369 @@ void TopiaryBeatsModel::duplicatePattern(int p)
 void TopiaryBeatsModel::clearPattern(int p)
 {
 	jassert(p > -1); // has to be a valid row to delete
-	jassert(p < numPatterns);
+	jassert(p < getNumPatterns());
 
-	patternData[p].noteData->deleteAllChildElements();
-	generateAllVariations();
+	patternData[p].numItems = 0;
+	generateAllVariations(-1);
 
 	Log("Pattern cleared.", Topiary::LogType::Info);
 
 } // clearPattern
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+TopiaryPattern* TopiaryBeatsModel::getPattern(int p)
+{
+	jassert( (p < getNumPatterns()) || (p==0));
+	jassert(p >= 0);
+	
+	return &(patternData[p]);
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
+{ // main Generator
+
+	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+
+	/*************************************************************************************************************************************************
+	Uses a lot of model variables!  Summary of what is needed for what here
+
+	variation[variationRunning].pattern;
+	variation[variationRunning].currentPatternChild;
+	variation[variationRunning].lenInTicks;
+	variation[variationRunning].lenInMeasures;   DO WE NEED THIS, THINK NOT!
+
+	int64 blockCursor;				// sampletime of start of current block
+	int64 nextRTGenerationCursor;	// real time cursor of next event to generate
+	int blockSize;					// size of block to generate
+	int patternCursor;				// ticks where we are within the variation/pattern - if we do nothing it should still advance with blocksize/samplesPerTick
+
+	**************************************************************************************************************************************************/
+
+	int64 rtCursorFrom;				// sampletime to start generating from
+	int64 rtCursorTo;				// we generate in principle till here
+	int64 rtCursor;					// where we are, between rtCursorFrom and rtCursorTo
+	
+
+	if (blockCursor == 0)			// blockCursor is updated at end of generation!
+	{
+		rtCursor = 0;
+		patternCursor = 0;
+		rtCursorFrom = 0;
+		patternCursorOffset = 0;
+		rtCursorTo = rtCursorFrom + blockSize;
+		nextRTGenerationCursor = 0;
+		measure = 0;
+		beat = 0;
+		tick = 0;
+		previousMeasure = 0;
+	}
+	else
+	{
+		rtCursorFrom = blockCursor;
+		rtCursorTo = rtCursorFrom + blockSize;
+		rtCursor = rtCursorFrom;
+		calcMeasureBeat();
+		patternCursor = (int)(blockCursor / samplesPerTick) - patternCursorOffset; // not floor - that may lead to duplicate notes!!!
+		
+		//Logger::outputDebugString("Enter generateMidi with patternCursor " + String(patternCursor));
+	}
+
+	int parentLength; // in ticks
+	bool ending; // indicates this variation will play only once
+	bool ended; // indicates this variation was ending==true and has now ended
+	MidiMessage msg; 
+	int noteChild = 0; 
+
+#ifdef PRESETZ
+	UNUSED(recBuffer)
+#endif
+#ifdef CHANGE_THIS_TO_IFNDEF_PRESETZ_TEMPORARILY_HERE_TO_AVOID_RECORD
+
+
+	////////////////////////////////////////
+	// Record logic here
+	////////////////////////////////////////
+
+#define RECBUFFERSIZE 100
+	MidiMessage recordBuffer[RECBUFFERSIZE];
+	int recordTiming[RECBUFFERSIZE];
+	int recordBufferSize = 0;
+	int samplePos = 0;
+
+	if (recordingMidi)
+	{
+		TopiaryVariation* varpat = nullptr;
+		for (MidiBuffer::Iterator it(*recBuffer); it.getNextEvent(msg, samplePos);)
+		{	
+			if (msg.isNoteOn() || msg.isNoteOff())
+			{
+				if (varpat == nullptr)
+					varpat = &(variation[variationRunning].pattern);
+				varpat->add();
+				int nIndex = varpat->numItems-1;
+				varpat->dataList[nIndex].ID = -1: // dummy
+				varpat->dataList[nIndex].note = it->getNoteNumber();
+				varpat->dataList[nIndex].velocity = it->getNoteVelocity();
+				varpat->dataList[nIndex].channel = recordChannel;
+				varpat->dataList[nIndex].length = -1; // so we know not to generate a noteOff event (because the noteOff will follow)
+
+				if (it->isNoteOn())
+					varpat->dataList[nIndex].miditype = Topiary::MidiType::NoteOn;
+				else
+					varpat->dataList[nIndex].miditype = Topiary::MidiType::NoteOff;
+
+				int64 cursorInTicks = (int64)floor(blockCursor / samplesPerTick) + recordTiming[r];
+				cursorInTicks = cursorInTicks % variation[variationSelected].pattern.patLenInTicks;
+
+				//int measure = (int)floor(cursorInTicks / (ticksPerBeat* denominator)) + 1;
+				//int beat = (int)floor(cursorInTicks / ticksPerBeat);
+				//int beat = (beat % denominator) + 1;
+				varpat->dataList[nIndex].timestamp = (int) cursorInTicks;
+				//Logger::outputDebugString("RECORDING");
+			} // noteOn or noteOff
+		} // iterator over recordBuffer
+		
+		// reset patternchild to nullptr so the rest of the logic can restart (because we may have messed with patternchild
+		variation[variationRunning].currentPatternChild = 0;
+		patternCursor = rememberPatternCursor;
+
+		// sort by timstamp
+		if (varpat != nullptr) // we did record something
+			varpat->sortByTimestamp(false); // keep the -1 IDs se we know later which events got inserted
+
+	}
+
+	////////////////////////////////////////
+	// End of record logic
+	////////////////////////////////////////
+
+#endif
+
+	//Logger::outputDebugString("Generate midi; patcur" + String(patternCursor));
+	//Logger::outputDebugString("next RTcursor " + String(nextRTGenerationCursor));
+
+	jassert(beat >= 0);
+	jassert(measure >= 0);
+
+	//getVariationDetailForGenerateMidi(&parent, &noteChild, parentLength, ending, ended);
+	TopiaryVariation* parentPattern = &(variation[variationRunning].pattern);
+	parentLength = parentPattern->patLenInTicks;
+	ending = variation[variationRunning].ending;
+	ended = variation[variationRunning].ended;
+	noteChild = variation[variationRunning].currentPatternChild;
+
+	int nextPatternCursor;  // patternCursor is global and remembers the last one we generated
+
+	int ticksTaken;
+	int noteNumber;
+	int length;
+	int channel;
+	int CC = 0;
+	int value = 0;
+
+	patternCursor = (int)patternCursor % parentLength;
+	
+	//Logger::outputDebugString("Next note on to generate afer current tick " + String(patternCursor));
+
+	bool walk;
+
+	if (!ending || (ending && !ended))
+	{
+		walk = walkToTick(parentPattern, noteChild, patternCursor);
+	}
+	else
+		walk = false; // meaning an ending variation and ended
+
+	//Logger::outputDebugString(String("Walk: ") + String((int)walk));
+
+	if (walk)
+	{
+		// set patternCursors where we are now, so the offsets in sample time are correct
+		patternCursor = (int)patternCursor % parentLength;  //////// because rtCursors are multi loops !!!!
+		
+		//Logger::outputDebugString("PatternCursor = " + String(patternCursor));
+		//Logger::outputDebugString("DEBUGPatternCursor = " + String(DEBUGpatCursor));
+		//Logger::outputDebugString("PatternCursorOffset = " + String(patternCursorOffset));
+		//Logger::outputDebugString("Blockcursor ; " + String(blockCursor));
+		
+
+		while (rtCursor < rtCursorTo)
+		{
+			nextPatternCursor = parentPattern->dataList[noteChild].timestamp;
+
+			ticksTaken = nextPatternCursor - patternCursor;  // ticks taken in this timeframe
+			if (ticksTaken < 0)
+			{
+				//Logger::outputDebugString("PatternCursor looped over end");
+
+				if (ending)
+				{
+					// this is an ending variation and it has now ended
+					ended = true;
+					setEnded();
+					//Log("Ended ---------------------------------------", Topiary::LogType::Variations);
+					rtCursor = rtCursorTo; // prevent next if to pass so nothing further is generated
+				}
+
+				ticksTaken += parentLength;
+				jassert(ticksTaken >= 0);
+			}
+
+			if ((rtCursor + (int64)(ticksTaken*samplesPerTick)) < rtCursorTo)
+			{
+				//Logger::outputDebugString("GENERATING A NOTE " + String(noteChild->getIntAttribute("midiType")) + "------------>" + String(noteChild->getIntAttribute("Note"))+" at timest "+ String(noteChild->getIntAttribute("Timestamp")));
+				//Logger::outputDebugString(String("Next Patcursor ") + String(nextPatternCursor));
+
+				////// GENERATE MIDI EVENT
+				int midiType = parentPattern->dataList[noteChild].midiType;
+				
+				int pMeasure = (int) floor(parentPattern->dataList[noteChild].timestamp / (numerator * Topiary::TICKS_PER_QUARTER));
+				if (pMeasure != previousMeasure)
+				{
+					// regenerate a measure
+#ifdef BEATZ
+					if (!recordingMidi) // because we do not want to loose the recorded notes!
+					{
+						generateVariation(variationRunning, pMeasure+1);
+				
+						// DO WE NEED TO WALK HERE - I THINK WE CAN AVOID IT !!!! GETVARIATIONDETAIL NOT NEEDED EITHER???
+						noteChild = 0;
+						walkToTick(parentPattern, noteChild, patternCursor);
+					}
+#endif
+					previousMeasure = pMeasure;
+				}
+				if ((midiType == Topiary::MidiType::NoteOn) || (midiType == Topiary::MidiType::NoteOff))
+				{ // Generate note on/off; ignore other midi events for now
+					length = parentPattern->dataList[noteChild].length;
+					noteNumber = parentPattern->dataList[noteChild].note;
+					channel = parentPattern->dataList[noteChild].channel;
+					if (midiType == Topiary::MidiType::NoteOn)
+						msg = MidiMessage::noteOn(channel, noteNumber, (float)parentPattern->dataList[noteChild].velocity / 128);
+					else
+						msg = MidiMessage::noteOff(channel, noteNumber, (float)parentPattern->dataList[noteChild].velocity / 128);
+
+					// DEBUG LOGIC !!!!!!!!!
+					// outputting the pattern tick values + the tick value in the generated pattern
+					// int64 cursorInTicks = (int64)floor( (rtCursor + (int64)(ticksTaken*samplesPerTick) ) / samplesPerTick    );
+					// now do that modulo the patternlenght in ticks
+					// cursorInTicks = cursorInTicks % parentLength;
+					// Logger::outputDebugString("Generated note at realtime pat tick " + String(cursorInTicks) + " / tick in pattern " + String(noteChildOn->getStringAttribute("Timestamp")));
+					/////////////////////////
+
+					// schedule noteOff event if this is noteOn and len != -1; otherwise it's a recording event and the noteOff will follow
+					if ((midiType == Topiary::MidiType::NoteOn) && (parentPattern->dataList[noteChild].length != -1))
+						noteOffBuffer.push(noteNumber, rtCursor + (int64)((ticksTaken + parentPattern->dataList[noteChild].length) * samplesPerTick));
+
+				}
+				else
+				{
+					if (midiType == Topiary::MidiType::CC)
+					{
+						channel = parentPattern->dataList[noteChild].channel;
+						CC = parentPattern->dataList[noteChild].CC;
+						value = parentPattern->dataList[noteChild].value;
+						msg = MidiMessage::controllerEvent(channel, CC, value);
+						processCC(msg); // make sure model is updated with new cc values
+					}
+				}
+
+				patternCursor = nextPatternCursor;  // that is the tick of the event we just generated
+				if (patternCursor >= parentLength) patternCursor = patternCursor - parentLength;
+
+				auto rememberChild = noteChild;
+				nextTick(parentPattern, noteChild);
+
+				//Logger::outputDebugString(String("NOTE ON --------"));
+				rtCursor = rtCursor + (int64)(ticksTaken * samplesPerTick);
+
+				jassert((rtCursor - rtCursorFrom) >= 0);
+				jassert((rtCursor - rtCursorFrom) < blockSize);
+
+				midiBuffer->addEvent(msg, (int)(rtCursor - rtCursorFrom));
+				if (logMidiOut)
+					logMidi(false, msg);
+
+				if (noteChild == rememberChild)
+				{
+					// can only happen in recording in empty pattern; note OFF but no note ON yet
+					// force end
+					rtCursor = rtCursor + blockSize;
+				}
+				//Logger::outputDebugString(String("nxtcursor ") + String(nextRTGenerationCursor));
+
+			}  // generated a note (on or off)
+			else
+			{
+				// done for now; next event is over rtCursorTo
+				// let's place ourselves ready for the next round
+				// so either walkOn and we have the next On note ready
+				// or walkOff and next Off note ready as well
+				// main goal is to set nextPatternCursor!
+
+				//Logger::outputDebugString(String(" ++++++++++++++ done +++++++++++++++++++++"));
+
+				nextPatternCursor = parentPattern->dataList[noteChild].timestamp;
+				ticksTaken = nextPatternCursor - patternCursor;
+				if (ticksTaken < 0)
+				{
+					ticksTaken += parentLength;
+					//Logger::outputDebugString(String("Running over end of pattern!!!"));
+				}
+
+				patternCursor = nextPatternCursor;
+				if (patternCursor >= parentLength) patternCursor = patternCursor - parentLength;
+
+				// we set rtCursor at the time of the next event; will possibly break out of the loop if not within this block
+
+				rtCursor = rtCursorTo; // force break out of the loop
+				nextRTGenerationCursor = rtCursorFrom + (int64)(ticksTaken * samplesPerTick);
+				//int nextTick = (int) (nextRTGenerationCursor / samplesPerTick) % parentLength;
+				//Logger::outputDebugString("Next tick to generate (off nextRTcursor): " + String(nextTick));
+			}  // end loop over from --> to
+		}
+	}
+	else
+	{
+		// walk did not find a note to generate
+		// so pattern is empty or no fitting note events found
+		if ((noteChild == 0))
+		{
+			// make sure our cursors keep running
+			// 		  nextRTGenerationCursor = rtCursorTo + 1;
+			nextRTGenerationCursor = rtCursorTo;
+			patternCursor = +(int)(blockSize / samplesPerTick);
+
+		}
+	} // pattern is empty
+	
+	// output any noteOff events scheduled in this block - this can be called even when ended!!!
+
+	int64 debugNote=-1;
+	int64 debugTimestamp = -1;
+	while (noteOffBuffer.firstTimeStamp() < (blockCursor+ blockSize))
+	{
+		int64 timestamp;
+		int note;
+		noteOffBuffer.pop(note, timestamp);
+		msg = MidiMessage::noteOff(recordChannel, note, (float)0.0);
+		midiBuffer->addEvent(msg, (int)(timestamp - blockCursor));
+		jassert((timestamp - blockCursor) >=0);
+		jassert((timestamp - blockCursor) < blockSize);
+		jassert( (note!= debugNote) || (timestamp!=debugTimestamp));
+		debugNote = note;
+		debugTimestamp = timestamp;
+		if (logMidiOut)
+			logMidi(false, msg);
+	}
+
+	blockCursor = blockCursor + blockSize;
+	calcMeasureBeat();
+	
+} // generateMidi
+
 
 #include "../../Topiary/Source/TopiaryMidiLearnEditor.cpp"

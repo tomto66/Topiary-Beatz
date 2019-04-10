@@ -17,7 +17,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
 #include "../../Topiary/Source/TopiaryModel.h"
 #define TOPIARYMODEL TopiaryBeatsModel
@@ -25,7 +24,12 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #define TOPIARYTRANSPORTCOMPONENT TopiaryBeatsTransportComponent
 #define TOPIARYUTILITYCOMPONENT TopiaryBeatsUtilityComponent
 #define BEATZ
-#include "../../Topiary/Source/TopiaryTable.h"
+
+#include "TopiaryPatternList.h"
+#include "TopiaryPoolList.h"
+#include "TopiaryPattern.h"
+#include "../../Topiary/Source/TopiaryVariation.h"
+#include "TopiaryNoteOffBuffer.h"
 
 enum TopiaryLearnMidiId
 {
@@ -43,18 +47,14 @@ public:
 
 	String name = "New Beatz Pattern"; // name of this preset
 
-	void getMasterModel(XmlElement** h, XmlElement** d, XmlElement** ph, XmlElement** pd);
-	void getPatternModel(int patternIndex, XmlElement** h, XmlElement** d);
 	void getPatterns(String pats[8]);
+	
 	int getPatternLengthInMeasures(int i);  // needed in variationComponent for validating pool length values;
 	void setPatternLengthInMeasures(int i, int l);
 	void deletePattern(int i);
 	void addPattern();
 	void duplicatePattern(int p);
 	void clearPattern(int p);
-
-	void setPatternTableHeaders(int p); // set measure & beat limits in patterntable headers
-
 	void cleanPattern(int p) override;
 	void setPatternLength(int p, int l, bool keepTail);
 	void deleteNote(int p, int n);				// deletes the note with ID n from pattern p
@@ -80,7 +80,7 @@ public:
 	void restoreStateFromMemoryBlock(const void* data, int sizeInBytes) override;
 	bool processVariationSwitch() override;
 	bool switchingVariations() override;
-	void getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended) override;
+	//void getVariationDetailForGenerateMidi(int& parent, int& noteChild, int& parentLength, bool& ending, bool& ended) override;
 	void initializeVariationsForRunning() override;
 	void setEnded() override;
 	void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer) override;
@@ -93,9 +93,9 @@ public:
 	bool getVariationEnabled(int v);
 	int getVariationLenInTicks(int v);
 
-	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4]);   // pass variation Definition on to VariationComponent in editor
-	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolLength[4][3][2], int poolChannel[4]);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
-	bool validateVariationDefinition(int i, bool enable, String vname, int patternId, int poolLength[4][3][2]);
+	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4]);   // pass variation Definition on to VariationComponent in editor
+	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolChannel[4]);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
+	bool validateVariationDefinition(int i, bool enable, String vname, int patternId);
 	void setRandomizeNotes(int v, bool enable, bool enablePool[4], int value);
 	void getRandomizeNotes(int v, bool &enable, bool enablePool[4], int &value);
 	void setSwing(int v, bool enable, bool enablePool[4], int value);
@@ -105,9 +105,8 @@ public:
 	void setRandomizeTiming(int v, bool enable, bool enablePool[4], int value, bool plus, bool min);
 	void getRandomizeTiming(int v, bool &enable, bool enablePool[4], int &value, bool &plus, bool &min);
 
-	void generateVariation(int i); // Generates the variation; at the end , swaps it in (using spinlock)
-	void generateAllVariations();
-	void threadRunner() override;
+	void generateVariation(int i, int measureToGenerate); // Generates the variation;
+	void generateAllVariations(int measureToGenerate);
 
 	void setOverrideHostTransport(bool o) override;
 	void setNumeratorDenominator(int nu, int de) override;
@@ -115,28 +114,17 @@ public:
 	struct Variation {
 
 		int patternToUse;					// index in patterndata
-		int lenInTicks;
 		int lenInMeasures;
-		XmlElement* pattern;				// pattern  events
-		XmlElement* currentPatternChild;    // where we are in generation 
+		TopiaryVariation pattern;				// pattern  events in the variation
+		int currentPatternChild;			// where we are in generation 
 		
-		bool ending;					// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended)
+		bool ending;						// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended)
 		bool ended;
 
 		bool enabled = false;
 		String name = "";
 		bool enablePool[4];
-		
-		/// pool length definitions
-		int beatFrom[4]; int beatTo[4];
-		int measureFrom[4]; int measureTo[4];
-		int tickFrom[4];
-		int tickTo[4];
-		int fullTickTo[4];		// pool measure, beat, tick translated tot total!
-		int fullTickFrom[4];	// pool measure, beat, tick translated tot total!
 		int poolChannel[4];		// output channel for this pool in this variation
-		int poolTickCursor[4];	// offset in ticks of next note to generate in the pool (offset in the to-generate pattern, not offset in the pool :)
-		int poolIdCursor[4];	// Id of next note to generate in the pool (ID of note in the parent pattern; both cursors to initialize every time run starts
 
 		// note occurrence randomization
 		bool randomizeNotes;
@@ -170,66 +158,32 @@ public:
 	void record(bool b) override; // tells model to record or not; at end of recording it processes the new notes
 	void processMidiRecording() override; // add recorded events to the pattern
 
+	TopiaryPatternList* getPatternList();
+	TopiaryPoolList* getPoolList();
+	TopiaryPattern* getPattern(int p);
+	int getNumPatterns();
 
 #define NUMBEROFQUANTIZERS 10
 
+	
+
 private:
-
-	XmlElement *patternListHeader = new XmlElement("PatternListHeader");
-	XmlElement *patternListData = new XmlElement("PatternListData");
-
-	XmlElement *poolListHeader = new XmlElement("PoolListHeader");
-	XmlElement *poolListData = new XmlElement("PoolListData");
-
-	XmlElement *patternHeader = new XmlElement("PatternHeader");
-
-	std::unique_ptr<XmlElement> headerParent;
-	
-
-	struct Pattern
-	{
-		XmlElement *noteData;
-		
-		int numNotes = 0;
-		//int notesRealID = 1;
-		int patLenInTicks = 0;
-	} patternData[8];
-
-	//int patternsRealID = 1;
-	int numPoolNotes = 0;
-	//int poolNotesRealID = 1;
-	
-	int debugLastNoteOn = 0; // delete - for debugging duplicate notes
-
+	TopiaryPatternList patternList;
+	TopiaryPoolList poolList;
+	TopiaryPattern patternData[8];
 	Variation variation[8];  // struct to hold variation detail
-	
-	///////////////////////////////////////////////////////////////////////
-
-	void renumberPool(XmlElement *list)
-	{  // resort by timestamp and set the Ids in that order
-		DataSorter sorter("Note", true);
-		list->sortChildElements(sorter);
-		XmlElement* child = list->getFirstChildElement();
-		int id = 1;
-		while (child != nullptr)
-		{
-			child->setAttribute("ID", id);
-			id++;
-			child = child->getNextElement();
-		}
-	} //renumberPool
+	NoteOffBuffer noteOffBuffer;
 
 	///////////////////////////////////////////////////////////////////////
 
-	bool loadMidiDrumPattern(const File& fileToRead, XmlElement *noteList, int patternIndex, int& measures, int& lenInTicks)
+	bool loadMidiDrumPattern(const File& fileToRead, int patternIndex, int& measures, int& lenInTicks)
 	{
-		// fileToRead and noteList must have been initialized!!
-		// noteList will receive children that have tag NOTEDATA
+		// fileToRead must have been initialized!!
 		// if the input file contains more than 1 real track, the result will
 		// be undefined and possibly mix note data from different channels
-		// note data need not be on Channel10 (any channel will do as long as it's one track and one channel
+		// note data need not be on Channel 10 (any channel will do as long as it's one track and one channel
 
-		//jassert(noteList->getTagName().compare("PATTERNDATA"));
+		int index; // index of the new even in the TopiaryPattern
 
 		if (!fileToRead.existsAsFile())
 		{
@@ -263,24 +217,23 @@ private:
 		int numTracks = midifile.getNumTracks();
 		/// check header value like timing info
 		short timeFormat = midifile.getTimeFormat();
-		XmlElement *newNote;
-
+		
 		int noteCounter = 0; // index (ID) of the Notes
 
 		if (timeFormat > 0)
 		{
 			Logger::writeToLog("Ticks per quarter note :" + String(timeFormat));
-			ticksPerQuarter = timeFormat; // what is the tick then??? - need to know BPM for that!
+			ticksPerQuarter = timeFormat; // what is the tick then -> need to know BPM for that!
 		}
 		else
 		{
 
 			ticksPerFrame = timeFormat & 0xFF;
 			framesPerSecond = -(timeFormat >> 8);
-			Logger::writeToLog("SMTP format; frames per second:" + String(framesPerSecond) + " ; ticks/frame: " + String(ticksPerFrame));
+			//Logger::writeToLog("SMTP format; frames per second:" + String(framesPerSecond) + " ; ticks/frame: " + String(ticksPerFrame));
 		}
 
-		Logger::writeToLog(String("Tracks:" + String(numTracks)));
+		//Logger::writeToLog(String("Tracks:" + String(numTracks)));
 		// careful: if the file contains more than 1 midi track the result will be undefined!!!
 		for (int t = 0; t < numTracks; t++) {
 			auto sequence = midifile.getTrack(t);
@@ -290,15 +243,18 @@ private:
 				auto message = event->message;
 				if (message.isNoteOn())
 				{
-					Logger::writeToLog(message.getDescription());
-					Logger::writeToLog(String(message.getTimeStamp()));
+					//Logger::writeToLog(message.getDescription());
+					//Logger::writeToLog(String(message.getTimeStamp()));
+
 					// create a note
-					newNote = new XmlElement("DATA");
-					newNote->setAttribute("ID", noteCounter + 1);
-					newNote->setAttribute("REALID", noteCounter + 1); // because noteCounter starts at 0 (it will be renumbered at the end) but REALID has to start at 1
-					newNote->setAttribute("Note", message.getNoteNumber());
-					newNote->setAttribute("Velocity", message.getVelocity());
-					newNote->setAttribute("Label", MidiMessage::getMidiNoteName(message.getNoteNumber(), true, true, 5));
+					
+					patternData[patternIndex].add();
+
+					index = patternData[patternIndex].numItems-1;
+					patternData[patternIndex].dataList[index].ID = noteCounter + 1;
+					patternData[patternIndex].dataList[index].note = message.getNoteNumber();
+					patternData[patternIndex].dataList[index].velocity = message.getVelocity();
+					patternData[patternIndex].dataList[index].label = MidiMessage::getMidiNoteName(message.getNoteNumber(), true, true, 5);
 					// calculate start markers
 					// duration will follow @noteoff event
 
@@ -306,36 +262,38 @@ private:
 					// recalculate timeStamp to our reference range
 					timeStamp = timeStamp * Topiary::TICKS_PER_QUARTER / ticksPerQuarter;
 					lenInTicks = (int)timeStamp; // passed on to caller
-					newNote->setAttribute("Timestamp", (int)floor(timeStamp));
+					patternData[patternIndex].dataList[index].timestamp = 	(int)floor(timeStamp);
 					timeStampMeasure = (int)floor(timeStamp / (num*Topiary::TICKS_PER_QUARTER));
 					timeStamp = timeStamp - (timeStampMeasure * num*Topiary::TICKS_PER_QUARTER);
 					int timeStampBeat = (int)floor(timeStamp / Topiary::TICKS_PER_QUARTER);
 					timeStamp = timeStamp - (timeStampBeat * Topiary::TICKS_PER_QUARTER);
 					int timeStampTicks = (int)timeStamp;
-					newNote->setAttribute("Measure", timeStampMeasure);
-					newNote->setAttribute("Beat", timeStampBeat);
-					newNote->setAttribute("Tick", timeStampTicks);
+					patternData[patternIndex].dataList[index].measure = timeStampMeasure;	
+					patternData[patternIndex].dataList[index].beat = timeStampBeat;
+					patternData[patternIndex].dataList[index].tick =  timeStampTicks;
 					noteCounter++;
-					noteList->prependChildElement(newNote); // we do this backwards to it's easier to find the note on event!!!
+					
 				}
 				if (message.isNoteOff())
 				{
 					// find the note that is off and set the length
 					int oldNote = message.getNoteNumber();
+					
 					// now find the last occurrence of this note in the children of noteList
-					XmlElement *child = noteList->getFirstChildElement();
-					while ((child->getStringAttribute("Note")).equalsIgnoreCase(String(oldNote)) == false)
+					index = patternData[patternIndex].numItems - 1;
+					while ((index >=0) && patternData[patternIndex].dataList[index].note != oldNote)
 					{
-						String note = (child->getStringAttribute("Note"));
-						child = child->getNextElement();
+						index--;
 					}
+
 					double timeStamp = message.getTimeStamp();
+					
 					// recalculate timeStamp to our reference range
 					timeStamp = timeStamp * Topiary::TICKS_PER_QUARTER / ticksPerQuarter;
 					lenInTicks = (int)timeStamp; // passed on to caller
-					child->setAttribute("Length", (int)floor(timeStamp - child->getStringAttribute("Timestamp").getIntValue()));
+					if (index>=0)
+						patternData[patternIndex].dataList[index].length = (int)floor(timeStamp) - patternData[patternIndex].dataList[index].timestamp;
 
-					// so child is our note ON event; fill the note OFF event
 				}
 				if (message.isMetaEvent())
 				{
@@ -354,25 +312,12 @@ private:
 				}
 			}
 
-			patternData[patternIndex].numNotes = noteList->getNumChildElements();
-			//patternData[patternIndex].notesRealID = patternData[patternIndex].numNotes;
-
 			measures = timeStampMeasure; // because that gets passed on to  caller !! and we do +1 at the end!
 			measures++;
 			int finalLength = measures * num * Topiary::TICKS_PER_QUARTER;
 			lenInTicks = finalLength;
-			renumberByTimestamp(noteList);
-			
-			// summary:
-			//Logger::writeToLog(String("************ BPM: ") + String(bpm) + String(" signature ") + String(num) + String("/") + String(den));
-			//Logger::writeToLog(String("************ From header timeframe:  tickperQ ") + String(timeFormat) + String("ticksperFrame ") +
-			//	String(ticksPerFrame) + String("framesPerSecond ") + String(framesPerSecond));
-			//String myXmlDoc2 = noteList->createDocument(String());
-			//Logger::writeToLog(myXmlDoc2);
-
-			//String myXmlDoc = noteOffList->createDocument(String());
-			//Logger::writeToLog(myXmlDoc);
-
+			patternData[patternIndex].sortByTimestamp(); // this one renumbers!
+				
 
 		}
 		Log("File " + fileToRead.getFileName() + " imported.", Topiary::LogType::Info);
@@ -458,6 +403,23 @@ private:
 
 	void addParametersToModel()
 	{
+		model.reset(new XmlElement("Beatz"));
+		auto patternListData = new XmlElement("PatternList");
+		model->addChildElement(patternListData);
+		// this one will have a series of <PatternData>
+		patternList.addToModel(patternListData);
+
+		auto poolListData = new XmlElement("PoolList");
+		// this one will have a series of <PoolData>
+		model->addChildElement(poolListData);
+		poolList.addToModel(poolListData);
+		
+		auto patternDataa = new XmlElement("PatternData");
+		// this one will have a series of <Pattern>
+		model->addChildElement(patternDataa);
+		for (int p = 0; p < patternList.numItems; p++)
+			patternData[p].addToModel(patternDataa);
+		
 		auto parameters = new XmlElement("Parameters");
 		model->addChildElement(parameters);
 
@@ -482,22 +444,15 @@ private:
 		addBoolToModel(parameters, logInfo, "logInfo");
 		addStringToModel(parameters, filePath, "filePath");
 
-		//addIntToModel(parameters, numPatterns, "numPatterns"); NOT SAVED BUT COUNTED
-		//addIntToModel(parameters, patternsRealID, "patternsRealID");
-		addIntToModel(parameters, numPoolNotes, "numPoolNotes");
-		//addIntToModel(parameters, poolNotesRealID, "poolNotesRealId");
-
+		addIntToModel(parameters, poolList.getNumItems(), "numPoolNotes");
+		
 		addIntToModel(parameters, variationSwitchChannel, "variationSwitchChannel");
 		addBoolToModel(parameters, ccVariationSwitching, "ccVariationSwitching");
 
 		for (int i = 0; i < 8; i++) {
-			// pattern variables
-			addIntToModel(parameters, patternData[i].numNotes, "numNotes", i);
-			//addIntToModel(parameters, patternData[i].notesRealID, "notesRealID", i);
-			addIntToModel(parameters, patternData[i].patLenInTicks, "patLenInTicks", i);
-
+			
 			// Variations
-			addIntToModel(parameters, variation[i].lenInTicks, "lenInTicks", i);
+			
 			addIntToModel(parameters, variation[i].lenInMeasures, "lenInMeasures", i);
 			addIntToModel(parameters, variation[i].patternToUse, "patternToUse", i);
 			addStringToModel(parameters, variation[i].name, "variationName", i);
@@ -507,36 +462,6 @@ private:
 			addBoolToModel(parameters, variation[i].enablePool[1], "enablePool1", i);
 			addBoolToModel(parameters, variation[i].enablePool[2], "enablePool2", i);
 			addBoolToModel(parameters, variation[i].enablePool[3], "enablePool3", i);
-
-			addIntToModel(parameters, variation[i].measureFrom[0], "measureFrom0", i);
-			addIntToModel(parameters, variation[i].measureFrom[1], "measureFrom1", i);
-			addIntToModel(parameters, variation[i].measureFrom[2], "measureFrom2", i);
-			addIntToModel(parameters, variation[i].measureFrom[3], "measureFrom3", i);
-
-			addIntToModel(parameters, variation[i].measureTo[0], "measureTo0", i);
-			addIntToModel(parameters, variation[i].measureTo[1], "measureTo1", i);
-			addIntToModel(parameters, variation[i].measureTo[2], "measureTo2", i);
-			addIntToModel(parameters, variation[i].measureTo[3], "measureTo3", i);
-
-			addIntToModel(parameters, variation[i].beatFrom[0], "beatFrom0", i);
-			addIntToModel(parameters, variation[i].beatFrom[1], "beatFrom1", i);
-			addIntToModel(parameters, variation[i].beatFrom[2], "beatFrom2", i);
-			addIntToModel(parameters, variation[i].beatFrom[3], "beatFrom3", i);
-
-			addIntToModel(parameters, variation[i].beatTo[0], "beatTo0", i);
-			addIntToModel(parameters, variation[i].beatTo[1], "beatTo1", i);
-			addIntToModel(parameters, variation[i].beatTo[2], "beatTo2", i);
-			addIntToModel(parameters, variation[i].beatTo[3], "beatTo3", i);
-
-			addIntToModel(parameters, variation[i].tickFrom[0], "tickFrom0", i);
-			addIntToModel(parameters, variation[i].tickFrom[1], "tickFrom1", i);
-			addIntToModel(parameters, variation[i].tickFrom[2], "tickFrom2", i);
-			addIntToModel(parameters, variation[i].tickFrom[3], "tickFrom3", i);
-
-			addIntToModel(parameters, variation[i].tickTo[0], "tickTo0", i);
-			addIntToModel(parameters, variation[i].tickTo[1], "tickTo1", i);
-			addIntToModel(parameters, variation[i].tickTo[2], "tickTo2", i);
-			addIntToModel(parameters, variation[i].tickTo[3], "tickTo3", i);
 
 			addIntToModel(parameters, variation[i].poolChannel[0], "poolChannel0", i);
 			addIntToModel(parameters, variation[i].poolChannel[1], "poolChannel1", i);
@@ -584,28 +509,35 @@ private:
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
 	void restoreParametersToModel()
-	{ 
-		// model now has a child "Parameters"; set all non-XML parameters to their new values
+	{
+		
 		overrideHostTransport = true; // otherwise we might get very weird effects if the host were running
 		setRunState(Topiary::Stopped);
 
 		auto child = model->getFirstChildElement();
-		patternListData = child;
+		jassert(child->getTagName().equalsIgnoreCase("PatternList"));
+		patternList.getFromModel(child);
+	
 		child = child->getNextElement();
-		poolListData = child;
+		jassert(child->getTagName().equalsIgnoreCase("PoolList"));
+		poolList.getFromModel(child);
+
 		child = child->getNextElement();
-				
-		// first load all patternData
+		jassert(child->getTagName().equalsIgnoreCase("PatternData"));
+
+		// load all patternData
+		XmlElement *pchild = child->getFirstChildElement();
 		int p = 0;
-		while (child->getTagName().compare("Pattern") == 0)
+		while (pchild != nullptr)
 		{
-			patternData[p].noteData = child;
-			child = child->getNextElement();
+			patternData[p].getFromModel(pchild);
+			pchild = pchild->getNextElement();
 			p++;
 		}
 
+		child = child->getNextElement();
 		bool rememberOverride = true; // we do not want to set that right away!
-
+		jassert(child->getTagName().equalsIgnoreCase("Parameters"));
 		{
 			while (child != nullptr)
 			{
@@ -645,15 +577,7 @@ private:
 
 						if (parameterName.compare("filePath") == 0)	filePath = parameter->getStringAttribute("Value");
 
-						//if (parameterName.compare("numPatterns") == 0) numPatterns = parameter->getIntAttribute("Value");
-						//if (parameterName.compare("patternsRealID") == 0) patternsRealID = parameter->getIntAttribute("Value");
-						if (parameterName.compare("numPoolNotes") == 0) numPoolNotes = parameter->getIntAttribute("Value");
-						//if (parameterName.compare("poolNotesRealID") == 0) poolNotesRealID = parameter->getIntAttribute("Value");
-
-						if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
-						//if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
-
-						if (parameterName.compare("lenInTicks") == 0) variation[parameter->getIntAttribute("Index")].lenInTicks = parameter->getIntAttribute("Value");
+						//if (parameterName.compare("lenInTicks") == 0) variation[parameter->getIntAttribute("Index")].lenInTicks = parameter->getIntAttribute("Value");
 						if (parameterName.compare("lenInMeasures") == 0) variation[parameter->getIntAttribute("Index")].lenInMeasures = parameter->getIntAttribute("Value");
 						if (parameterName.compare("patternToUse") == 0) variation[parameter->getIntAttribute("Index")].patternToUse = parameter->getIntAttribute("Value");
 						if (parameterName.compare("variationEnabled") == 0) variation[parameter->getIntAttribute("Index")].enabled = parameter->getBoolAttribute("Value");
@@ -663,43 +587,13 @@ private:
 						if (parameterName.compare("enablePool2") == 0) variation[parameter->getIntAttribute("Index")].enablePool[2] = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("enablePool3") == 0) variation[parameter->getIntAttribute("Index")].enablePool[3] = parameter->getBoolAttribute("Value");
 
-						if (parameterName.compare("poolChannel0") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("poolChannel0") == 0) 
+							variation[parameter->getIntAttribute("Index")].poolChannel[0] = parameter->getIntAttribute("Value");
 						if (parameterName.compare("poolChannel1") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[1] = parameter->getIntAttribute("Value");
 						if (parameterName.compare("poolChannel2") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[2] = parameter->getIntAttribute("Value");
 						if (parameterName.compare("poolChannel3") == 0) variation[parameter->getIntAttribute("Index")].poolChannel[3] = parameter->getIntAttribute("Value");
 
 						if (parameterName.compare("variationName") == 0) variation[parameter->getIntAttribute("Index")].name = parameter->getStringAttribute("Value");
-
-						if (parameterName.compare("measureFrom0") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[0] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("measureFrom1") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[1] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("measureFrom2") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[2] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("measureFrom3") == 0) variation[parameter->getIntAttribute("Index")].measureFrom[3] = parameter->getIntAttribute("Value");
-
-						if (parameterName.compare("measureTo0") == 0) variation[parameter->getIntAttribute("Index")].measureTo[0] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("measureTo1") == 0) variation[parameter->getIntAttribute("Index")].measureTo[1] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("measureTo2") == 0) variation[parameter->getIntAttribute("Index")].measureTo[2] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("measureTo3") == 0) variation[parameter->getIntAttribute("Index")].measureTo[3] = parameter->getIntAttribute("Value");
-
-						if (parameterName.compare("beatFrom0") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[0] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("beatFrom1") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[1] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("beatFrom2") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[2] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("beatFrom3") == 0) variation[parameter->getIntAttribute("Index")].beatFrom[3] = parameter->getIntAttribute("Value");
-
-						if (parameterName.compare("beatTo0") == 0) variation[parameter->getIntAttribute("Index")].beatTo[0] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("beatTo1") == 0) variation[parameter->getIntAttribute("Index")].beatTo[1] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("beatTo2") == 0) variation[parameter->getIntAttribute("Index")].beatTo[2] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("beatTo3") == 0) variation[parameter->getIntAttribute("Index")].beatTo[3] = parameter->getIntAttribute("Value");
-
-						if (parameterName.compare("tickFrom0") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[0] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("tickFrom1") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[1] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("tickFrom2") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[2] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("tickFrom3") == 0) variation[parameter->getIntAttribute("Index")].tickFrom[3] = parameter->getIntAttribute("Value");
-
-						if (parameterName.compare("tickTo0") == 0) variation[parameter->getIntAttribute("Index")].tickTo[0] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("tickTo1") == 0) variation[parameter->getIntAttribute("Index")].tickTo[1] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("tickTo2") == 0) variation[parameter->getIntAttribute("Index")].tickTo[2] = parameter->getIntAttribute("Value");
-						if (parameterName.compare("tickTo3") == 0) variation[parameter->getIntAttribute("Index")].tickTo[3] = parameter->getIntAttribute("Value");
-
 						if (parameterName.compare("randomizeNotes") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotes = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("randomizeNotesValue") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotesValue = parameter->getIntAttribute("Value");
 						if (parameterName.compare("randomizeNotePool0") == 0) variation[parameter->getIntAttribute("Index")].randomizeNotePool[0] = parameter->getBoolAttribute("Value");
@@ -732,11 +626,6 @@ private:
 						if (parameterName.compare("timingPlus") == 0) variation[parameter->getIntAttribute("Index")].timingPlus = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("timingMin") == 0) variation[parameter->getIntAttribute("Index")].timingMin = parameter->getBoolAttribute("Value");
 
-						// patterndata array variables
-						if (parameterName.compare("patLenInTicks") == 0)  patternData[parameter->getIntAttribute("Index")].patLenInTicks = parameter->getIntAttribute("Value");
-						if (parameterName.compare("numNotes") == 0)  patternData[parameter->getIntAttribute("Index")].numNotes = parameter->getIntAttribute("Value");
-						//if (parameterName.compare("notesRealID") == 0)  patternData[parameter->getIntAttribute("Index")].notesRealID = parameter->getIntAttribute("Value");
-
 						// automation
 						if (parameterName.compare("variationSwitch") == 0)  variationSwitch[parameter->getIntAttribute("Index")] = parameter->getIntAttribute("Value");
 						if (parameterName.compare("ccVariationSwitching") == 0)  ccVariationSwitching = (bool)parameter->getIntAttribute("Value");
@@ -746,22 +635,6 @@ private:
 					}
 					break;
 				}
-				/*
-				if (tagName.compare("PatternHeader") == 0)
-					patternHeader = child;
-				if (tagName.compare("PatternListHeader") == 0)
-					patternListHeader = child;
-				if (tagName.compare("PatternListData") == 0)
-					patternListData = child;
-				if (tagName.compare("PoolListData") == 0)
-					poolListData = child;
-				if (tagName.compare("PoolListHeader") == 0)
-					poolListHeader = child;
-					*/
-				if (tagName.compare("Pattern") == 0) patternData[child->getIntAttribute("Index")].noteData = child;
-
-				//if (tagName.compare("ShadowPatternOn") == 0) variation[child->getIntAttribute("Index")].shadowPatternOn = child;  LEAK
-				//if (tagName.compare("ShadowPatternOff") == 0) variation[child->getIntAttribute("Index")].shadowPatternOff = child;
 
 				child = child->getNextElement();
 
@@ -771,9 +644,7 @@ private:
 
 			// if there are no patterns; all variations need to be disabled!!!
 
-			numPatterns = patternListData->getNumChildElements(); // these are not saved but counted; ALSO DO THIS WHERE THIS GETS CALLED (not sure which part of XML processed when!!!
-
-			if (numPatterns == 0)
+			if (patternList.getNumItems() == 0)
 			{
 				for (int i = 0; i < 8; i++)
 					variation[i].enabled = false;
@@ -782,18 +653,11 @@ private:
 			for (int i = 0; i < 8; i++)
 			{
 				// housekeeping auxciliary values for pools
-				variation[i].lenInTicks = patternData[variation[i].patternToUse].patLenInTicks;
-
-				for (int j = 0; j < 4; j++)
-				{
-					variation[i].fullTickFrom[j] = variation[i].tickFrom[j] + variation[i].beatFrom[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureFrom[j] * Topiary::TICKS_PER_QUARTER;
-					variation[i].fullTickTo[j] = variation[i].tickTo[j] + variation[i].beatTo[j] * Topiary::TICKS_PER_QUARTER + numerator * variation[i].measureTo[j] * Topiary::TICKS_PER_QUARTER;
-				}
-
+				if (variation[i].patternToUse >=0)
+					variation[i].pattern.patLenInTicks = patternData[variation[i].patternToUse].patLenInTicks;
 			}
 
-			// now delete the no-longer-needed "Parameters" child
-			model->deleteAllChildElementsWithTagName("Parameters");
+			
 
 		} // end block protected by lock
 
@@ -802,7 +666,7 @@ private:
 
 		// generate the variations
 		for (int v = 0; v < 8; v++)
-			generateAllVariations();
+			generateAllVariations(-1);
 		
 		// inform editor
 		broadcaster.sendActionMessage(MsgLoad); // tell everyone we've just loaded something (table headers need to be re-set
@@ -814,7 +678,7 @@ private:
 		broadcaster.sendActionMessage(MsgVariationEnables);		// so that if needed variationbuttons are disabled/enabled
 		broadcaster.sendActionMessage(MsgVariationDefinition);	// inform editor of variation settings;
 		broadcaster.sendActionMessage(MsgVariationAutomation);	// inform editor of variation automation settings;	
-
+		
 	} // restoreParametersToModel
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
@@ -829,7 +693,7 @@ private:
 		if (denominator == 0) return;
 		ticksPerBeat = Topiary::TICKS_PER_QUARTER * 4 / denominator;
 		samplesPerTick = (double)sampleRate / ((double)ticksPerBeat * BPM / 60.0);
-		Log("Samples per tick" + String(samplesPerTick), Topiary::LogType::Debug);
+		Log("Samples per tick: " + String(samplesPerTick), Topiary::LogType::Info);
 
 	} // recalcRealTime
 
@@ -853,62 +717,7 @@ private:
 			broadcaster.sendActionMessage(MsgTiming);
 		}
 	} // calcMeasureBeat
-
-	///////////////////////////////////////////////////////////////////////
-/*
-	bool walkToTick(XmlElement* parent, XmlElement** child, int toTick)
-	{ // find the first child on or after this tick, starting from current child; 
-	  // caller has to make sure that child is child of parent, or pass nullptr to initialize
-	  // return false if pattern is empty or nothing to do within the blockSize; if empty then child == nullptr; 
-	  // This loops around the pattern! To avoid infinite loop, take blockSize into account; only loop over pattern
-	  // if the amount of ticks walked is less than blocksize
-
-		// DOES NOT TAKE LIMITED PATTERN LENGTH INTO ACCOUNT (yet) - we will do that in the variations later -- NO THE VARIATION WILL BE AS LONG AS THE BASE PATTERN
-
-		int childTick;
-
-		if (*child == nullptr)
-		{
-			*child = parent->getFirstChildElement(); // initialize
-			if (*child == nullptr)
-			{
-				return false; // empty pattern!
-			}
-		}
-		childTick = (*child)->getIntAttribute("Timestamp");
-
-		while (childTick < toTick)
-		{   // as long as our child is behind time we're looking for
-			*child = (*child)->getNextElement();
-			if (*child == nullptr) break; // there are no events afther the given time
-			childTick = (*child)->getIntAttribute("Timestamp");
-		}
-
-		if (*child == nullptr)
-		{
-			*child = parent->getFirstChildElement();
-			return true;
-			
-
-		}
-		return true;
-	} // walkToTick
-*/
-	///////////////////////////////////////////////////////////////////////
-/*
-	void nextTick(XmlElement* parent, XmlElement** child)
-	{	// assert that parent has at least 1 child of each!!! (do a walk to a tick first!)
-		// this one loops around the pattern
-
-		*child = (*child)->getNextElement();
-		if (*child == nullptr)
-		{
-			*child = parent->getFirstChildElement();
-			//Logger::outputDebugString(String("-------- LOOPING OVER END OFF PATTERN ==================== "));
-		}
-
-	}  // nextTick
-*/
+	
 	///////////////////////////////////////////////////////////////////////
 
 	void initializeVariation(int i)
@@ -921,16 +730,10 @@ private:
 		for (int j = 0; j < 4; j++)
 		{
 			variation[i].enablePool[j] = true;
-			variation[i].measureTo[j] = -1;
-			variation[i].beatFrom[j] = -1;
-			variation[i].beatTo[j] = -1;
-			variation[i].tickFrom[j] = -1;
-			variation[i].tickTo[j] = -1;
-			variation[i].poolIdCursor[j] = 1;
-			variation[i].poolTickCursor[j] = 0;
+			
 		}
 		variation[i].lenInMeasures = 0;
-		variation[i].lenInTicks = 0;
+		variation[i].pattern.patLenInTicks = 0;
 		variation[i].ending = false;				// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended) till done
 
 		variation[i].name = "Variation " + String(i + 1);
@@ -942,12 +745,7 @@ private:
 			else
 				variation[i].enablePool[j] = true;
 			variation[i].poolChannel[j] = 10;
-			variation[i].measureFrom[j] = 0;
-			variation[i].measureTo[j] = -1;
-			variation[i].beatFrom[j] = 0;
-			variation[i].beatTo[j] = -1;
-			variation[i].tickFrom[j] = 0;
-			variation[i].tickTo[j] = -1;
+			
 		}
 	} // initializeVariation
 
@@ -973,80 +771,54 @@ private:
 		if (p == -1) variation[v].enabled = false;
 
 		variation[v].patternToUse = p;
-		for (int i = 0; i < 4; i++)
-		{
-			variation[v].measureFrom[i] = 0;
-			variation[v].beatFrom[i] = 0;
-			variation[v].tickFrom[i] = 0;
-			variation[v].measureTo[i] = -1;
-			variation[v].beatTo[i] = 0;
-			variation[v].tickTo[i] = 0;
-		}
-
+		
 		// don't forget to set the length!!!
 		
 		if (p != -1)
 		{
-			variation[v].lenInMeasures = getPatternLengthInMeasures(p + 1);
-			variation[v].lenInTicks = patternData[variation[v].patternToUse].patLenInTicks;
+			variation[v].lenInMeasures = getPatternLengthInMeasures(p);
+			variation[v].pattern.patLenInTicks = patternData[variation[v].patternToUse].patLenInTicks;
 		}
 
 	} // initializePatternToVariations
 
 	///////////////////////////////////////////////////////////////////////
 
-	void generatePool(int v, int p, XmlElement *newPatternOn, int poolNote[128])
+	void generatePool(int v, int p, int poolNote[128], int measureToGenerate)
 	{
-		// generates the pool notes in poop p for variation v
+		// generates the pool notes in pool p for variation v
 		// v is variation to generate
 		// p is poolnumber
+		// if measureToGenerate == -1 it regenerates for all measures
+		// if not it generates for measureToGenerate - but if measure too long it resets to 0
 
+		if (measureToGenerate >= patternList.dataList[variation[v].patternToUse].measures) // we ran over end of pattern
+			measureToGenerate = 0;
+		
 		Random randomizer;
+		TopiaryVariation *var = &(variation[v].pattern);
+		TopiaryPattern *pat = &(patternData[variation[v].patternToUse]);
+		
+		var->patLenInTicks = pat->patLenInTicks; // make sure length is correct
 
-		XmlElement* newChild = nullptr;
-		XmlElement* patternOn = patternData[variation[v].patternToUse].noteData; ///
-		int patLenInTicks = variation[v].lenInTicks;
-
-		XmlElement* patternChild;
-		int previousTick;
 		int note;
-		bool firstNoteGenerated;
-
-		// if NOT RUNNING - then the value of poolTickCursor is not reliable; because the 
-		// first note in the pool may not be at time 0, and it may not be the first note at all!!! 
-		// In that case set the poolTickCursor to the timestamp of the first note generated!!!
-		// Assumes that at run start we do not regenerate the variations!!!
-
-		if (runState == Topiary::Running) firstNoteGenerated = true;
-		else firstNoteGenerated = false;
-
+		int vIndex;
+		
 		if (!variation[v].enabled) return; // might not be decently initialized!!!
 		if (!variation[v].enablePool[p]) return; // might not be decently initialized!!!
 
-		//Logger::writeToLog("------------------- Start generation of pool " + String(p));
-
-		// find poolIDCursor
-		patternChild = patternOn->getFirstChildElement();
-		if (patternChild == nullptr) return; // empty variation
-
-		while (patternChild->getIntAttribute("ID") != variation[v].poolIdCursor[p])
+	
+		for (int pIndex=0; pIndex< pat->numItems; pIndex++)
 		{
-			//Logger::outputDebugString("ID =" + patternChild->getStringAttribute("ID") + " -- look for -- " + String(variation[v].poolIdCursor[p]));
-			patternChild = patternChild->getNextElement();
-		}
+		   if ( ((*pat).dataList[pIndex].measure == measureToGenerate) || (measureToGenerate == -1) )
+		   {
+			note = (*pat).dataList[pIndex].note;
 
-		
-		jassert(variation[v].poolTickCursor[p] >= 0);
-		while (variation[v].poolTickCursor[p] < patLenInTicks)
-		{
-			// careful: the ID we walk to may not be in this notepool (it might be the first ID that made the previous run loop over the patternlength
-			// so check before generating the note !!!
-
-			note = patternChild->getIntAttribute("Note");
-			if (poolNote[note] == p)
+			if (poolNote[note] == p) // note in this pool
 			{
 				// note randomization logic
 				bool doNote = true;
+				vIndex = var->findID(pIndex+1);
 
 				if (variation[v].randomizeNotes && variation[v].randomizeNotePool[p])
 				{
@@ -1056,21 +828,25 @@ private:
 					{
 						doNote = false;
 					}
+					
 				};
 
+				// if (doNote) we will generate a note on event; if not it will be a NOP event
 				if (doNote)
-				{
-					// need some decision logic to make sure we generate the child
+					var->dataList[vIndex].midiType = Topiary::MidiType::NoteOn;
+				else
+					var->dataList[vIndex].midiType = Topiary::MidiType::NOP;
 
-					newChild = new XmlElement("DATA");
-					newChild->setAttribute("ID", patternChild->getStringAttribute("ID"));
-					newChild->setAttribute("Note", patternChild->getStringAttribute("Note"));
-					newChild->setAttribute("Channel", variation[v].poolChannel[p]);
-					newChild->setAttribute("Length", patternChild->getStringAttribute("Length"));
-
+				var->dataList[vIndex].note = note;
+				var->dataList[vIndex].channel = variation[v].poolChannel[p];
+				var->dataList[vIndex].length = pat->dataList[pIndex].length;
+				var->dataList[vIndex].velocity = pat->dataList[pIndex].velocity;
+				int timestamp  = pat->dataList[pIndex].timestamp;			
+				var->dataList[vIndex].timestamp = timestamp;
+				if (doNote)
 					if (variation[v].randomizeVelocity && (variation[v].velocityPlus || variation[v].velocityMin)  && variation[v].velocityPool[p])
 					{
-						int vel = patternChild->getIntAttribute("Velocity");
+						int vel = pat->dataList[pIndex].velocity;
 						float rnd;
 						int direction;
 						if (variation[v].velocityPlus && variation[v].velocityMin)
@@ -1090,36 +866,14 @@ private:
 						vel = vel + (int) (direction * rnd * 128 * variation[v].velocityValue/50);   // originally / 100 but I want more of an effect
 						if (vel > 127) vel = 127;
 						if (vel < 0) vel = 0;
-						newChild->setAttribute("Velocity", vel);
-					}
-					else
-						newChild->setAttribute("Velocity", patternChild->getStringAttribute("Velocity"));
+						var->dataList[vIndex].velocity = vel;
 
-					newChild->setAttribute("midiType", Topiary::MidiType::NoteOn);
-					// timestamp is variation[v].poolTickCursor !!!!
-					// except if first note generated; then it's the timestamp of the note in the pattern!
+					} // velocity randomization
+				
 
-					if (firstNoteGenerated)
-					{
-						newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
-						jassert(variation[v].poolTickCursor[p] >= 0);
-						jassert(newChild->getIntAttribute("Timestamp") >= 0);
-					}
-					else
-					{
-						jassert(variation[v].poolTickCursor[p] >= 0);
-						variation[v].poolTickCursor[p] = patternChild->getIntAttribute("Timestamp");
-						jassert(variation[v].poolTickCursor[p] >= 0);
-						newChild->setAttribute("Timestamp", String(variation[v].poolTickCursor[p]));
-						firstNoteGenerated = true;
-						jassert(newChild->getIntAttribute("Timestamp") >= 0);
-					}
-
-					if (variation[v].swing && variation[v].swingPool[p])
-					{
+				if (variation[v].swing && variation[v].swingPool[p] && doNote)
+				{
 						// recalc the timestamp, based on the swing lookup table
-						int timestamp = newChild->getIntAttribute("Timestamp");
-
 						//Logger::outputDebugString("Timestamp pre " + String(timestamp));
 
 						int base = ((int)(timestamp / Topiary::TICKS_PER_QUARTER)) * Topiary::TICKS_PER_QUARTER;
@@ -1127,21 +881,21 @@ private:
 						//Logger::outputDebugString("Remainder pre " + String(timestamp-base));
 
 						int remainder = swing(timestamp - base, variation[v].swingValue);
-						newChild->setAttribute("Timestamp", base + remainder);
+						var->dataList[vIndex].timestamp = base + remainder;
 
 						//Logger::outputDebugString("Remainder post" + String (remainder));
 						//Logger::outputDebugString("New Timestamp " + String(base + remainder) + " (DIFF: " + String (timestamp-base-remainder));
 
 						jassert((remainder) <= Topiary::TICKS_PER_QUARTER);
-						jassert(newChild->getIntAttribute("Timestamp") >= 0);
+						jassert((base + remainder) >= 0);
 						
-					}
+				} // swing
 
-					// we apply timing randomization AFTER possible swing !!!
-
+				// we apply timing randomization AFTER possible swing !!!
+				if (doNote)
 					if (variation[v].randomizeTiming && (variation[v].timingPlus || variation[v].timingMin) && variation[v].timingPool[p])
 					{
-						int timestamp = newChild->getIntAttribute("Timestamp");
+						timestamp = var->dataList[vIndex].timestamp;
 						float rnd;
 						int direction = -1;
 						if (variation[v].velocityPlus && variation[v].velocityMin)
@@ -1153,104 +907,32 @@ private:
 						else if (variation[v].velocityPlus)
 							direction = 1;
 													
-
 						rnd = randomizer.nextFloat();
 						//int debug = direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].timingValue /100;
 						timestamp = timestamp + (int)(direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].timingValue / 800);
 						if (timestamp < 0) timestamp = 0;
 
-						if (timestamp > (variation->lenInTicks-1)) timestamp = variation->lenInTicks - 1; // lenInTicks -1 because we need time for the note off event
+						if (timestamp > (var->patLenInTicks-1)) timestamp = var->patLenInTicks - 1; // lenInTicks -1 because we need time for the note off event
 
 						// make sure we do not run over the patternlenght with note off
-						int length = newChild->getIntAttribute("Length");
-						if ((length + timestamp) >= variation->lenInTicks)
+						int length = var->dataList[vIndex].length;
+						if ((length + timestamp) >= var->patLenInTicks)
 						{
-							length = variation->lenInTicks - timestamp - 1;
-							newChild->setAttribute("Length", length);
+							length = var->patLenInTicks - timestamp - 1;
+							var->dataList[vIndex].length = length;
 							jassert(length > 0);
 						}
+						var->dataList[vIndex].timestamp = timestamp;
 
-						newChild->setAttribute("Timestamp", timestamp);
-					}
+					} // end randomize timing
 
-
-					// the following 3 are incorrect!!! these are what's in the pattern definition, but won't match tick value.  That's OK
-					// because nobody gets to see these :)
-					newChild->setAttribute("Measure", patternChild->getStringAttribute("Measure"));
-					newChild->setAttribute("Beat", patternChild->getStringAttribute("Beat"));
-					newChild->setAttribute("Tick", patternChild->getStringAttribute("Tick"));
-
-
-					newPatternOn->prependChildElement(newChild);
-
-					//Logger::outputDebugString("Generating Note " + String(note) + " timestamp " + String(variation[v].poolTickCursor[p]));
-					jassert(variation[v].poolTickCursor[p] >= 0);
-					jassert(newChild->getIntAttribute("Timestamp") >= 0);
-				}
-			} // end if note in this pool
-
-			// remember the tick of the last generated note; tick in the source pattern!
-			previousTick = patternChild->getIntAttribute("Timestamp");
-
-			//debug
-			//jassert(previousTick < 950);
-
-			//Logger::outputDebugString(" looking for next note ");
-
-			// now find the next child that's in the pool; loop because it may take a couple of tries; a loop without loops is empty and caught in the caller: generateVariation()
-
-			do
-			{
-				patternChild = patternChild->getNextElement();
-
-				if (patternChild == nullptr) // run over pattern end
-				{
-					//Logger::outputDebugString(" running over pattern end");
-					variation[v].poolTickCursor[p] += (variation[v].lenInTicks - previousTick) + 1; // +1 because we will reset to start of pool/pattern (and that start is 1st tick in that pattern/pool)
-					
-					patternChild = patternOn->getFirstChildElement();
-					previousTick = patternChild->getIntAttribute("Timestamp");  // because first note need not be at time 0 !!!
-				}
-				else
-				{
-					if (patternChild->getIntAttribute("Timestamp") > variation[v].fullTickTo[p]) // run over pool end
-					{
-						//Logger::outputDebugString(" running over pool end");
-						variation[v].poolTickCursor[p] += (patternChild->getIntAttribute("Timestamp") - previousTick);
-						previousTick = patternChild->getIntAttribute("Timestamp");
-					}
-					else
-					{
-						// normal case
-						if (patternChild->getIntAttribute("Timestamp") < variation[v].fullTickFrom[p])  // we are before the start of the pool; just keep walking
-						{
-							Logger::outputDebugString(" looking for pool start; now at tick " + patternChild->getStringAttribute("Timestamp") + " and tickFrom " + String(variation[v].fullTickFrom[p]));
-
-							variation[v].poolTickCursor[p] += (patternChild->getIntAttribute("Timestamp") - previousTick);
-							previousTick = patternChild->getIntAttribute("Timestamp");
-						}
-						else
-						{
-							// just take the step; tested and OK!
-							variation[v].poolTickCursor[p] += (patternChild->getIntAttribute("Timestamp") - previousTick);
-							previousTick = patternChild->getIntAttribute("Timestamp");
-						}
-					}
-				}
+				//Logger::outputDebugString("Generating Note " + String(var->dataList[vIndex].note) + " timestamp " + String(var->dataList[vIndex].timestamp));
+				//auto debug = 0;
 				
-				note = patternChild->getIntAttribute("Note");
-
-			} // do this as long as the note is not in this pool and the pattern is not completely filled (in length)
-			while ((poolNote[note] != p) && (variation[v].poolTickCursor[p] < patLenInTicks));
-
-
-		}  // while length is less than whole pattern
-
-		variation[v].poolIdCursor[p] = patternChild->getIntAttribute("ID");
-
-		// the pooltickCursor was already set!!! but it has run over the patternlength; reset it to remainder (so minus the patternlength)
-		variation[v].poolTickCursor[p] = variation[v].poolTickCursor[p] - patLenInTicks;
-
+			} // end if note in this pool
+		     } // end check for measureToGenerate
+		}  // for children in original pattern
+		
 	} // generatePool
 
 	///////////////////////////////////////////////////////////////////////
@@ -1293,6 +975,58 @@ private:
 	} // swing
 
 	///////////////////////////////////////////////////////////////////////
+
+	bool walkToTick(TopiaryVariation* parent, int& childIndex, int toTick)
+	{
+		// Find the first child on or after this tick, starting from current child; 
+		// Caller has to make sure that child is child of parent, or pass nullptr to initialize
+		// Return false if pattern is empty or nothing to do within the blockSize; if empty then child == nullptr; 
+		// This loops around the pattern! 
+		// returns childIndex when called from recording (before record we set nextPatternChild to nullptr to make this correct)
+		// returns correct prevChild if there is one
+
+		int childTick;
+
+		if (childIndex == 0)
+		{
+			if (parent->numItems == 0)
+			{
+				return false; // empty pattern!
+			}
+		}
+		childTick = parent->dataList[childIndex].timestamp;
+
+		while (childTick < toTick)
+		{   // as long as our child is behind time we're looking for
+
+			childIndex++;
+			if (childIndex == parent->numItems) break; // there are no events afther the given time
+			childTick = parent->dataList[childIndex].timestamp;
+		}
+
+		if (childIndex == parent->numItems) // wrap around the pattern
+		{
+			childIndex = 0;
+			return true;
+		}
+		return true;
+
+	} // walkToTick
+
+	///////////////////////////////////////////////////////////////////////
+
+	void nextTick(TopiaryVariation* parent, int& childIndex)
+	{	// assert that parent has at least 1 child of each!!! (do a walk to a tick first!)
+		// this one loops around the pattern
+
+		childIndex++;
+		if (childIndex == parent->numItems)
+		{
+			childIndex = 0;
+			//Logger::outputDebugString(String("-------- LOOPING OVER END OFF PATTERN ==================== "));
+		}
+
+	}  // nextTick
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsModel)
 };
