@@ -17,7 +17,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "TopiaryBeatsPatternComponent.h"
 
@@ -54,10 +53,8 @@ void TopiaryBeatsPatternComponent::setModel(TopiaryBeatsModel* m)
 {
 	beatsModel = m;
 	beatsModel->setListener((ActionListener*)this);
-	beatsModel->getPatternModel(-1, &patternListHeader, &patternListData);  // @ initialization this will simply be an empty pattern
-
-	patternTable.setDataLists(patternListHeader, patternListData);
-	patternTable.setModel(beatsModel); // because it will have to validate note data!
+	
+	patternTable.setModel(beatsModel->getPattern(0)); // (0) just to get it started because it will have to validate note data!
 	actionButtonsComponent.setParent(this);
 	patternLengthComponent.setParent(this);
 	
@@ -100,9 +97,9 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 	if (message.compare(MsgLoad) == 0)
 	{
 		// this means we just loaded a preset; model needs to be refreshed because the pattern data may have been overwritten
-		beatsModel->getPatternModel(0, &patternListHeader, &patternListData);  // @ initialization this will simply be an empty pattern
-		patternTable.setDataLists(patternListHeader, patternListData);
-
+		//beatsModel->getPatternModel(0, &patternListHeader, &patternListData);  // @ initialization this will simply be an empty pattern
+		//patternTable.setDataLists(patternListHeader, patternListData);
+		patternTable.setModel(beatsModel->getPattern(0)); // (0) just to get it started because it will have to validate note data!
 	}
 	else if (message.compare(MsgPattern) == 0)
 	{
@@ -116,31 +113,43 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 	{
 		// find the list of patterns loaded
 		String patterns[8];
+		int rememberPatternComboSelection = patternCombo.getSelectedItemIndex()-1;
+		if (rememberPatternComboSelection < 0)
+			rememberPatternComboSelection = 0;
+
 		patternCombo.clear();
 		for (int i = 0; i < 8; i++) patterns[i] = "";
 
 		beatsModel->getPatterns(patterns);
-		//int i = 0;
-		//while (i<8)
+
 		for (int i=0; i<8; i++)
 		{
 			if (patterns[i].compare(""))
 				patternCombo.addItem(patterns[i], i + 1);
-			
 		}
 
 		// if there are no patterns, disable yourself!!!
-		if (beatsModel->getNumPatterns())
+		if (beatsModel->getNumPatterns()>0)
 		{
 			this->setEnabled(true);
-			patternCombo.setSelectedItemIndex(0);
-			beatsModel->getPatternModel(0, &patternListHeader, &patternListData);
-			patternTable.setDataLists(patternListHeader, patternListData);
-			patternTable.setPattern(-1);
-			actionListenerCallback(MsgPattern);  // force reload of patterndata
+			if (patternCombo.getNumItems() > rememberPatternComboSelection)
+			{
+				patternCombo.setSelectedItemIndex(rememberPatternComboSelection);
+				//patternTable.setModel(beatsModel->getPattern(rememberPatternComboSelection)); done by above line
+			}
+			else
+			{
+				patternCombo.setSelectedItemIndex(0);
+				//patternTable.setModel(beatsModel->getPattern(0)); done by above line
+			}
+
+			//actionListenerCallback(MsgPattern);  // force reload of patterndata
 		}
 		else
+		{
 			this->setEnabled(false);
+			patternCombo.setSelectedItemIndex(0, dontSendNotification);
+		}
 		// fill the combobox with the pattern names
 	}
 
@@ -160,7 +169,6 @@ void TopiaryBeatsPatternComponent::setPatternLength()
 	else
 	{
 		beatsModel->setPatternLength(patternCombo.getSelectedId() - 1, len, patternLengthComponent.keepTail.getToggleState());
-		beatsModel->setPatternTableHeaders(patternCombo.getSelectedId() - 1); // make sure the table allow valid measure inputs
 		patternTable.updateContent();
 	}
 
@@ -197,7 +205,7 @@ void TopiaryBeatsPatternComponent::addNote()
 		timestamp = 0;
 	else
 	{
-		beatsModel->getNote(patternCombo.getSelectedId() - 1, patternTable.getSelectedRow()+1, note, velocity, timestamp, length);
+		beatsModel->getNote(patternCombo.getSelectedId() - 1, patternTable.getSelectedRow(), note, velocity, timestamp, length);
 	}
 	beatsModel->addNote(patternCombo.getSelectedId() - 1, 0, 127, Topiary::TICKS_PER_QUARTER, timestamp);
 	//int debug = patternTable.getSelectedRow();
@@ -218,7 +226,7 @@ void TopiaryBeatsPatternComponent::copyNote()
 	// adds a note at the position selected in table
 	int timestamp = 0;
 	
-	beatsModel->getNote(patternCombo.getSelectedId() - 1, patternTable.getSelectedRow() + 1, pbufferNote, pbufferVelocity, timestamp, pbufferLength);
+	beatsModel->getNote(patternCombo.getSelectedId() - 1, patternTable.getSelectedRow(), pbufferNote, pbufferVelocity, timestamp, pbufferLength);
 	
 	// call setButtonStates so pase button comes on
 	setButtonStates();
@@ -242,7 +250,7 @@ void TopiaryBeatsPatternComponent::pasteNote()
 		timestamp = 0;
 	else
 	{
-		beatsModel->getNote(patternCombo.getSelectedId() - 1, patternTable.getSelectedRow() + 1, note, velocity, timestamp, length);
+		beatsModel->getNote(patternCombo.getSelectedId() - 1, patternTable.getSelectedRow(), note, velocity, timestamp, length);
 	}
 	beatsModel->addNote(patternCombo.getSelectedId() - 1, pbufferNote, pbufferVelocity, pbufferLength, timestamp);
 	

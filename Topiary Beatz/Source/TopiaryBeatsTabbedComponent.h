@@ -18,7 +18,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-
 #include "TopiaryBeatsMasterComponent.h"
 #include "TopiaryBeatsLogComponent.h"
 #include "TopiaryBeatsVariationComponent.h"

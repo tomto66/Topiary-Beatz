@@ -17,9 +17,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-#include"../../Topiary/Source/TopiaryTable.h"  // temp for testing
 #include"TopiaryBeatsModel.h"
 #include "TopiaryBeatsVariationChildren.h"
 
@@ -51,7 +49,7 @@ private:
 	
 	VariationDefinitionComponent variationDefinitionComponent;
 	EnablePoolComponent enablePoolComponent;
-	PoolLengthComponent poolLengthComponent;
+	//PoolLengthComponent poolLengthComponent;
 	PoolChannelComponent poolChannelComponent;
 	RandomNoteComponent randomNoteComponent;
 	SwingComponent swingComponent;

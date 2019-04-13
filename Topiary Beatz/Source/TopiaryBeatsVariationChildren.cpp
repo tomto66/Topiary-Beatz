@@ -17,180 +17,9 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-//#include "../JuceLibraryCode/JuceHeader.h"
-//#include "../../Topiary/Source/Topiary.h"
 #include "TopiaryBeatsModel.h"
 #include "TopiaryBeatsVariationChildren.h"
 #include "TopiaryBeatsVariationComponent.h"
-
-/////////////////////////////////////////////////////////////////////////////
-// PoolTimingComponent
-// One line of measure / beat / tick editors
-/////////////////////////////////////////////////////////////////////////////
-
-PoolTimingComponent::PoolTimingComponent()
-{
-	addAndMakeVisible(measureEditor);
-	measureEditor.setSelectAllWhenFocused(true);
-	measureEditor.setEnabled(false);
-
-	addAndMakeVisible(beatEditor);
-	beatEditor.setSelectAllWhenFocused(true);
-	beatEditor.setEnabled(false);
-
-	addAndMakeVisible(tickEditor);
-	tickEditor.setSelectAllWhenFocused(true);
-	tickEditor.setEnabled(false);
-
-	measureEditor.onFocusLost = [this]
-	{
-		parent->setVariationDefinition();
-	};
-
-	measureEditor.onReturnKey = [this]
-	{
-		parent->setVariationDefinition();
-	};
-	measureEditor.onFocusLost = [this]
-	{
-		parent->setVariationDefinition();
-	};
-
-	beatEditor.onReturnKey = [this]
-	{
-		parent->setVariationDefinition();
-	};
-	beatEditor.onFocusLost = [this]
-	{
-		parent->setVariationDefinition();
-	};
-
-	tickEditor.onReturnKey = [this]
-	{
-		parent->setVariationDefinition();
-	};
-	   
-	setSize(width, heigth);
-
-} // PoolTimingComponent
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-PoolTimingComponent::~PoolTimingComponent()
-{
-} // ~PoolTimingComponent
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-void PoolTimingComponent::resized()
-{
-} // resized
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-void PoolTimingComponent::setParent(TopiaryBeatsVariationComponent* p)
-{
-	parent = p;
-
-} // setParent
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-void PoolTimingComponent::paint(Graphics& g)
-{
-	int separator = 5;
-	int labelOffset = 15;
-	g.fillAll(TopiaryColour::background);
-	g.setColour(TopiaryColour::foreground);
-	g.setFont(12.0f);
-
-	g.drawText(label, 0, 0, 200, (int)labelOffset, juce::Justification::centredLeft);
-
-	auto area = getLocalBounds();
-	auto left = area.removeFromLeft(65); //space for label
-	left = area.removeFromLeft(mw);
-	measureEditor.setBounds(left);
-	left = area.removeFromLeft(separator);
-	left = area.removeFromLeft(bw);
-	beatEditor.setBounds(left);
-	left = area.removeFromLeft(separator);
-	left = area.removeFromLeft(tw);
-	tickEditor.setBounds(left);
-
-} // paint
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-// PoolLengthComponent
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-PoolLengthComponent:: PoolLengthComponent()
-{
-	for (int i = 0; i < 4; i++)
-	{
-		addAndMakeVisible(poolStart[i]);  // sizes set by constructor
-		poolStart[i].label = "Pool " + String(i + 1) + " Start";
-		addAndMakeVisible(poolStop[i]);
-		poolStop[i].label = "Pool " + String(i + 1) + " Stop";
-	}
-} // PoolLengthComponent
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-PoolLengthComponent::~PoolLengthComponent()
-{
-} // ~PoolLengthComponent
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-void PoolLengthComponent::setParent(TopiaryBeatsVariationComponent* p)
-{
-	parent = p;
-	for (int i = 0; i < 4; i++)
-	{
-		poolStart[i].setParent(parent);
-		poolStop[i].setParent(parent);
-	}
-} // setParent
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-void PoolLengthComponent::paint(Graphics& g)
-{
-	//int separator = 5;
-	int labelOffset = 15;
-	g.fillAll(TopiaryColour::background);
-	g.setColour(TopiaryColour::foreground);
-	g.setFont(12.0f);
-	auto area = getLocalBounds();
-	int lineWidth = 2;
-
-	g.drawText("Pool Length", 0, 0, 200, (int)labelOffset, juce::Justification::centredLeft);
-	auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
-	g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
-
-	// turn it into inner rectangle
-	auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
-
-	auto bBounds = inRecBounds.removeFromTop(poolStart[0].heigth);
-	for (int i = 0; i < 4; i++)
-	{
-		poolStart[i].setBounds(bBounds);
-		inRecBounds.removeFromTop(2 * lineWidth);
-		bBounds = inRecBounds.removeFromTop(poolStart[0].heigth);
-		poolStop[i].setBounds(bBounds);
-		inRecBounds.removeFromTop(2 * lineWidth);
-		bBounds = inRecBounds.removeFromTop(poolStart[0].heigth);
-	}
-
-} // paint
-
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-void PoolLengthComponent::resized()
-{
-
-} // resized
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 // EnablePoolComponent
@@ -623,6 +452,15 @@ void  SwingComponent::paint(Graphics& g)
 			parent->setVariationDefinition();
 		};
 		
+		addAndMakeVisible(endingButton);
+		endingButton.setClickingTogglesState(true);
+		endingButton.setButtonText("Ending");
+		endingButton.onClick = [this]
+		{
+			parent->setVariationDefinition();
+		};
+
+
 		
 	} // VariationDefinitionComponent
 
@@ -693,12 +531,18 @@ void  SwingComponent::paint(Graphics& g)
 
 		// topBounds is now fourth row which only has the patternCombo
 		// hBounds = topBounds.removeFromLeft(eW);
+		endingButton.setBounds(topBounds);
+		endingButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+		inRecBounds.removeFromTop(4 * lineWidth);
+		topBounds = inRecBounds.removeFromTop(eH);
+
+		// topBounds is now third row which only has the enablebutton
+		//hBounds = topBounds.removeFromLeft(eW);
+		
 		patternCombo.setBounds(topBounds);
 		patternCombo.setSize(topBounds.getWidth(), topBounds.getHeight());
 
-		int debug = patternCombo.getSelectedId();
-
-		debug = debug + 0;
 
 	} // paint
 

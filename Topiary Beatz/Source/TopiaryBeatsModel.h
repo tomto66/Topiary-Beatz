@@ -55,7 +55,7 @@ public:
 	void addPattern();
 	void duplicatePattern(int p);
 	void clearPattern(int p);
-	void cleanPattern(int p) override;
+	//void cleanPattern(int p) override;
 	void setPatternLength(int p, int l, bool keepTail);
 	void deleteNote(int p, int n);				// deletes the note with ID n from pattern p
 	void getNote(int p, int ID, int& note, int &velocity, int &timestamp, int &length);  // get note with id ID from pattern p
@@ -87,14 +87,14 @@ public:
 	
 	////// Variations
 
-	void setVariation(int i) override;
+	void setVariation(int i, bool lockIt=true) override;
 	void getVariation(int& running, int& selected);
 	void getVariationEnables(bool enables[8]);
 	bool getVariationEnabled(int v);
 	int getVariationLenInTicks(int v);
 
-	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4]);   // pass variation Definition on to VariationComponent in editor
-	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolChannel[4]);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
+	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4], bool& ending);   // pass variation Definition on to VariationComponent in editor
+	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolChannel[4], bool ending);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
 	bool validateVariationDefinition(int i, bool enable, String vname, int patternId);
 	void setRandomizeNotes(int v, bool enable, bool enablePool[4], int value);
 	void getRandomizeNotes(int v, bool &enable, bool enablePool[4], int &value);
@@ -457,7 +457,7 @@ private:
 			addIntToModel(parameters, variation[i].patternToUse, "patternToUse", i);
 			addStringToModel(parameters, variation[i].name, "variationName", i);
 			addBoolToModel(parameters, variation[i].enabled, "variationEnabled", i);
-
+			addBoolToModel(parameters, variation[i].ending, "variationEnding", i);
 			addBoolToModel(parameters, variation[i].enablePool[0], "enablePool0", i);
 			addBoolToModel(parameters, variation[i].enablePool[1], "enablePool1", i);
 			addBoolToModel(parameters, variation[i].enablePool[2], "enablePool2", i);
@@ -581,7 +581,7 @@ private:
 						if (parameterName.compare("lenInMeasures") == 0) variation[parameter->getIntAttribute("Index")].lenInMeasures = parameter->getIntAttribute("Value");
 						if (parameterName.compare("patternToUse") == 0) variation[parameter->getIntAttribute("Index")].patternToUse = parameter->getIntAttribute("Value");
 						if (parameterName.compare("variationEnabled") == 0) variation[parameter->getIntAttribute("Index")].enabled = parameter->getBoolAttribute("Value");
-
+						if (parameterName.compare("variationEnding") == 0) variation[parameter->getIntAttribute("Index")].ending = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("enablePool0") == 0) variation[parameter->getIntAttribute("Index")].enablePool[0] = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("enablePool1") == 0) variation[parameter->getIntAttribute("Index")].enablePool[1] = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("enablePool2") == 0) variation[parameter->getIntAttribute("Index")].enablePool[2] = parameter->getBoolAttribute("Value");
@@ -665,8 +665,7 @@ private:
 		setOverrideHostTransport(rememberOverride);
 
 		// generate the variations
-		for (int v = 0; v < 8; v++)
-			generateAllVariations(-1);
+		generateAllVariations(-1);
 		
 		// inform editor
 		broadcaster.sendActionMessage(MsgLoad); // tell everyone we've just loaded something (table headers need to be re-set

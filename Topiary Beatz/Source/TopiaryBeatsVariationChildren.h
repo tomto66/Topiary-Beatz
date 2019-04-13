@@ -48,35 +48,6 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// PoolTimingComponent
-////////////////////////////////////////////////////////////////////////////////
-
-class PoolTimingComponent : public Component
-{
-public:
-	PoolTimingComponent();
-	~PoolTimingComponent();
-	void paint(Graphics&) override;
-	void resized() override;
-	void setParent(TopiaryBeatsVariationComponent* p);
-
-	TextEditor measureEditor;
-	TextEditor beatEditor;
-	TextEditor tickEditor;
-	
-	String label; // label to use
-	int width = 170;
-	int heigth = 20;
-private:
-	TopiaryBeatsVariationComponent* parent;
-	int eh = 20;  // height of the editors
-	int mw = 25;
-	int bw = 25;
-	int tw = 30;
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PoolTimingComponent)
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // PoolLengthComponent
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -89,8 +60,8 @@ public:
 	void resized() override;
 	void setParent(TopiaryBeatsVariationComponent* p);
 
-	PoolTimingComponent poolStart[4];
-	PoolTimingComponent poolStop[4];
+	//PoolTimingComponent poolStart[4];
+	//PoolTimingComponent poolStop[4];
 	
 	int width = 168;
 	int heigth = 215;
@@ -154,9 +125,10 @@ public:
 	TextEditor nameEditor;
 	TopiaryButton enableButton;
 	ComboBox patternCombo;
+	TopiaryButton endingButton;
 
 	int width = 140;
-	int heigth = 140;
+	int heigth = 160;
 
 	VariationDefinitionComponent();
 	~VariationDefinitionComponent();

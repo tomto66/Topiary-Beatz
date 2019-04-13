@@ -17,11 +17,9 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
 #include"TopiaryBeatsModel.h"
-//#include "../../Topiary/Source/Topiary.h"
-//#include"../../Topiary/Source/TopiaryTable.h"  
+#include"../../Topiary/Source/TopiaryTableList.h"  
 #include "TopiaryBeatsPatternChildren.h"
 
 class TopiaryBeatsPatternComponent : public Component, ActionListener
@@ -44,11 +42,9 @@ public:
 
 private:
 	TopiaryBeatsModel* beatsModel;
-	TopiaryTable patternTable;
+	TopiaryTableList patternTable;
 	int patternTW = 380;
 	int patternTH = 360;
-	XmlElement *patternListHeader = nullptr;
-	XmlElement *patternListData = nullptr;
 	
 	ComboBox patternCombo;
 	PatternLengthComponent patternLengthComponent;
@@ -63,16 +59,19 @@ private:
 
 	void processPatternCombo() // call when pattern combobox changed
 	{
-		beatsModel->getPatternModel(patternCombo.getSelectedId()-1, &patternListHeader, &patternListData);  // @ initialization this will simply be an empty pattern
-		patternTable.setDataLists(patternListHeader, patternListData);
+		if (patternCombo.getSelectedId()>0)
+			patternTable.setModel(beatsModel->getPattern(patternCombo.getSelectedId() - 1));
+		else
+			patternTable.setModel(beatsModel->getPattern(0));
+
 		patternTable.updateContent();
 		patternTable.setPattern(patternCombo.getSelectedId() - 1);
 		
 		patternLengthComponent.lengthEditor.setText(String(beatsModel->getPatternLengthInMeasures( patternCombo.getSelectedId() - 1)));
-		beatsModel->setPatternTableHeaders(patternCombo.getSelectedId() - 1); // make sure the table allow valid measure inputs
+		
 		setButtonStates();
 
-		beatsModel->setPatternSelectedInPatternEditor(patternCombo.getSelectedId() - 1); // needed to that transport can check whether recording makes sense
+		beatsModel->setPatternSelectedInPatternEditor(patternCombo.getSelectedId() - 1); // needed so that transport can check whether recording makes sense
 
 	} // processPatternCombo
 
@@ -80,9 +79,7 @@ private:
 
 	void setButtonStates()
 	{
-
 		int numRows = patternTable.getNumRows();
-		//int selRow = patternTable.getSelectedRow();
 
 		if (pbufferNote == -1)
 			actionButtonsComponent.pasteButton.setEnabled(false);

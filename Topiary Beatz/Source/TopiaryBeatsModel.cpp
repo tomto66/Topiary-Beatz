@@ -166,7 +166,7 @@ void TopiaryBeatsModel::setPatternLengthInMeasures(int i, int l)
 {
 	// l: length of pattern in Measures
 	// i: pattern index
-
+	// called by setPatternLength
 	jassert((i < patternList.getNumItems()) && (i >= 0));
 
 	patternList.dataList[i].measures = l;
@@ -353,6 +353,7 @@ void TopiaryBeatsModel::addPoolNote()
 	// adds a note to the pool list
 
 	poolList.add();
+	poolList.sortByNote();
 	//rebuildPool(false);
 	broadcaster.sendActionMessage(MsgNotePool);
 	Log("Note created.", Topiary::LogType::Info);
@@ -450,6 +451,8 @@ void TopiaryBeatsModel::rebuildPool(bool clean)
 		else
 			set.add(poolList.dataList[p].note);
 	}
+
+	poolList.sortByNote();
 } // rebuildPool
 
 ///////////////////////////////////////////////////////////////////////
@@ -487,11 +490,12 @@ void TopiaryBeatsModel::initializeVariationsForRunning()
 // Variation Parameters
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4])
+void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4], bool& ending)
 {
 	jassert(i < 8); // goes from 0-7
 	vname = variation[i].name;
 	enabled = variation[i].enabled;
+	ending = variation[i].ending;
 	patternId = variation[i].patternToUse;
 	for (int j = 0; j < 4; j++)
 	{
@@ -504,7 +508,7 @@ void TopiaryBeatsModel::getVariationDefinition(int i, bool& enabled, String& vna
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4],  int poolChannel[4])
+void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4],  int poolChannel[4], bool ending)
 {
 	// write to model
 	// assume the data has been validated first!
@@ -520,7 +524,7 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 
 	variation[i].name = vname;
 	variation[i].enabled = enabled;
-
+	variation[i].ending = ending;
 	if (!enabled)
 	{
 		// make sure to enable hostOverride if there are no enabled variations
@@ -791,17 +795,14 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 		variation[i].pattern.numItems = 0;
 	}
 
-
 	int poolNote[128];  // will contain the pool number for the note
-	bool poolHasNotes[4];
-
+	
 	int note;
 	int pool;
 
 	// poolNote is helper datastructure; given a note, it returns the pool the note is in (careful for -1s; pool numbers in variation are 0-3 but in screen are 1-4
 
 	for (int j = 0; j < 128; j++) poolNote[j] = -1;
-	for (int j = 0; j < 4; j++) poolHasNotes[j] = false;
 
 	for (int x=0; x<poolList.getNumItems(); x++)
 
@@ -810,18 +811,34 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 		note = poolList.dataList[x].note;
 		pool = poolList.dataList[x].pool; 
 		poolNote[note] = pool - 1;
-		poolHasNotes[pool - 1] = true;
+		
 	}
 
 	// set every event in the variation to miditype::NOP
 	// (because if certain pools are off the notes should not be generated
 
-	TopiaryVariation* pattern = &(variation[i].pattern);
-	for (int j = 0; j < pattern->numItems; j++)
+	TopiaryVariation* var = &(variation[i].pattern);
+	TopiaryPattern* pat = &(patternData[variation[i].patternToUse]);
+	if (measureToGenerate == -1)
 	{
-		int measre = (*pattern).dataList[i].timestamp % (numerator * Topiary::TICKS_PER_QUARTER);
+		// make sure it's initialized properly - only done from editor or @ load
+		var->numItems = pat->numItems;
+		for (int j = 0; j < pat->numItems; j++)
+		{
+			var->dataList[j].ID = j + 1;
+			var->dataList[j].timestamp = pat->dataList[j].timestamp;
+			int measre = pat->dataList[i].timestamp % (numerator * Topiary::TICKS_PER_QUARTER);
+			if ((measre == measureToGenerate) || (measureToGenerate == -1))
+				var->dataList[j].midiType = Topiary::MidiType::NOP;
+		}
+
+	}
+
+	for (int j = 0; j < pat->numItems; j++)
+	{
+		int measre = pat->dataList[i].timestamp % (numerator * Topiary::TICKS_PER_QUARTER);
 		if ((measre == measureToGenerate) || (measureToGenerate == -1))
-			pattern->dataList[j].midiType = Topiary::MidiType::NOP;
+			var->dataList[j].midiType = Topiary::MidiType::NOP;
 	}
 
 	////////////////////////////
@@ -831,18 +848,19 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 	for (int j = 0; j < 4; j++)
 	{
 		// only call generatePool if there are notes in the pool; otherwise generatePool will loop forever!!!) 
-		if (poolHasNotes[j])
-			generatePool(i, j, poolNote, measureToGenerate);
+		generatePool(i, j, poolNote, measureToGenerate);
 	}
 
+	//Logger::outputDebugString("SORTED ------------------------");
 	variation[i].pattern.sortByTimestamp();
-	//Logger::outputDebugString("------------------------");
-	//for (int j = 0; j < variation[i].pattern.numItems; j++)
-	//{
-	//	Logger::outputDebugString("Note: " + String(variation[i].pattern.dataList[j].note) + " timestamp " + String(variation[i].pattern.dataList[j].timestamp));
-	//}
-	//Logger::outputDebugString("------------------------");
-	
+	/*
+	Logger::outputDebugString("------------------------");
+	for (int j = 0; j < variation[i].pattern.numItems; j++)
+	{
+		Logger::outputDebugString("<" + String(j) + "> <ID" + String(variation[i].pattern.dataList[j].ID)+"> Note: " + String(variation[i].pattern.dataList[j].note) + " timestamp " + String(variation[i].pattern.dataList[j].timestamp) + " midiType " + String(variation[i].pattern.dataList[j].midiType));
+	}
+	Logger::outputDebugString("------------------------");
+	*/
 } // generateVariation
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -931,7 +949,7 @@ void TopiaryBeatsModel::setPatternLength(int p, int l, bool keepTail)
 		if (warned)
 			Log("Pattern was shortened and MIDI events were lost.", Topiary::LogType::Warning);
 		broadcaster.sendActionMessage(MsgPattern);
-
+		broadcaster.sendActionMessage(MsgPatternList);
 	}
 	
 } // setPatternLength
@@ -952,13 +970,13 @@ void TopiaryBeatsModel::deleteNote(int p ,int n)
 
 ////////////////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::addNote(int p, int n, int v, int l, int t) 
+void TopiaryBeatsModel::addNote(int p, int n, int v, int l, int timestamp) 
 {   
-	int measuree = (int)(t / (denominator*Topiary::TICKS_PER_QUARTER));
-	t = t % (denominator*Topiary::TICKS_PER_QUARTER);
+	int measuree = (int)(timestamp / (denominator*Topiary::TICKS_PER_QUARTER));
+	int t = timestamp % (denominator*Topiary::TICKS_PER_QUARTER);
 	int beatt = (int)(t / Topiary::TICKS_PER_QUARTER);
 	t = t % Topiary::TICKS_PER_QUARTER;
-	patternData[p].add(measuree, beatt, t, n, l, v);
+	patternData[p].add(measuree, beatt, t, timestamp, n, l, v);
 	patternData[p].sortByTimestamp(); // will create the ID
 	broadcaster.sendActionMessage(MsgPattern);
 	regenerateVariationsForPattern(p);
@@ -1010,7 +1028,7 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 	if (attribute.compare("Label") == 0) 
 	{
 		// set the note value correctly
-		//int debug = validNoteNumber(child->getStringAttribute("Label"));
+		
 		child->setAttribute("Note", validNoteNumber(child->getStringAttribute("Label")));
 		child->setAttribute("Label", validateNote(child->getStringAttribute("Label")));
 		if (p != -1)
@@ -1022,7 +1040,11 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 		{
 			poolList.dataList[index].note = child->getIntAttribute("Note");
 			poolList.dataList[index].label = child->getStringAttribute("Label");
+			poolList.sortByNote();
 		}
+
+		
+
 	}
 	else if ((attribute.compare("Measure") == 0) || (attribute.compare("Beat") == 0) || (attribute.compare("Tick") == 0))
 	{
@@ -1048,7 +1070,7 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 		patternData[p].sortByTimestamp();
 	}
 
-	// what follows detects what we are editint (pattern, notepool or patternlist)
+	// what follows detects what we are editing (pattern, notepool or patternlist)
 
 	if (child->hasAttribute("Timestamp"))
 	{
@@ -1058,7 +1080,7 @@ void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attri
 		if ((child->getIntAttribute("Timestamp") + child->getIntAttribute("Length")) >= patternData[p].patLenInTicks)
 		{
 			child->setAttribute("Length", String(patternData[p].patLenInTicks - child->getIntAttribute("Timestamp") - 1));
-			patternData[p].dataList[index].timestamp = child->getIntAttribute("Timestamp");
+			patternData[p].dataList[index].length = child->getIntAttribute("Length");
 			Log("Note shortened so it does not run over pattern end.", Topiary::LogType::Warning);
 		}
 
@@ -1246,14 +1268,6 @@ void TopiaryBeatsModel::record(bool b)
 
 	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 
-	// check if pattern being recorded is also the one in the variation selected!
-
-	if ((patternSelectedInPatternEditor != variation[variationSelected].patternToUse) &&b)
-	{
-		Log("Pattern is not in variation selected.", Topiary::LogType::Warning);
-		return;
-	}
-
 	// check there are pool(s) enabled; otherwise we don't know the channel when recording
 	if (b) {
 		bool noNotes = true;
@@ -1291,12 +1305,12 @@ void TopiaryBeatsModel::processMidiRecording()
 	int loopLen = variation[variationSelected].pattern.numItems; 
 	int patPos; // where to inser the new events
 	TopiaryPattern* pat = &(patternData[variation[variationSelected].patternToUse]);
-	TopiaryVariation *var = &(variation[variationSelected]);
+	TopiaryVariation *var = &(variation[variationSelected].pattern);
 	for (int v=0; v < loopLen; v++)
 	{
-		if (variation[variationSelected].pattern[v].ID == -1)
+		if (variation[variationSelected].pattern.dataList[v].length == -1)
 		{
-			if (variation[variationSelected].pattern[v].midiType == Topiary::MidiType::NoteOn)
+			if (var->dataList[v].midiType == Topiary::MidiType::NoteOn)
 			{
 				patPos = pat->numItems;
 				pat->add();
@@ -1308,30 +1322,30 @@ void TopiaryBeatsModel::processMidiRecording()
 				pat->dataList[patPos].velocity = var->dataList[v].velocity;
 				pat->dataList[patPos].timestamp = var->dataList[v].timestamp;
 				pat->dataList[patPos].length = 0;
-				int measur = (int)floor(timestamp / (numerator * Topiary::TICKS_PER_QUARTER));
+				int measur = (int)floor(var->dataList[v].timestamp / (numerator * Topiary::TICKS_PER_QUARTER));
 				pat->dataList[patPos].measure = measur;
-				timestamp = timestamp - measur * (numerator * Topiary::TICKS_PER_QUARTER);
+				int timestamp = var->dataList[v].timestamp - measur * (numerator * Topiary::TICKS_PER_QUARTER);
 				int bea = (int)floor(timestamp / Topiary::TICKS_PER_QUARTER);
 				pat->dataList[patPos].beat = bea;
 				int tic = timestamp - bea * Topiary::TICKS_PER_QUARTER;
 				pat->dataList[patPos].tick = tic;
 			}
-			else if (event->getIntAttribute("midiType") == Topiary::MidiType::NoteOff)
+			else if (var->dataList[v].midiType == Topiary::MidiType::NoteOff)
 			{
 				// find the note and set the length
 				int timestamp = var->dataList[v].timestamp; // timestamp of end of note
 				int note = var->dataList[v].note; 
-				book cont = true;
+				bool cont = true;
 				int pIndex = 0;
-				numPats = pat->numItems;
+				int numPats = pat->numItems;
 
 				while (cont && (pIndex<numPats))
 				{
-					if (pat->dataList[pIndex].ID == -1) && (pat->dataList[pIndex].note  == note))
+					if ((pat->dataList[pIndex].ID == -1) && (pat->dataList[pIndex].note  == note))
 					{
 						// we found the note to end
-						pat->dataList[pIndex].length = timstamp - pat->dataList[pIndex].timestamp;
-						pat->dataList[pIndex].ID == -2; // so we don't cover it again
+						pat->dataList[pIndex].length = timestamp - pat->dataList[pIndex].timestamp;
+						pat->dataList[pIndex].ID = -2; // so we don't cover it again
 						cont = false;
 					}
 					pIndex++;
@@ -1342,10 +1356,18 @@ void TopiaryBeatsModel::processMidiRecording()
 		
 	}
 	// resort 
-	pat->renumberByTimestamp();
+	pat->sortByTimestamp();
+
+	Logger::outputDebugString("------------------------");
+	for (int j = 0; j < pat->numItems; j++)
+	{
+		Logger::outputDebugString("<" + String(j) + "> <ID" + String(pat->dataList[j].ID) + "> Note: " + String(pat->dataList[j].note) + " timestamp " + String(pat->dataList[j].timestamp));
+	}
+	Logger::outputDebugString("------------------------");
 
 	// rebuild the pool list
 	rebuildPool(false);
+	generateAllVariations(-1);
 	// inform pattern tab
 	broadcaster.sendActionMessage(MsgPattern);
 	
@@ -1356,9 +1378,18 @@ void TopiaryBeatsModel::processMidiRecording()
 void TopiaryBeatsModel::duplicatePattern(int p)  
 {
 	jassert(p > -1); // has to be a valid row 
+	if (getNumPatterns() > 6)
+	{
+		Log("Cannot duplicate; number of patterns limited to 8.", Topiary::LogType::Warning);
+		return;
+	}
 
 	patternList.duplicate(p);
+	
+	// duplicate the patterndata
+	patternData[getNumPatterns() - 1].duplicate(&(patternData[p]));
 
+	broadcaster.sendActionMessage(MsgPatternList);
 	Log("Duplicate pattern created.", Topiary::LogType::Info);
 
 } // duplicatePattern
@@ -1409,45 +1440,48 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuff
 
 	**************************************************************************************************************************************************/
 
-	int64 rtCursorFrom;				// sampletime to start generating from
-	int64 rtCursorTo;				// we generate in principle till here
-	int64 rtCursor;					// where we are, between rtCursorFrom and rtCursorTo
+	int64 rtCursorFrom=0;				// sampletime to start generating from
+	int64 rtCursorTo=0;				// we generate in principle till here
+	int64 rtCursor=0;					// where we are, between rtCursorFrom and rtCursorTo
 	
-
-	if (blockCursor == 0)			// blockCursor is updated at end of generation!
-	{
-		rtCursor = 0;
-		patternCursor = 0;
-		rtCursorFrom = 0;
-		patternCursorOffset = 0;
-		rtCursorTo = rtCursorFrom + blockSize;
-		nextRTGenerationCursor = 0;
-		measure = 0;
-		beat = 0;
-		tick = 0;
-		previousMeasure = 0;
-	}
-	else
-	{
-		rtCursorFrom = blockCursor;
-		rtCursorTo = rtCursorFrom + blockSize;
-		rtCursor = rtCursorFrom;
-		calcMeasureBeat();
-		patternCursor = (int)(blockCursor / samplesPerTick) - patternCursorOffset; // not floor - that may lead to duplicate notes!!!
+	if ((runState == Topiary::Running) || (runState == Topiary::Ending))
+		if (blockCursor == 0)			// blockCursor is updated at end of generation!
+		{
+			patternCursorOffset = 0;
+			rtCursorTo = rtCursorFrom + blockSize;
+			nextRTGenerationCursor = 0;
+			measure = 0;
+			beat = 0;
+			tick = 0;
+			previousMeasure = 0;
+			noteOffBuffer.bufferSize = 0;
+		}
+		else
+		{
+			rtCursorFrom = blockCursor;
+			rtCursorTo = rtCursorFrom + blockSize;
+			rtCursor = rtCursorFrom;
+			calcMeasureBeat();
+			patternCursor = (int)(blockCursor / samplesPerTick) - patternCursorOffset; // not floor - that may lead to duplicate notes!!!
 		
-		//Logger::outputDebugString("Enter generateMidi with patternCursor " + String(patternCursor));
-	}
+			//Logger::outputDebugString("Enter generateMidi with patternCursor " + String(patternCursor));
+		}
 
 	int parentLength; // in ticks
-	bool ending; // indicates this variation will play only once
-	bool ended; // indicates this variation was ending==true and has now ended
 	MidiMessage msg; 
 	int noteChild = 0; 
+	int ticksTaken;
+	int noteNumber;
+	int length;
+	int channel;
+	int CC = 0;
+	int value = 0;
+	int64 timestamp;
 
 #ifdef PRESETZ
 	UNUSED(recBuffer)
 #endif
-#ifdef CHANGE_THIS_TO_IFNDEF_PRESETZ_TEMPORARILY_HERE_TO_AVOID_RECORD
+#ifdef BEATZ
 
 
 	////////////////////////////////////////
@@ -1456,13 +1490,13 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuff
 
 #define RECBUFFERSIZE 100
 	MidiMessage recordBuffer[RECBUFFERSIZE];
-	int recordTiming[RECBUFFERSIZE];
-	int recordBufferSize = 0;
 	int samplePos = 0;
 
-	if (recordingMidi)
+	if (recordingMidi && ((runState==Topiary::Running)||(runState==Topiary::Ending)))
 	{
 		TopiaryVariation* varpat = nullptr;
+		int rememberPatternCursor = patternCursor;
+
 		for (MidiBuffer::Iterator it(*recBuffer); it.getNextEvent(msg, samplePos);)
 		{	
 			if (msg.isNoteOn() || msg.isNoteOff())
@@ -1471,18 +1505,18 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuff
 					varpat = &(variation[variationRunning].pattern);
 				varpat->add();
 				int nIndex = varpat->numItems-1;
-				varpat->dataList[nIndex].ID = -1: // dummy
-				varpat->dataList[nIndex].note = it->getNoteNumber();
-				varpat->dataList[nIndex].velocity = it->getNoteVelocity();
-				varpat->dataList[nIndex].channel = recordChannel;
+				varpat->dataList[nIndex].ID = -1; // dummy
+				varpat->dataList[nIndex].note = msg.getNoteNumber();
+				varpat->dataList[nIndex].velocity = msg.getVelocity();
+				varpat->dataList[nIndex].channel = msg.getChannel();
 				varpat->dataList[nIndex].length = -1; // so we know not to generate a noteOff event (because the noteOff will follow)
 
-				if (it->isNoteOn())
-					varpat->dataList[nIndex].miditype = Topiary::MidiType::NoteOn;
+				if (msg.isNoteOn())
+					varpat->dataList[nIndex].midiType = Topiary::MidiType::NoteOn;
 				else
-					varpat->dataList[nIndex].miditype = Topiary::MidiType::NoteOff;
+					varpat->dataList[nIndex].midiType = Topiary::MidiType::NoteOff;
 
-				int64 cursorInTicks = (int64)floor(blockCursor / samplesPerTick) + recordTiming[r];
+				int64 cursorInTicks = (int64)floor(blockCursor / samplesPerTick) + (int)(samplePos / samplesPerTick);
 				cursorInTicks = cursorInTicks % variation[variationSelected].pattern.patLenInTicks;
 
 				//int measure = (int)floor(cursorInTicks / (ticksPerBeat* denominator)) + 1;
@@ -1512,224 +1546,247 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuff
 	//Logger::outputDebugString("Generate midi; patcur" + String(patternCursor));
 	//Logger::outputDebugString("next RTcursor " + String(nextRTGenerationCursor));
 
-	jassert(beat >= 0);
-	jassert(measure >= 0);
-
-	//getVariationDetailForGenerateMidi(&parent, &noteChild, parentLength, ending, ended);
-	TopiaryVariation* parentPattern = &(variation[variationRunning].pattern);
-	parentLength = parentPattern->patLenInTicks;
-	ending = variation[variationRunning].ending;
-	ended = variation[variationRunning].ended;
-	noteChild = variation[variationRunning].currentPatternChild;
-
-	int nextPatternCursor;  // patternCursor is global and remembers the last one we generated
-
-	int ticksTaken;
-	int noteNumber;
-	int length;
-	int channel;
-	int CC = 0;
-	int value = 0;
-
-	patternCursor = (int)patternCursor % parentLength;
-	
-	//Logger::outputDebugString("Next note on to generate afer current tick " + String(patternCursor));
-
-	bool walk;
-
-	if (!ending || (ending && !ended))
+	if ((runState == Topiary::Running) || (runState == Topiary::Ending))
 	{
-		walk = walkToTick(parentPattern, noteChild, patternCursor);
-	}
-	else
-		walk = false; // meaning an ending variation and ended
+		jassert(beat >= 0);
+		jassert(measure >= 0);
 
-	//Logger::outputDebugString(String("Walk: ") + String((int)walk));
+		TopiaryVariation* parentPattern = &(variation[variationRunning].pattern);
+		parentLength = parentPattern->patLenInTicks;
+		//ending = variation[variationRunning].ending;
+		//ended = variation[variationRunning].ended;
+		noteChild = variation[variationRunning].currentPatternChild;
 
-	if (walk)
-	{
-		// set patternCursors where we are now, so the offsets in sample time are correct
-		patternCursor = (int)patternCursor % parentLength;  //////// because rtCursors are multi loops !!!!
-		
-		//Logger::outputDebugString("PatternCursor = " + String(patternCursor));
-		//Logger::outputDebugString("DEBUGPatternCursor = " + String(DEBUGpatCursor));
-		//Logger::outputDebugString("PatternCursorOffset = " + String(patternCursorOffset));
-		//Logger::outputDebugString("Blockcursor ; " + String(blockCursor));
-		
+		int nextPatternCursor;  // patternCursor is global and remembers the last one we generated
 
-		while (rtCursor < rtCursorTo)
+		patternCursor = (int)patternCursor % parentLength;
+
+		//Logger::outputDebugString("Next note on to generate afer current tick " + String(patternCursor));
+
+		bool walk;
+
+		if (!variation[variationRunning].ending || (variation[variationRunning].ending && !variation[variationRunning].ended))
 		{
-			nextPatternCursor = parentPattern->dataList[noteChild].timestamp;
+			walk = walkToTick(parentPattern, noteChild, patternCursor);
+		}
+		else
+			walk = false; // meaning an ending variation and ended
 
-			ticksTaken = nextPatternCursor - patternCursor;  // ticks taken in this timeframe
-			if (ticksTaken < 0)
+		//Logger::outputDebugString(String("Walk: ") + String((int)walk));
+
+		if (walk)
+		{
+			// set patternCursors where we are now, so the offsets in sample time are correct
+			patternCursor = (int)patternCursor % parentLength;  //////// because rtCursors are multi loops !!!!
+
+			//Logger::outputDebugString("PatternCursor = " + String(patternCursor));
+			//Logger::outputDebugString("DEBUGPatternCursor = " + String(DEBUGpatCursor));
+			//Logger::outputDebugString("PatternCursorOffset = " + String(patternCursorOffset));
+			//Logger::outputDebugString("Blockcursor ; " + String(blockCursor));
+
+
+			while (rtCursor < rtCursorTo)
 			{
-				//Logger::outputDebugString("PatternCursor looped over end");
+				auto rememberChild = noteChild;
 
-				if (ending)
+				nextPatternCursor = parentPattern->dataList[noteChild].timestamp;
+
+				ticksTaken = nextPatternCursor - patternCursor;  // ticks taken in this timeframe
+				if (ticksTaken < 0)
 				{
-					// this is an ending variation and it has now ended
-					ended = true;
-					setEnded();
-					//Log("Ended ---------------------------------------", Topiary::LogType::Variations);
-					rtCursor = rtCursorTo; // prevent next if to pass so nothing further is generated
-				}
+					Logger::outputDebugString("PatternCursor looped over end");
 
-				ticksTaken += parentLength;
-				jassert(ticksTaken >= 0);
-			}
-
-			if ((rtCursor + (int64)(ticksTaken*samplesPerTick)) < rtCursorTo)
-			{
-				//Logger::outputDebugString("GENERATING A NOTE " + String(noteChild->getIntAttribute("midiType")) + "------------>" + String(noteChild->getIntAttribute("Note"))+" at timest "+ String(noteChild->getIntAttribute("Timestamp")));
-				//Logger::outputDebugString(String("Next Patcursor ") + String(nextPatternCursor));
-
-				////// GENERATE MIDI EVENT
-				int midiType = parentPattern->dataList[noteChild].midiType;
-				
-				int pMeasure = (int) floor(parentPattern->dataList[noteChild].timestamp / (numerator * Topiary::TICKS_PER_QUARTER));
-				if (pMeasure != previousMeasure)
-				{
-					// regenerate a measure
-#ifdef BEATZ
-					if (!recordingMidi) // because we do not want to loose the recorded notes!
+					if (variation[variationRunning].ending)
 					{
-						generateVariation(variationRunning, pMeasure+1);
-				
-						// DO WE NEED TO WALK HERE - I THINK WE CAN AVOID IT !!!! GETVARIATIONDETAIL NOT NEEDED EITHER???
-						noteChild = 0;
-						walkToTick(parentPattern, noteChild, patternCursor);
+						// this is an ending variation and it has now ended - state goes to ENDING because there may be note Off events still to process
+						setRunState(Topiary::TransportRunState::Stopped, false); // false because the model already has the lock
+						rtCursor = rtCursorTo;
+						//Log("Ended ---------------------------------------", Topiary::LogType::Variations);
+						rtCursor = rtCursorTo; // prevent next if to pass so nothing further is generated
 					}
-#endif
-					previousMeasure = pMeasure;
+					else if (runState == Topiary::Ending)
+					{
+						setRunState(Topiary::TransportRunState::Stopped, false); // false because the model already has the lock
+						//Log("Ended ---------------------------------------", Topiary::LogType::Variations);
+						rtCursor = rtCursorTo; // prevent next if to pass so nothing further is generated
+
+					}
+
+					ticksTaken += parentLength;
+					jassert(ticksTaken >= 0);
 				}
-				if ((midiType == Topiary::MidiType::NoteOn) || (midiType == Topiary::MidiType::NoteOff))
-				{ // Generate note on/off; ignore other midi events for now
-					length = parentPattern->dataList[noteChild].length;
-					noteNumber = parentPattern->dataList[noteChild].note;
-					channel = parentPattern->dataList[noteChild].channel;
-					if (midiType == Topiary::MidiType::NoteOn)
-						msg = MidiMessage::noteOn(channel, noteNumber, (float)parentPattern->dataList[noteChild].velocity / 128);
-					else
-						msg = MidiMessage::noteOff(channel, noteNumber, (float)parentPattern->dataList[noteChild].velocity / 128);
 
-					// DEBUG LOGIC !!!!!!!!!
-					// outputting the pattern tick values + the tick value in the generated pattern
-					// int64 cursorInTicks = (int64)floor( (rtCursor + (int64)(ticksTaken*samplesPerTick) ) / samplesPerTick    );
-					// now do that modulo the patternlenght in ticks
-					// cursorInTicks = cursorInTicks % parentLength;
-					// Logger::outputDebugString("Generated note at realtime pat tick " + String(cursorInTicks) + " / tick in pattern " + String(noteChildOn->getStringAttribute("Timestamp")));
-					/////////////////////////
-
-					// schedule noteOff event if this is noteOn and len != -1; otherwise it's a recording event and the noteOff will follow
-					if ((midiType == Topiary::MidiType::NoteOn) && (parentPattern->dataList[noteChild].length != -1))
-						noteOffBuffer.push(noteNumber, rtCursor + (int64)((ticksTaken + parentPattern->dataList[noteChild].length) * samplesPerTick));
-
-				}
-				else
+				if ((rtCursor + (int64)(ticksTaken*samplesPerTick)) < rtCursorTo)
 				{
-					if (midiType == Topiary::MidiType::CC)
+					//Logger::outputDebugString("GENERATING A NOTE " + String(noteChild->getIntAttribute("midiType")) + "------------>" + String(noteChild->getIntAttribute("Note"))+" at timest "+ String(noteChild->getIntAttribute("Timestamp")));
+					//Logger::outputDebugString(String("Next Patcursor ") + String(nextPatternCursor));
+
+					////// GENERATE MIDI EVENT
+					int midiType = parentPattern->dataList[noteChild].midiType;
+
+					int pMeasure = (int)floor(parentPattern->dataList[noteChild].timestamp / (numerator * Topiary::TICKS_PER_QUARTER));
+					if (pMeasure != previousMeasure)
+					{
+						// regenerate a measure
+#ifdef BEATZ
+						if (!recordingMidi) // because we do not want to loose the recorded notes!
+						{
+							generateVariation(variationRunning, pMeasure + 1);
+
+							// DO WE NEED TO WALK HERE - I THINK WE CAN AVOID IT !!!! GETVARIATIONDETAIL NOT NEEDED EITHER???
+							noteChild = 0;
+							walkToTick(parentPattern, noteChild, patternCursor);
+							midiType = parentPattern->dataList[noteChild].midiType;
+						}
+#endif
+						previousMeasure = pMeasure;
+					}
+					if ((midiType == Topiary::MidiType::NoteOn) || (midiType == Topiary::MidiType::NoteOff))
+					{ // Generate note on/off; ignore other midi events for now
+						length = parentPattern->dataList[noteChild].length;
+						noteNumber = parentPattern->dataList[noteChild].note;
+						channel = parentPattern->dataList[noteChild].channel;
+						timestamp = (int)(rtCursor - rtCursorFrom);
+
+						if (midiType == Topiary::MidiType::NoteOn)
+							msg = MidiMessage::noteOn(channel, noteNumber, (float)parentPattern->dataList[noteChild].velocity / 128);
+						else
+							msg = MidiMessage::noteOff(channel, noteNumber, (float)0.0);
+
+						// DEBUG LOGIC !!!!!!!!!
+						// outputting the pattern tick values + the tick value in the generated pattern
+						// int64 cursorInTicks = (int64)floor( (rtCursor + (int64)(ticksTaken*samplesPerTick) ) / samplesPerTick    );
+						// now do that modulo the patternlenght in ticks
+						// cursorInTicks = cursorInTicks % parentLength;
+						// Logger::outputDebugString("Generated note at realtime pat tick " + String(cursorInTicks) + " / tick in pattern " + String(noteChildOn->getStringAttribute("Timestamp")));
+						/////////////////////////
+
+						/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+						// schedule noteOff event if this is noteOn and len != -1; otherwise it's a recording event and the noteOff will follow
+						/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+						if ((midiType == Topiary::MidiType::NoteOn) && (parentPattern->dataList[noteChild].length != -1))
+						{
+							noteOffBuffer.push(channel, noteNumber, rtCursor + (int64)((ticksTaken + parentPattern->dataList[noteChild].length) * samplesPerTick));
+							jassert(channel > 0);
+						}
+
+						///////////////////////////////////
+						// OUTPUT THE NOTE EVENT
+						///////////////////////////////////
+
+						midiBuffer->addEvent(msg, (int)timestamp);
+						if (logMidiOut)
+							logMidi(false, msg);
+					}
+					else if (midiType == Topiary::MidiType::CC)
 					{
 						channel = parentPattern->dataList[noteChild].channel;
 						CC = parentPattern->dataList[noteChild].CC;
 						value = parentPattern->dataList[noteChild].value;
 						msg = MidiMessage::controllerEvent(channel, CC, value);
+						timestamp = (int)(rtCursor - rtCursorFrom);
 						processCC(msg); // make sure model is updated with new cc values
+
+						///////////////////////////////////
+						// OUTPUT THE NOTE EVENT
+						///////////////////////////////////
+
+						midiBuffer->addEvent(msg, (int)timestamp);
+						if (logMidiOut)
+							logMidi(false, msg);
 					}
-				}
+					else if (midiType == Topiary::MidiType::NOP)
+					{
+						//jassert(false); // but this is really fine
+					}
 
-				patternCursor = nextPatternCursor;  // that is the tick of the event we just generated
-				if (patternCursor >= parentLength) patternCursor = patternCursor - parentLength;
+					patternCursor = nextPatternCursor;  // that is the tick of the event we just generated
+					if (patternCursor >= parentLength) patternCursor = patternCursor - parentLength;
 
-				auto rememberChild = noteChild;
-				nextTick(parentPattern, noteChild);
+					nextTick(parentPattern, noteChild);
 
-				//Logger::outputDebugString(String("NOTE ON --------"));
-				rtCursor = rtCursor + (int64)(ticksTaken * samplesPerTick);
+					//Logger::outputDebugString(String("NOTE ON --------"));
+					rtCursor = rtCursor + (int64)(ticksTaken * samplesPerTick);
 
-				jassert((rtCursor - rtCursorFrom) >= 0);
-				jassert((rtCursor - rtCursorFrom) < blockSize);
+					jassert((rtCursor - rtCursorFrom) >= 0);
+					jassert((rtCursor - rtCursorFrom) < blockSize);
 
-				midiBuffer->addEvent(msg, (int)(rtCursor - rtCursorFrom));
-				if (logMidiOut)
-					logMidi(false, msg);
+					if (noteChild == rememberChild)
+					{
+						// can only happen in recording in empty pattern; note OFF but no note ON yet
+						// force end
+						rtCursor = rtCursor + blockSize; jassert(false);
+					}
+					//Logger::outputDebugString(String("nxtcursor ") + String(nextRTGenerationCursor));
 
-				if (noteChild == rememberChild)
+				}  // generated a note (on or off)
+				else
 				{
-					// can only happen in recording in empty pattern; note OFF but no note ON yet
-					// force end
-					rtCursor = rtCursor + blockSize;
-				}
-				//Logger::outputDebugString(String("nxtcursor ") + String(nextRTGenerationCursor));
+					// done for now; next event is over rtCursorTo
+					// let's place ourselves ready for the next round
+					// so either walkOn and we have the next On note ready
+					// or walkOff and next Off note ready as well
+					// main goal is to set nextPatternCursor!
 
-			}  // generated a note (on or off)
-			else
-			{
-				// done for now; next event is over rtCursorTo
-				// let's place ourselves ready for the next round
-				// so either walkOn and we have the next On note ready
-				// or walkOff and next Off note ready as well
-				// main goal is to set nextPatternCursor!
+					//Logger::outputDebugString(String(" ++++++++++++++ done +++++++++++++++++++++"));
 
-				//Logger::outputDebugString(String(" ++++++++++++++ done +++++++++++++++++++++"));
+					nextPatternCursor = parentPattern->dataList[noteChild].timestamp;
+					ticksTaken = nextPatternCursor - patternCursor;
+					if (ticksTaken < 0)
+					{
+						ticksTaken += parentLength;
+						//Logger::outputDebugString(String("Running over end of pattern!!!"));
+					}
 
-				nextPatternCursor = parentPattern->dataList[noteChild].timestamp;
-				ticksTaken = nextPatternCursor - patternCursor;
-				if (ticksTaken < 0)
-				{
-					ticksTaken += parentLength;
-					//Logger::outputDebugString(String("Running over end of pattern!!!"));
-				}
+					patternCursor = nextPatternCursor;
+					if (patternCursor >= parentLength) patternCursor = patternCursor - parentLength;
 
-				patternCursor = nextPatternCursor;
-				if (patternCursor >= parentLength) patternCursor = patternCursor - parentLength;
+					// we set rtCursor at the time of the next event; will possibly break out of the loop if not within this block
 
-				// we set rtCursor at the time of the next event; will possibly break out of the loop if not within this block
-
-				rtCursor = rtCursorTo; // force break out of the loop
-				nextRTGenerationCursor = rtCursorFrom + (int64)(ticksTaken * samplesPerTick);
-				//int nextTick = (int) (nextRTGenerationCursor / samplesPerTick) % parentLength;
-				//Logger::outputDebugString("Next tick to generate (off nextRTcursor): " + String(nextTick));
-			}  // end loop over from --> to
+					rtCursor = rtCursorTo; // force break out of the loop
+					nextRTGenerationCursor = rtCursorFrom + (int64)(ticksTaken * samplesPerTick);
+					//int nextTick = (int) (nextRTGenerationCursor / samplesPerTick) % parentLength;
+					//Logger::outputDebugString("Next tick to generate (off nextRTcursor): " + String(nextTick));
+				}  // end loop over from --> to
+			}
 		}
-	}
-	else
-	{
-		// walk did not find a note to generate
-		// so pattern is empty or no fitting note events found
-		if ((noteChild == 0))
+		else
 		{
-			// make sure our cursors keep running
-			// 		  nextRTGenerationCursor = rtCursorTo + 1;
-			nextRTGenerationCursor = rtCursorTo;
-			patternCursor = +(int)(blockSize / samplesPerTick);
+			// walk did not find a note to generate
+			// so pattern is empty or no fitting note events found
+			if ((noteChild == 0))
+			{
+				// make sure our cursors keep running
+				// 		  nextRTGenerationCursor = rtCursorTo + 1;
+				nextRTGenerationCursor = rtCursorTo;
+				patternCursor = +(int)(blockSize / samplesPerTick);
 
-		}
-	} // pattern is empty
-	
+			}
+		} // pattern is empty
+	} // if Running or Ending
+
 	// output any noteOff events scheduled in this block - this can be called even when ended!!!
 
-	int64 debugNote=-1;
-	int64 debugTimestamp = -1;
 	while (noteOffBuffer.firstTimeStamp() < (blockCursor+ blockSize))
 	{
-		int64 timestamp;
-		int note;
-		noteOffBuffer.pop(note, timestamp);
-		msg = MidiMessage::noteOff(recordChannel, note, (float)0.0);
+		noteOffBuffer.pop(channel, noteNumber, timestamp);
+		msg = MidiMessage::noteOff(channel, noteNumber, (float)0.0);
 		midiBuffer->addEvent(msg, (int)(timestamp - blockCursor));
 		jassert((timestamp - blockCursor) >=0);
 		jassert((timestamp - blockCursor) < blockSize);
-		jassert( (note!= debugNote) || (timestamp!=debugTimestamp));
-		debugNote = note;
-		debugTimestamp = timestamp;
+		//jassert( (note!= debugNote) || (timestamp!=debugTimestamp));
+		//debugNote = note;
+		//debugTimestamp = timestamp;
 		if (logMidiOut)
 			logMidi(false, msg);
 	}
 
-	blockCursor = blockCursor + blockSize;
-	calcMeasureBeat();
-	
+	if ((runState == Topiary::Running) || (runState == Topiary::Ending))
+	{
+		blockCursor = blockCursor + blockSize;
+		calcMeasureBeat();
+	}
 } // generateMidi
 
 

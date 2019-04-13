@@ -17,12 +17,9 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-//#include"../../Topiary/Source/TopiaryTable.h"  // included in model.h
-#include"TopiaryBeatsModel.h"
-
-//class TopiaryBeatsMasterComponent;
+#include "TopiaryBeatsModel.h"
+#include "../../Topiary/Source/TopiaryTableList.h"
 
 class TopiaryBeatsMasterComponent : public Component, ActionListener
 {
@@ -39,7 +36,7 @@ private:
 	TopiaryLookAndFeel topiaryLookAndFeel;
 	void actionListenerCallback(const String &message);
 	// patterns stuff
-	TopiaryTable patternsTable;
+	TopiaryTableList patternsTable;
 	XmlElement *patternListHeader = nullptr;
 	XmlElement *patternListData = nullptr;
 	TextButton insertPatternButton;
@@ -56,7 +53,8 @@ private:
 	int patternTH = 240;
 
 	// pool stuff
-	TopiaryTable poolTable;
+	
+	TopiaryTableList poolTable;
 	XmlElement *poolListHeader = nullptr;
 	XmlElement *poolListData = nullptr;
 	

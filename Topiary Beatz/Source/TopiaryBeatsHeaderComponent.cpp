@@ -18,11 +18,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-//#include "../JuceLibraryCode/JuceHeader.h"
-//#include "TopiaryBeatsHeaderComponent.h"
-//#include "../../Topiary/Source/Topiary.h"
-//#include "TopiaryBeatsTransportComponent.h"
-//#include "TopiaryBeatsVariationButtonsComponent.h"
 #include "TopiaryBeatsComponent.h"
 
 TopiaryBeatsHeaderComponent::TopiaryBeatsHeaderComponent()

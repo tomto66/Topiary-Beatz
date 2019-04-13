@@ -17,7 +17,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#pragma once
 //#include "../JuceLibraryCode/JuceHeader.h"
 //#include "../../Topiary/Source/Topiary.h"
 #include "TopiaryBeatsModel.h"

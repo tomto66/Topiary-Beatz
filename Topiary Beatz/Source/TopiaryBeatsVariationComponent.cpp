@@ -17,7 +17,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "../../Topiary/Source/Topiary.h"
 #include "TopiaryBeatsModel.h"
@@ -34,8 +33,8 @@ TopiaryBeatsVariationComponent::TopiaryBeatsVariationComponent()
 	addAndMakeVisible(enablePoolComponent);
 	enablePoolComponent.setParent(this);
 
-	addAndMakeVisible(poolLengthComponent);
-	poolLengthComponent.setParent(this);
+	//addAndMakeVisible(poolLengthComponent);
+	//poolLengthComponent.setParent(this);
 
 	addAndMakeVisible(poolChannelComponent);
 	poolChannelComponent.setParent(this);
@@ -91,18 +90,14 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 	{
 		initializing = false; // don't do anything but un-set initializing
 	}
-
 	
 	bool enables[4];
-	int poolLength[4][3][2];
 	int poolChannel[4];
 	
-
 	enables[0] = enablePoolComponent.enableButton1.getToggleState();
 	enables[1] = enablePoolComponent.enableButton2.getToggleState();
 	enables[2] = enablePoolComponent.enableButton3.getToggleState();
 	enables[3] = enablePoolComponent.enableButton4.getToggleState();
-
 
 	if (variation != (variationDefinitionComponent.variationCombo.getSelectedId() - 1))
 	{
@@ -112,25 +107,12 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 	jassert(variation > -1);
 
 	int selectedPatternId = variationDefinitionComponent.patternCombo.getSelectedId() -1;
-
-	for (int j = 0; j < 4; j++)
-	{
-		poolLength[j][0][0] = poolLengthComponent.poolStart[j].measureEditor.getText().getIntValue();
-		poolLength[j][0][1] = poolLengthComponent.poolStop[j].measureEditor.getText().getIntValue();
-		poolLength[j][1][0] = poolLengthComponent.poolStart[j].beatEditor.getText().getIntValue();
-		poolLength[j][1][1] = poolLengthComponent.poolStop[j].beatEditor.getText().getIntValue();
-		poolLength[j][2][0] = poolLengthComponent.poolStart[j].tickEditor.getText().getIntValue();
-		poolLength[j][2][1] = poolLengthComponent.poolStop[j].tickEditor.getText().getIntValue();
-
-	}
-
 	poolChannel[0] = poolChannelComponent.poolChannelEditor1.getText().getIntValue();
 	poolChannel[1] = poolChannelComponent.poolChannelEditor2.getText().getIntValue();
 	poolChannel[2] = poolChannelComponent.poolChannelEditor3.getText().getIntValue();
 	poolChannel[3] = poolChannelComponent.poolChannelEditor4.getText().getIntValue();
 
-	bool refused = beatsModel->validateVariationDefinition(variation, variationDefinitionComponent.enableButton.getToggleState(),  variationDefinitionComponent.nameEditor.getText(), selectedPatternId, poolLength);
-
+	bool refused = beatsModel->validateVariationDefinition(variation, variationDefinitionComponent.enableButton.getToggleState(),  variationDefinitionComponent.nameEditor.getText(), selectedPatternId);
 
 	// channels are not validated in the model; because that validation does not depend on the model state
 
@@ -157,7 +139,7 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 
 	if (!refused)
 	{
-		beatsModel->setVariationDefinition(variation, variationDefinitionComponent.enableButton.getToggleState(), variationDefinitionComponent.nameEditor.getText(), selectedPatternId, enables, poolLength, poolChannel);  //// TODO last parameter
+		beatsModel->setVariationDefinition(variation, variationDefinitionComponent.enableButton.getToggleState(), variationDefinitionComponent.nameEditor.getText(), selectedPatternId, enables, poolChannel, variationDefinitionComponent.endingButton.getToggleState());
 		beatsModel->Log("Variation "+String(variation+1)+" saved.", Topiary::LogType::Info);
 	}
 	else
@@ -187,16 +169,17 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 
 	if (variation <0 ) return;  // this should never happen, except when initializing
 
-	bool enable;
+	bool enable, ending;
 	String vname;
 	int patternId;
 
 	bool enables[4];
-	int poolLength[4][3][2];
+	
 	int poolChannel[4];
 
-	beatsModel->getVariationDefinition(variation, enable, vname, patternId, enables, poolLength, poolChannel);
+	beatsModel->getVariationDefinition(variation, enable, vname, patternId, enables, poolChannel, ending);
 	variationDefinitionComponent.enableButton.setToggleState(enable, dontSendNotification);
+	variationDefinitionComponent.endingButton.setToggleState(ending, dontSendNotification);
 	variationDefinitionComponent.nameEditor.setText(vname, dontSendNotification);
 
 	enablePoolComponent.enableButton1.setToggleState(enables[0], dontSendNotification);
@@ -208,17 +191,7 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 	poolChannelComponent.poolChannelEditor2.setText(String(poolChannel[1]));
 	poolChannelComponent.poolChannelEditor3.setText(String(poolChannel[2]));
 	poolChannelComponent.poolChannelEditor4.setText(String(poolChannel[3]));
-
-	for (int j = 0; j < 4; j++)
-	{
-		poolLengthComponent.poolStart[j].measureEditor.setText(String(poolLength[j][0][0]));
-		poolLengthComponent.poolStop[j].measureEditor.setText(String(poolLength[j][0][1]));
-		poolLengthComponent.poolStart[j].beatEditor.setText(String(poolLength[j][1][0]));
-		poolLengthComponent.poolStop[j].beatEditor.setText(String(poolLength[j][1][1]));
-		poolLengthComponent.poolStart[j].tickEditor.setText(String(poolLength[j][2][0]));
-		poolLengthComponent.poolStop[j].tickEditor.setText(String(poolLength[j][2][1]));
-	}
-
+	
 	// find the appropriate item in patternCombo, and select it; if nothing sel = variationDefinitionComponent.patternCombo.getSelectedId();
 	int items = variationDefinitionComponent.patternCombo.getNumItems();
 	
@@ -474,9 +447,9 @@ void TopiaryBeatsVariationComponent::paint(Graphics& g)
 	UNUSED(g)
 	
 	variationDefinitionComponent.setBounds(10, 10, variationDefinitionComponent.width, variationDefinitionComponent.heigth);
-	enablePoolComponent.setBounds(10, 150, enablePoolComponent.width, enablePoolComponent.heigth);
-	poolLengthComponent.setBounds(160, 10, poolLengthComponent.width, poolLengthComponent.heigth);
-	poolChannelComponent.setBounds(10, 270, poolChannelComponent.width, poolChannelComponent.heigth);
+	enablePoolComponent.setBounds(10, 180, enablePoolComponent.width, enablePoolComponent.heigth);
+
+	poolChannelComponent.setBounds(10, 300, poolChannelComponent.width, poolChannelComponent.heigth);
 	randomNoteComponent.setBounds(350, 10, randomNoteComponent.width, randomNoteComponent.heigth);
 	swingComponent.setBounds(450, 10, swingComponent.width, swingComponent.heigth);
 	velocityComponent.setBounds(550, 10, velocityComponent.width, velocityComponent.heigth);

@@ -123,7 +123,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 		jassert(selection > -1);
 		
 		beatsModel->deletePoolNote(selection);
-		beatsModel->generateAllVariations();
+		beatsModel->generateAllVariations(-1);
 		beatsModel->sendActionMessage(MsgNotePool); // tables resort the data!
 		poolTable.updateContent();
 		poolTable.selectRow(0);   // select the first row
@@ -136,7 +136,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	newPoolButton.setButtonText("Add note");
 	newPoolButton.onClick = [this] {
 		beatsModel->addPoolNote();
-		beatsModel->sendActionMessage(MsgNotePool); // tables resort the data!
+		//beatsModel->sendActionMessage(MsgNotePool); // done in the model!
 		poolTable.selectRow(beatsModel->getNumPatterns()-1 );   // select the new row
 	};
 
@@ -146,7 +146,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	regeneratePoolButton.setButtonText("Rebuild");
 	regeneratePoolButton.onClick = [this] {
 		beatsModel->rebuildPool(false);
-		beatsModel->generateAllVariations();
+		beatsModel->generateAllVariations(-1);
 		beatsModel->sendActionMessage(MsgNotePool); // tables resort the data!
 	};
 
@@ -164,7 +164,7 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	cleanPoolButton.setButtonText("Clean");
 	cleanPoolButton.onClick = [this] {
 		beatsModel->rebuildPool(true); // true makes it clean!
-		beatsModel->generateAllVariations();
+		beatsModel->generateAllVariations(-1);
 		beatsModel->sendActionMessage(MsgNotePool); // tables resort the data!
 	};
 
@@ -302,12 +302,10 @@ TopiaryBeatsMasterComponent::~TopiaryBeatsMasterComponent()
 void TopiaryBeatsMasterComponent::setModel(TopiaryBeatsModel* m)
 {
 	beatsModel = m;
-	beatsModel->getMasterModel(&patternListHeader, &patternListData, &poolListHeader, &poolListData);
+	
+	patternsTable.setModel(beatsModel->getPatternList());
 
-	patternsTable.setDataLists(patternListHeader, patternListData);
-
-	poolTable.setDataLists(poolListHeader, poolListData);
-	poolTable.setModel(beatsModel); // because it will have to validate note data!
+	poolTable.setModel(beatsModel->getPoolList()); // because it will have to validate note data!
 	beatsModel->setListener((ActionListener*)this);
 
 	// trick to call the model and read 
@@ -388,11 +386,9 @@ void TopiaryBeatsMasterComponent::resized()
 void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
 {
 	if (message.compare(MsgLoad) == 0)
-	{
-		// refresh the tables because data adresses may have changed
-		beatsModel->getMasterModel(&patternListHeader, &patternListData, &poolListHeader, &poolListData);
-		patternsTable.setDataLists(patternListHeader, patternListData);
-		poolTable.setDataLists(poolListHeader, poolListData);
+	{	
+		patternsTable.setModel(beatsModel->getPatternList());
+		poolTable.setModel(beatsModel->getPoolList());
 	}
 
 	else if (message.compare(MsgPatternList) == 0)
@@ -408,6 +404,7 @@ void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
 		}
 		else
 			patternsTable.selectRow(0);
+		setButtonStates();
 	}
 	else if (message.compare(MsgNotePool) == 0)
 	{
@@ -417,6 +414,7 @@ void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
 	}
 	if (message.compare(MsgTransport) == 0)
 		getSettings();
+
 } // actionListenerCallback
 
 ///////////////////////////////////////////////////////////////////////////
