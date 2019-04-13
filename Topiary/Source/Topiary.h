@@ -76,7 +76,7 @@ class Topiary
 		Running = 1,     // really running, producing output
 		Recording = 2,   // running & recording (never in performance, only in setup)
 		Armed = 3,  	 // ready to start running  @first note in
-		Ended = 4,       // transport still running, but has produced last note (after an ending pattern; will not produce more notes)
+		//Ended = 4,       // transport still running, but has produced last note (after an ending pattern; will not produce more notes)
 		Ending = 5		 // stop command given, but finishing the last notes; goes to Ended when totally done
 	};
 
@@ -84,7 +84,8 @@ class Topiary
 	{
 		NoteOn = 1,
 		NoteOff = 2,
-		CC = 3
+		CC = 3,
+		NOP = 99
 	};
 
 	enum Quantization : int
@@ -111,7 +112,6 @@ class Topiary
 
 	enum LogType : int
 	{
-		Debug = 0,		// low lever info for debugging
 		Warning = 1,	// things that go wrong, user error
 		MidiIn = 2,		// monitor incoming midi
 		MidiOut = 3,	// monitor outgoing midi
@@ -128,8 +128,16 @@ class Topiary
 		DoneGenerating = 2607 // meaning it needs to go back to NothingToDo
 	};
 
-	static const int TICKS_PER_QUARTER = 240;
+	enum HeaderType : int
+	{
+		Int = 3604,
+		Bool = 3605,
+		String = 3607,
+		NoteLabel = 3608
+	};
 
+	static const int TICKS_PER_QUARTER = 240;
+	static const int ToDeleteID = 999999999;
 private:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Topiary)
@@ -171,6 +179,8 @@ public:
 	static const Colour paleBlue;
 	static const Colour sliderTrace;
 	static const Colour sliderThumb;
+	static const Colour purple;
+
 private:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryColour)
@@ -178,5 +188,3 @@ private:
 }; // TopiaryColour
 
 /////////////////////////////////////////////////////////////////////////////
-
-

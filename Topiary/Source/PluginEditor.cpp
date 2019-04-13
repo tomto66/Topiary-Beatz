@@ -16,38 +16,43 @@ You should have received a copy of the GNU General Public License
 along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 
 /////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-/*
 
-This code has generic stuff that can be included in every Topiary model code.
-It includes:
-- Variation logic (that depends on variation variables defined in the actual
-  models (not in the generic TopiaryModel))
+This code has a generic editor component that can be included in every Topiary plugin.
 
-CAREFUL: needs a symbol TOPIARYMODEL to actually build!
+CAREFUL: needs symbols:
+- TOPIARYMODEL e.g. TOPIARYMODEL
+- TOPIARYEDITORCOMPONENT - e.g. TopiaryPresetsComponent
 
 */
 /////////////////////////////////////////////////////////////////////////////
 
+#include "PluginProcessor.h"
+#include "PluginEditor.h"
+
 #ifdef TOPIARYMODEL
-#ifndef FILE_TOPIARYMIDILEARNEDITOR_SEEN
-#define FILE_TOPIARYMIDILEARNEDITOR_SEEN
-class TOPIARYMODEL;
 
-class TopiaryMidiLearnEditor : public TextEditor
+
+TopiaryAudioProcessorEditor::TopiaryAudioProcessorEditor (TopiaryAudioProcessor& p)
+    : AudioProcessorEditor (&p), processor (p)
 {
-public:
-	TopiaryMidiLearnEditor();
-	~TopiaryMidiLearnEditor();
-	void addPopupMenuItems(PopupMenu &menuToAddTo, const MouseEvent *mouseClickEvent) override;
-	void performPopupMenuAction(int menuItemID) override;
-	void setModel(TOPIARYMODEL* m, int ID);
+	setSize(TOPIARYEDITORCOMPONENT::width, TOPIARYEDITORCOMPONENT::heigth);
+	model = processor.getModel();
+	topiaryEditorComponent.setModel(model);
+	addAndMakeVisible(topiaryEditorComponent);
+}
 
-private:
-	TOPIARYMODEL *model;
-	int Id; // unique identifier for the model
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryMidiLearnEditor)
-};
+TopiaryAudioProcessorEditor::~TopiaryAudioProcessorEditor()
+{
+}
 
-#endif
+void TopiaryAudioProcessorEditor::paint (Graphics& g)
+{
+	UNUSED(g)
+	topiaryEditorComponent.setBounds(getLocalBounds());
+}
+
+void TopiaryAudioProcessorEditor::resized()
+{
+    
+}
 #endif

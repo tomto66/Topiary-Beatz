@@ -17,8 +17,7 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "Topiary.h"
+#pragma once
 #include "TopiaryModel.h"
 
 void TopiaryModel::saveStateToMemoryBlock(MemoryBlock& destData)
@@ -56,13 +55,11 @@ void TopiaryModel::savePreset(String msg, String extension)
 	{
 		filePath = f.getParentDirectory().getFullPathName();
 		f = myChooser.getResult();
-		addParametersToModel();  // this adds and XML element "Parameters" to the model
+		addParametersToModel();  // this adds all data as XML elements to model
 		String myXmlDoc = model->createDocument(String());
 		f.replaceWithText(myXmlDoc);
 		//Logger::writeToLog(myXmlDoc);
 
-		// now delete the no-longer-needed "Parameters" child
-		model->deleteAllChildElementsWithTagName("Parameters");
 	}
 } // savePreset
 
@@ -99,17 +96,13 @@ TopiaryModel::TopiaryModel()
 	runState = Topiary::Stopped;
 	BPM = 120;
 	numerator = 4; denominator = 4;
-	numPatterns = 0;
-	topiaryThread.setModel(this);
-	topiaryThread.startThread(8); // thread should start with a wait - and inherited model should call notify when init is done
-
+	
 } // TopiaryModel
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TopiaryModel::~TopiaryModel()
 {
-	topiaryThread.stopThread(-1);
 	runState = Topiary::Stopped;
 
 } //~TopiaryModel
@@ -126,10 +119,11 @@ int TopiaryModel::getVariationLenInTicks(int v)
 	return(0);
 }
 
-void TopiaryModel::setVariation(int v)
+void TopiaryModel::setVariation(int v, bool lockIt)
 {
 	// virtual
 	UNUSED(v)
+	UNUSED(lockIt)
 }
 
 bool TopiaryModel::getVariationEnabled(int v)
@@ -162,9 +156,6 @@ void TopiaryModel::Log(String s, int logType)
 		break;
 	case Topiary::LogType::MidiOut:
 		if (!logMidiOut) return;
-		break;
-	case Topiary::LogType::Debug:
-		if (!logDebug) return;
 		break;
 	case Topiary::LogType::Warning:
 		if (!logWarning) return;
@@ -210,7 +201,7 @@ String TopiaryModel::getLastWarning()
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryModel::setLogSettings(bool warning, bool midiIn, bool midiOut, bool debug, bool transport, bool variations, bool info)
+void TopiaryModel::setLogSettings(bool warning, bool midiIn, bool midiOut, bool transport, bool variations, bool info)
 {
 	bool updateNeeded = false;
 
@@ -229,12 +220,6 @@ void TopiaryModel::setLogSettings(bool warning, bool midiIn, bool midiOut, bool 
 	else if (logMidiOut != midiOut)
 	{
 		logMidiOut = midiOut;
-		updateNeeded = true;
-	}
-
-	else if (logDebug != debug)
-	{
-		logDebug = debug;
 		updateNeeded = true;
 	}
 
@@ -272,12 +257,11 @@ void TopiaryModel::clearLog()
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryModel::getLogSettings(bool& warning, bool& midiIn, bool& midiOut, bool& debug, bool &transport, bool &variations, bool &info)
+void TopiaryModel::getLogSettings(bool& warning, bool& midiIn, bool& midiOut, bool &transport, bool &variations, bool &info)
 {
 	warning = logWarning;
 	midiIn = logMidiIn;
 	midiOut = logMidiOut;
-	debug = logDebug;
 	transport = logTransport;
 	variations = logVariations;
 	info = logInfo;
@@ -382,10 +366,11 @@ void TopiaryModel::setNumeratorDenominator(int nu, int de)
 
 void TopiaryModel::setBPM(int n)
 {
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	
 	if (n == 0) n = 120;  // do not allow 0 BPM
 	if (BPM != n)
 	{
+		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 		BPM = n;
 		recalcRealTime(); // housekeeping!
 		Log(String("BPM set to ") + String(n), Topiary::LogType::Transport);
@@ -396,9 +381,11 @@ void TopiaryModel::setBPM(int n)
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryModel::setRunState(int n)
+void TopiaryModel::setRunState(int n, bool lockIt)
 {
-	
+	// lockIt is by default TRUE
+	// only call with false when called from generateMidi - because there we already have the lock!
+
 	int remember;
 	remember = runState;  // needed because in 1 case setting to Armed should fail!!!
 	bool varEnabled = false;
@@ -407,8 +394,11 @@ void TopiaryModel::setRunState(int n)
 
 	if (runState != n)
 	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);  // because we may need to call setVariation and that also relies on the lock!
-		runState = n;
+		//const GenericScopedLock<SpinLock> myScopedLock(lockModel);  // because we may need to call setVariation and that also relies on the lock!
+		if (lockIt)
+			lockModel.enter();
+
+		
 		switch (n)
 		{
 		case  Topiary::Running:
@@ -418,8 +408,7 @@ void TopiaryModel::setRunState(int n)
 			patternCursor = 0;
 			blockCursor = 0;
 			cursorToStop = (int64)-1;
-			
-			threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
+			runState = Topiary::Running;
 			broadcaster.sendActionMessage(MsgTransport);
 			break;
 
@@ -433,23 +422,17 @@ void TopiaryModel::setRunState(int n)
 			Log("Stopped.", Topiary::LogType::Transport);
 			broadcaster.sendActionMessage(MsgTransport);
 
-			// if there is a variation waiting, then we need to make sure it becomes boue again - do that outside this scoped lock otherwise we'll lock -- see below
-			
+			// if there is a variation waiting - do that outside this scoped lock otherwise we'll lock -- see below
+			runState = Topiary::Stopped;
 			break;
+
 		case Topiary::Ending:
 			Log("Ending, cleaning up.", Topiary::LogType::Transport);
+			runState = Topiary::Ending;
 			broadcaster.sendActionMessage(MsgTransport);
 			break;
-		case Topiary::Ended:
-			break;
 		case Topiary::Armed:
-			if (numPatterns == 0)
-			{
-				Log("Cannot run because there is no pattern data loaded.", Topiary::LogType::Warning);
-				runState = remember;
-			}
-			else
-			{
+			
 				// make sure there are variations enbabled
 				// and that we selected an enabled variation
 				
@@ -472,37 +455,44 @@ void TopiaryModel::setRunState(int n)
 						// we need to call setVariation but that one also needs the lock - do that when lock has been released
 					}
 
-					Log("Armed, waiting for first note.", Topiary::LogType::Transport);
-					broadcaster.sendActionMessage(MsgTransport);
+					if (runState != Topiary::Ending)
+					{
+						runState = Topiary::Armed;
+						Log("Armed, waiting for first note.", Topiary::LogType::Transport);
+						broadcaster.sendActionMessage(MsgTransport);
+					}
 				}
 				else
 				{
 					Log("Cannot run because there is no variation enabled.", Topiary::LogType::Warning);
 					runState = Topiary::Stopped;
 				}
-			}
+			
 			break;
 		default:
 			break;
+
 		}
 		
 		broadcaster.sendActionMessage(MsgTransport);
+		if (lockIt)
+			lockModel.exit();
 	}
 
 	if (changeSetVariation)
 	{
 		// if the currently selected variation is disabled switch to one that has been selected!
 		// we do that here because setVariation needs the model lock!
-		setVariation(enabledVariation);
+		setVariation(enabledVariation, lockIt);
 	}
 	else
 	{
-		setVariation(variationSelected);	// so that if the button was orange, it becomes blue again
+		setVariation(variationSelected, lockIt);	// so that if the button was orange, it becomes blue again
 	}
 
 	// now the first waiting variation might stil be orange; fix that below
 	if (remember == Topiary::Armed)
-		setVariation(variationSelected);
+		setVariation(variationSelected, lockIt);
 
 } // setRunState
 
@@ -568,12 +558,6 @@ void TopiaryModel::processTransportControls(int buttonEnabled)  // buttonEnabled
 
 ///////////////////////////////////////////////////////////////////////
 
-int TopiaryModel::getNumPatterns()
-{
-	// from 1 to number of patterns
-	return numPatterns;
-
-} // getNumPatterns
 
 
 ///////////////////////////////////////////////////////////////////////
@@ -593,7 +577,7 @@ void TopiaryModel::setSampleRate(double sr)
 	{
 		sampleRate = sr;
 		recalcRealTime(); // housekeeping
-		Log(String("Samplerate set to ") + String(sampleRate) + String("."), Topiary::LogType::Debug);
+		Log(String("Samplerate set to ") + String(sampleRate) + String("."), Topiary::LogType::Info);
 	}
 
 } // setSampleRate
@@ -623,13 +607,13 @@ void TopiaryModel::setBlockSize(int blocksz)
 	if (blocksz != blockSize)
 	{
 		blockSize = blocksz;
-		Log(String("Blocksize ") + String(blockSize), Topiary::LogType::Debug);
+		Log(String("Blocksize ") + String(blockSize), Topiary::LogType::Info);
 	}
 } // setBlockSize
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryModel::getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended)
+void TopiaryModel::getVariationDetailForGenerateMidi(int& parent, int& noteChild, int& parentLength, bool& ending, bool& ended)
 {                  
 	// virtual
 	UNUSED(parent);
@@ -1004,7 +988,7 @@ ActionBroadcaster* TopiaryModel::getBroadcaster()
 }
 
 ///////////////////////////////////////////////////////////////////////
-
+/*
 void TopiaryModel::cleanPattern(int p)
 {
 	// virtual
@@ -1019,7 +1003,7 @@ void TopiaryModel::cleanPattern(int p)
 	UNUSED(p)
 
 } // cleanPattern
-
+*/
 ///////////////////////////////////////////////////////////////////////
 
 void TopiaryModel::copyVariation(int from, int to)

@@ -16,38 +16,37 @@ You should have received a copy of the GNU General Public License
 along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 
 /////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-/*
 
-This code has generic stuff that can be included in every Topiary model code.
-It includes:
-- Variation logic (that depends on variation variables defined in the actual
-  models (not in the generic TopiaryModel))
+This code has a generic editor component that can be included in every Topiary plugin.
 
-CAREFUL: needs a symbol TOPIARYMODEL to actually build!
+CAREFUL: needs symbols:
+- TOPIARYMODEL e.g. TOPIARYMODEL
+- TOPIARYEDITORCOMPONENT - e.g. TopiaryPresetsComponent
 
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#ifdef TOPIARYMODEL
-#ifndef FILE_TOPIARYMIDILEARNEDITOR_SEEN
-#define FILE_TOPIARYMIDILEARNEDITOR_SEEN
-class TOPIARYMODEL;
+#pragma once
+#include "PluginProcessor.h"
 
-class TopiaryMidiLearnEditor : public TextEditor
+#ifdef TOPIARYMODEL
+
+class TopiaryAudioProcessorEditor  : public AudioProcessorEditor
 {
 public:
-	TopiaryMidiLearnEditor();
-	~TopiaryMidiLearnEditor();
-	void addPopupMenuItems(PopupMenu &menuToAddTo, const MouseEvent *mouseClickEvent) override;
-	void performPopupMenuAction(int menuItemID) override;
-	void setModel(TOPIARYMODEL* m, int ID);
+    TopiaryAudioProcessorEditor (TopiaryAudioProcessor&);
+    ~TopiaryAudioProcessorEditor();
+
+    void paint (Graphics&) override;
+    void resized() override;
 
 private:
-	TOPIARYMODEL *model;
-	int Id; // unique identifier for the model
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryMidiLearnEditor)
+    
+    TopiaryAudioProcessor& processor;
+	TOPIARYMODEL* model;
+	TOPIARYEDITORCOMPONENT topiaryEditorComponent;
+
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TopiaryAudioProcessorEditor)
 };
 
-#endif
 #endif

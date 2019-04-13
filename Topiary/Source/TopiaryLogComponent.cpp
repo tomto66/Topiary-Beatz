@@ -76,14 +76,6 @@ TOPIARYLOGCOMPONENT::TOPIARYLOGCOMPONENT()
 		processLogButtons();
 	};
 
-	addAndMakeVisible(debugButton);
-	debugButton.setButtonText("Debug");
-	debugButton.setSize(bW, bH);
-	debugButton.setClickingTogglesState(true);
-	debugButton.onClick = [this] {
-		processLogButtons();
-	};
-
 	addAndMakeVisible(clearButton);
 	clearButton.setButtonText("Clear");
 	clearButton.setSize(bW, bH);
@@ -126,10 +118,9 @@ void TOPIARYLOGCOMPONENT::paint(Graphics& g)
 	clearButton.setBounds(w + 30, 10, bW, bH);
 	midiInButton.setBounds(w + 30, 40, bW, bH);
 	midiOutButton.setBounds(w + 30, 70, bW, bH);
-	debugButton.setBounds(w + 30, 100, bW, bH);
-	variationsButton.setBounds(w + 30, 130, bW, bH);
-	transportButton.setBounds(w + 30, 160, bW, bH);
-	infoButton.setBounds(w + 30, 190, bW, bH);
+	variationsButton.setBounds(w + 30, 100, bW, bH);
+	transportButton.setBounds(w + 30, 130, bW, bH);
+	infoButton.setBounds(w + 30, 160, bW, bH);
 	
 } // paint
 
@@ -152,12 +143,11 @@ void TOPIARYLOGCOMPONENT::actionListenerCallback(const String &message)
 		{
 			logEditor.setText(*(model->getLog()));
 			logEditor.moveCaretToEnd(); // keep scroll at bottom
-			bool warning, midiIn, midiOut, debug, transport, variations, info;
-			model->getLogSettings(warning, midiIn, midiOut, debug, transport, variations, info);
+			bool warning, midiIn, midiOut, transport, variations, info;
+			model->getLogSettings(warning, midiIn, midiOut, transport, variations, info);
 			
 			midiInButton.setToggleState(midiIn, dontSendNotification);
 			midiOutButton.setToggleState(midiOut, dontSendNotification);
-			debugButton.setToggleState(debug, dontSendNotification);
 			transportButton.setToggleState(transport, dontSendNotification);
 			variationsButton.setToggleState(variations, dontSendNotification);
 			infoButton.setToggleState(info, dontSendNotification);

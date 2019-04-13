@@ -222,23 +222,25 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 	if (!showRecordButton) recButton.setVisible(false);
 	switch (state)
 	{
-	case 5: // ending 
+	case Topiary::TransportRunState::Ending:
 		stopButton.specialState = Topiary::TopiaryButtonSpecialState::waitToEnd;
 		startButton.specialState = 0;
 		stopButton.setToggleState(true, dontSendNotification);
+		startButton.setEnabled(false);
+		stopButton.setEnabled(false);
 		break;
 
-	//case 4:
-	case 0:  // Stopped
+		case Topiary::TransportRunState::Stopped:
 		stopButton.specialState = 0;
 		startButton.specialState = 0;
 		stopButton.setToggleState(false, dontSendNotification); // dirty trick to force repaint
 		stopButton.setToggleState(true, dontSendNotification);
 		overrideButton.setEnabled(true);
 		recButton.setEnabled(true);
+		startButton.setEnabled(true);
 		break;
 
-	case 1: // Running
+		case Topiary::TransportRunState::Running:
 		startButton.specialState = 0;
 		stopButton.specialState = 0;
 		startButton.setToggleState(false, dontSendNotification); // dirty trick to force repaint
@@ -247,7 +249,7 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		recButton.setEnabled(false);
 		break;
 
-	case 3: // Armed
+		case Topiary::TransportRunState::Armed:
 		startButton.specialState = Topiary::TopiaryButtonSpecialState::waitToApply;
 		stopButton.specialState = 0;
 		startButton.setToggleState(true, dontSendNotification);
@@ -255,7 +257,7 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		recButton.setEnabled(false);
 		break;
 
-	case 2: 
+		case Topiary::TransportRunState::Recording:
 		recButton.setToggleState(true, sendNotification);
 		break;
 	default: break;

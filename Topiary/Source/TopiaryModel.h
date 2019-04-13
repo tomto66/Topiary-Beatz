@@ -17,14 +17,10 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
 
-
 #pragma once
 #include "Topiary.h"
-#include "TopiaryModel.h"
-#include "TopiaryThread.h"
 
-
-class TopiaryModel
+class TopiaryModel 
 {
 public:
 	TopiaryModel();
@@ -36,17 +32,16 @@ public:
 	virtual void restoreStateFromMemoryBlock(const void* data, int sizeInBytes);
 	virtual void addParametersToModel();
 	virtual void restoreParametersToModel();
-	virtual void cleanPattern(int p); // if there were edits done, recalculate stuff
-	int getNumPatterns();
+	//virtual void cleanPattern(int p); // if there were edits done, recalculate stuff
 
 	////// Logger 
 
 	String* getLog();
 	String getLastWarning();
 	void Log(String s, int logType);
-	void setLogSettings(bool warning, bool midiIn, bool midiOut, bool debug, bool transport, bool variations, bool info);
+	void setLogSettings(bool warning, bool midiIn, bool midiOut, bool transport, bool variations, bool info);
 	void clearLog();
-	void getLogSettings(bool& warning, bool& midiIn, bool& midiOut, bool& debug, bool &transport, bool &variations, bool &info);
+	void getLogSettings(bool& warning, bool& midiIn, bool& midiOut, bool &transport, bool &variations, bool &info);
 	void getMidiLogSettings(bool &in, bool &out);
 	void logMidi(bool in, MidiMessage &msg); // in denotes msg in or msg out
 
@@ -57,14 +52,14 @@ public:
 	void getTransportState(int& b, int& n, int& d, int& bs, bool& o, bool &waitFFN);
 	virtual void setOverrideHostTransport(bool o);
 	void removeRecordButton();
-	void setRunState(int n);
+	void setRunState(int n, bool lockIt=false);
 	int getRunState();
 	void processTransportControls(int buttonEnabled); // // buttonEnabled; 0=Stop; 1=start; 2=rec
 	
 	////// Variations
 
 	virtual int getVariationLenInTicks(int v);
-	virtual void setVariation(int v);
+	virtual void setVariation(int v, bool lockIt=true);
 	virtual bool getVariationEnabled(int v);
 	virtual void initializeVariationsForRunning();
 
@@ -81,7 +76,7 @@ public:
 	virtual void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer);
 	virtual bool processVariationSwitch();
 	virtual bool switchingVariations();
-	virtual void getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended);
+	virtual void getVariationDetailForGenerateMidi(int& parent, int& noteChild, int& parentLength, bool& ending, bool& ended);
 	virtual void setEnded(); // flag and ending variation has actually ended
 	virtual void threadRunner(); // does generation of patterns on a separate thread
 
@@ -117,8 +112,9 @@ public:
 #define MsgPattern "p"
 #define MsgTiming "T"
 #define MsgNotePool "n"
+#define MsgMaster "m"
 #define MsgPatternList "L"
-#define MsgLoad "l" //signal that new preset was loaded; e.g. to have the patternstab re-set the model
+#define MsgLoad "i" //signal that new preset was loaded; e.g. to have the patternstab re-set the model
 #define MsgVariationDefinition "d" // 
 #define MsgRealTimeParameter "r" // signal that something in realtime needs updating in editor
 
@@ -150,11 +146,14 @@ public:
 protected:
 
 	SpinLock lockModel;
-	ActionBroadcaster broadcaster;
+	
 	std::unique_ptr<XmlElement> model;
-	TopiaryThread topiaryThread;
-
+	
 	String name;
+
+	ActionBroadcaster broadcaster; // needed by validateTableEdit in e.g. TopiaryPattern
+	int denominator = 0; // b in a/b
+	int numerator = 0;  // a in a/b
 
 	/////////// Logger 
 
@@ -172,8 +171,6 @@ protected:
 	/////////// Transport
 
 	bool overrideHostTransport = true;
-	int denominator = 0; // b in a/b
-	int numerator = 0;  // a in a/b
 	int BPM = 120;
 	int runState;
 	
@@ -190,7 +187,7 @@ protected:
 	int64 nextRTGenerationCursor;		// real time cursor of next event to generate
 	int blockSize;						// size of block to generate 
 	int patternCursor;					// patternCursor  to disappear in the future
-	int numPatterns = -1;				// set to 1 in Presetz (as long as it's not -1 in presetz :)
+	//int numPatterns = -1;				// set to 1 in Presetz (as long as it's not -1 in presetz :)
 	int variationStartQ = Topiary::Quantization::Immediate;			// when to switch variations
 	int runStopQ = Topiary::Quantization::Immediate;				// when to stop running
 	bool WFFN = false;												// start at first note in if true; otherwize immediate
@@ -207,11 +204,10 @@ protected:
 	int transitioningFrom = -1;  // set when we are generating
 	int transitioningTo = -1;
 
-	int threadRunnerState; // NothingToDo --> Generating --> DoneGenerating (and back to nothingToGenerate when what was generated was applied (the latter for presetz only for now)
+	int previousMeasure; // needed to decide to start regeneration
 
 	MidiBuffer modelEventBuffer;		// for msgs caused by the editor
 	
-
 	/////////////// Automation
 
 	int variationSwitch[8];				// either notes for each variation, of CC numbers
@@ -223,66 +219,6 @@ protected:
 	int patternSelectedInPatternEditor = -1; // needed to that when setting "record" we can check whether the pattern being edited is actually going to run 
 
 	String filePath;
-
-	///////////////////////////////////////////////////////////////////////////////
-
-	class DataSorter
-	{
-	public:
-		DataSorter(const String& attributeToSortBy, bool forwards)
-			: attributeToSort(attributeToSortBy),
-			direction(forwards ? 1 : -1)
-		{}
-
-		int compareElements(XmlElement* first, XmlElement* second) const
-		{
-			auto result = first->getStringAttribute(attributeToSort)
-				.compareNatural(second->getStringAttribute(attributeToSort));
-
-			if (result == 0)
-				result = first->getStringAttribute("ID")
-				.compareNatural(second->getStringAttribute("ID"));
-
-			return direction * result;
-		}
-
-	private:
-		String attributeToSort;
-		int direction;
-
-	}; // class DataSorter
-
-	///////////////////////////////////////////////////////////////////////
-
-	void renumberByID(XmlElement *list)
-	{  // resort by RealID and reset all IDs
-		DataSorter sorter("REALID", true);
-		list->sortChildElements(sorter);
-		XmlElement* child = list->getFirstChildElement();
-		int id = 1;
-		while (child != nullptr)
-		{
-			child->setAttribute("ID", id);
-			id++;
-			child = child->getNextElement();
-		}
-	} // renumberByID
-
-	///////////////////////////////////////////////////////////////////////
-
-	void renumberByTimestamp(XmlElement *list)
-	{  // resort by timestamp and set the Ids in that order
-		DataSorter sorter("Timestamp", true);
-		list->sortChildElements(sorter);
-		XmlElement* child = list->getFirstChildElement();
-		int id = 1;
-		while (child != nullptr)
-		{
-			child->setAttribute("ID", id);
-			id++;
-			child = child->getNextElement();
-		}
-	} // renumberByTimestamp
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -371,7 +307,7 @@ protected:
 		if (denominator == 0) return;
 		ticksPerBeat = Topiary::TICKS_PER_QUARTER * 4 / denominator;
 		samplesPerTick = (double)sampleRate / ((double)ticksPerBeat * BPM / 60.0);
-		Log("Samples per tick" + String(samplesPerTick), Topiary::LogType::Debug);
+		Log("Samples per tick" + String(samplesPerTick), Topiary::LogType::Info);
 
 	} // recalcRealTime
 
@@ -396,79 +332,6 @@ protected:
 			broadcaster.sendActionMessage(MsgTiming);
 		}
 	} // calcMeasureBeat
-
-	///////////////////////////////////////////////////////////////////////
-
-	void nextTick(XmlElement* parent, XmlElement** child)
-	{	// assert that parent has at least 1 child of each!!! (do a walk to a tick first!)
-		// this one loops around the pattern
-
-		*child = (*child)->getNextElement();
-		if (*child == nullptr)
-		{
-			*child = parent->getFirstChildElement();
-			//Logger::outputDebugString(String("-------- LOOPING OVER END OFF PATTERN ==================== "));
-		}
-
-	}  // nextTick
-
-	///////////////////////////////////////////////////////////////////////
-
-	bool walkToTick(XmlElement* parent, XmlElement** child, int toTick, int& childIndex, XmlElement** prevChild)
-	{ 
-		// find the first child on or after this tick, starting from current child; 
-		// caller has to make sure that child is child of parent, or pass nullptr to initialize
-		// return false if pattern is empty or nothing to do within the blockSize; if empty then child == nullptr; 
-		// This loops around the pattern! 
-		// returns childIndex when called from recording (before record we set nextPatternChild to nullptr to make this correct)
-		// returns correct prevChild if there is one
-
-		int childTick;
-		childIndex = 0;
-		*prevChild = nullptr;
-
-		if (*child == nullptr)
-		{
-			*child = parent->getFirstChildElement(); // initialize
-			if (*child == nullptr)
-			{
-				return false; // empty pattern!
-			}
-		}
-		childTick = (*child)->getIntAttribute("Timestamp");
-
-		while (childTick < toTick)
-		{   // as long as our child is behind time we're looking for
-			*prevChild = *child;
-			*child = (*child)->getNextElement();
-			childIndex++;
-			if (*child == nullptr) break; // there are no events afther the given time
-			childTick = (*child)->getIntAttribute("Timestamp");
-		}
-
-		if (*child == nullptr)
-		{
-			*prevChild = *child;
-			*child = parent->getFirstChildElement();
-			return true;
-			
-		}
-		return true;
-	} // walkToTick
-
-	///////////////////////////////////////////////////////////////////////
-
-	///////////////////////////////////////////////////////////////////////
-
-	void swapXmlElementPointers(XmlElement** a, XmlElement** b)
-	{
-		XmlElement* remember;
-		remember = *a;
-		*a = *b;
-		*b = remember;
-	}
-
-	///////////////////////////////////////////////////////////////////////
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryModel)
 };

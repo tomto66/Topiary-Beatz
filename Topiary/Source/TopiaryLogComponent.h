@@ -26,8 +26,6 @@ CAREFUL: needs symbols:
 */
 /////////////////////////////////////////////////////////////////////////////
 
-#pragma once
-
 #ifdef TOPIARYLOGCOMPONENT
 
 class TOPIARYLOGCOMPONENT : public Component, ActionListener
@@ -52,7 +50,6 @@ private:
 	TopiaryButton infoButton;
 	TopiaryButton transportButton;
 	TopiaryButton variationsButton;
-	TopiaryButton debugButton;
 	TextButton clearButton;
 
 
@@ -63,7 +60,7 @@ private:
 	{
 		
 		model->setLogSettings( true, midiInButton.getToggleState(), midiOutButton.getToggleState(), 
-								debugButton.getToggleState(), transportButton.getToggleState(), variationsButton.getToggleState(), infoButton.getToggleState());
+								transportButton.getToggleState(), variationsButton.getToggleState(), infoButton.getToggleState());
 	}
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TOPIARYLOGCOMPONENT)

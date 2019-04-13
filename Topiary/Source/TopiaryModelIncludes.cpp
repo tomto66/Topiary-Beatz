@@ -81,18 +81,19 @@ void TOPIARYMODEL::setOverrideHostTransport(bool o)
 
 void TOPIARYMODEL::setNumeratorDenominator(int nu, int de)
 {
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	
 	if ((numerator != nu) || (denominator != de))
 	{
 #ifndef PRESETZ
 		// check if there is data - if so do not allow meter changes!
-		if (numPatterns >0)
+		if (getNumPatterns() >0)
 		{
 			Log("Set meter first!", Topiary::LogType::Warning);
 			Log("Meter change not allowed when patterndata available.", Topiary::LogType::Warning);
 			return;
 		}
 #endif	
+		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 		numerator = nu;
 		denominator = de;
 		recalcRealTime();
@@ -115,7 +116,7 @@ void TOPIARYMODEL::getVariation(int& running, int& selected)
 ///////////////////////////////////////////////////////////////////////
 
 
-void TOPIARYMODEL::setVariation(int n)
+void TOPIARYMODEL::setVariation(int n, bool lockIt)
 {
 	jassert(n < 8);
 	jassert(n >= 0);
@@ -130,12 +131,16 @@ void TOPIARYMODEL::setVariation(int n)
 	if ((n != variationSelected) || (runState == Topiary::Stopped))
 		// the || runState || is needed because we may need to re-set a waiting variation to non-waiting; in that case we want the update to happen otherwise the buttons stays orange
 	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		if (lockIt)
+			lockModel.enter();
+
 		variationSelected = n;
 		if (runState == Topiary::Stopped)  // otherwise the switch will be done when running depending on the variation switch Q
 			variationRunning = n;
 		//Log(String("Variation ") + String(n + 1) + String(" selected."), Topiary::LogType::Variations);
 		broadcaster.sendActionMessage(MsgVariationSelected);  // if the editor is there it will pick up the change in variation
+		if (lockIt)
+			lockModel.exit();
 	}
 
 #ifdef PRESETZ
@@ -167,7 +172,7 @@ void TOPIARYMODEL::getVariationEnables(bool enables[8])
 
 int TOPIARYMODEL::getVariationLenInTicks(int v)
 {
-	return variation[v].lenInTicks;
+	return variation[v].pattern.patLenInTicks;
 
 } // getVariationLenInTicks
 
@@ -178,18 +183,6 @@ bool TOPIARYMODEL::getVariationEnabled(int v)
 	return variation[v].enabled;
 
 } // getVariationEnabled
-
-///////////////////////////////////////////////////////////////////////
-
-void TOPIARYMODEL::getVariationDetailForGenerateMidi(XmlElement** parent, XmlElement** noteChild, int& parentLength, bool& ending, bool& ended)
-{
-	parentLength = variation[variationRunning].lenInTicks;
-	ending = variation[variationRunning].ending;
-	ended = variation[variationRunning].ended;
-	*parent = variation[variationRunning].pattern;
-	*noteChild = variation[variationRunning].currentPatternChild;
-
-} // getVariationDetailForGenerateMidi
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -320,7 +313,6 @@ bool TOPIARYMODEL::processVariationSwitch() // called just before generateMidi -
 	}
 	else return false;
 
-
 } // processVariationSwitch
 
 ///////////////////////////////////////////////////////////////////////
@@ -349,7 +341,7 @@ bool TOPIARYMODEL::switchingVariations()
 
 } // switchingVariations
 
-
+/*  FOR TESTING THIS IS NOW IN BEATSMODEL.cpp
 ///////////////////////////////////////////////////////////////////////
 
 void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
@@ -357,7 +349,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 
 	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
 
-	/*************************************************************************************************************************************************
+	/ *************************************************************************************************************************************************
 	Uses a lot of model variables!  Summary of what is needed for what here
 
 	variation[variationRunning].pattern;
@@ -370,7 +362,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 	int blockSize;					// size of block to generate
 	int patternCursor;				// ticks where we are within the variation/pattern - if we do nothing it should still advance with blocksize/samplesPerTick
 
-	**************************************************************************************************************************************************/
+	************************************************************************************************************************************************** /
 
 	int64 rtCursorFrom;				// sampletime to start generating from
 	int64 rtCursorTo;				// we generate in principle till here
@@ -391,6 +383,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 		measure = 0;
 		beat = 0;
 		tick = 0;
+		noteOffBuffer.bufferSize = 0;
 	}
 	else
 	{
@@ -409,23 +402,27 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 	bool ending; // indicates this variation will play only once
 	bool ended; // indicates this variation was ending==true and has now ended
 	MidiMessage msg;
-	XmlElement* parent = nullptr;
-	XmlElement* noteChild = nullptr;
-	XmlElement* prevNoteChild = nullptr; // needed because when recording we need to insert BEFORE the noteChild
+	int parent = 0; //
+	int noteChild = 0; //
+	int noteChildIndex;
+	jassert(false); // needs rework
+	
+
+#ifdef PRESETZ
+	UNUSED(recBuffer)
+#endif
 #ifndef PRESETZ
+
 
 	////////////////////////////////////////
 	// Record logic here
 	////////////////////////////////////////
-
-	// copy any events in the recBuffer to an array (for access reasons)
 
 #define RECBUFFERSIZE 100
 	MidiMessage recordBuffer[RECBUFFERSIZE];
 	int recordTiming[RECBUFFERSIZE];
 	int recordBufferSize = 0; 
 	int samplePos = 0;
-	int noteChildIndex;
 
 	if (recordingMidi)
 	{
@@ -444,20 +441,13 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 		{
 			int rememberPatternCursor = patternCursor;
 
-			// pick a channel
-			XmlElement *poolNote = poolListData->getFirstChildElement();
-			int channel = 0;
-
-			while ((poolNote != nullptr) && (channel == 0))
-			{
-				channel = poolNote->getIntAttribute("Channel");
-				poolNote = poolNote->getNextElement();
-			}
+			// pick a channel	
+			int channel = 10;
 
 			jassert(channel != 0); // should not happen; editor should prevent that!
 
 			// now insert the recorded events
-			getVariationDetailForGenerateMidi(&parent, &noteChild, parentLength, ending, ended);
+			getVariationDetailForGenerateMidi(parent, noteChild, parentLength, ending, ended);
 
 			// if pattern not empty
 			if (parent->getNumChildElements())
@@ -466,7 +456,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 				for (int r = 0; r < recordBufferSize; r++)
 				{
 					noteChild = nullptr; // otherwise noteChildIndex won't be correct
-					walkToTick(parent, &noteChild, patternCursor, noteChildIndex, &prevNoteChild);
+					walkToTick(parent, &noteChild, patternCursor, noteChildIndex);
 					XmlElement* newChild;
 					newChild = new XmlElement("RECDATA");  // the RECDATA elements will get inserted in the pattern when recording done
 					newChild->setAttribute("ID", 0); // dummy
@@ -479,7 +469,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 						newChild->setAttribute("midiType", Topiary::MidiType::NoteOff);
 
 					int64 cursorInTicks = (int64)floor(blockCursor / samplesPerTick) + recordTiming[r];
-					cursorInTicks = cursorInTicks % variation[variationSelected].lenInTicks;
+					cursorInTicks = cursorInTicks % variation[variationSelected].pattern.patLenInTicks;
 
 					//int measure = (int)floor(cursorInTicks / (ticksPerBeat* denominator)) + 1;
 					//int beat = (int)floor(cursorInTicks / ticksPerBeat);
@@ -511,7 +501,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 						newChild->setAttribute("midiType", Topiary::MidiType::NoteOff);
 
 					int64 cursorInTicks = (int64)floor(blockCursor / samplesPerTick) + recordTiming[r];
-					cursorInTicks = cursorInTicks % variation[variationSelected].lenInTicks;
+					cursorInTicks = cursorInTicks % variation[variationSelected].pattern.patLenInTicks;
 
 					//int measure = (int)floor(cursorInTicks / (ticksPerBeat* denominator)) + 1;
 					//int beat = (int)floor(cursorInTicks / ticksPerBeat);
@@ -526,7 +516,7 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 			} // record in empty pattern
 
 			// reset patternchild to nullptr so the rest of the logic can restart (because we may have messed with patternchild
-			variation[variationRunning].currentPatternChild = nullptr;
+			variation[variationRunning].currentPatternChild = 0;
 			patternCursor = rememberPatternCursor;
 
 		} // recordBufferSize != 0
@@ -543,13 +533,6 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 
 	jassert(beat >= 0);
 	jassert(measure >= 0);
-
-	//if (nextRTGenerationCursor > rtCursorTo)
-	//{
-	//	blockCursor = blockCursor + blockSize;
-	//	//Logger::outputDebugString("Nothing to generate");
-	//	return;  // nothing to generate now
-	//}
 
 	getVariationDetailForGenerateMidi(&parent, &noteChild, parentLength, ending, ended);
 
@@ -568,10 +551,10 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 	//Logger::outputDebugString("Next note on to generate afer current tick " + String(patternCursor));
 
 	bool walk;
-
+	
 	if (!ending || (ending && !ended))
 	{
-		walk = walkToTick(parent, &noteChild, patternCursor, noteChildIndex, &prevNoteChild);
+		walk = walkToTick(parent, &noteChild, patternCursor, noteChildIndex);
 	}
 	else
 		walk = false; // meaning an ending variation and ended
@@ -603,8 +586,11 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 				{
 					if (threadRunnerState == Topiary::ThreadRunnerState::NothingToDo)
 					{
-						threadRunnerState = Topiary::ThreadRunnerState::Generating;
-						topiaryThread.notify();  // trigger regeneration
+						//threadRunnerState = Topiary::ThreadRunnerState::Generating;
+						//topiaryThread.notify();  // trigger regeneration
+						generateVariation(variationRunning);
+						getVariationDetailForGenerateMidi(&parent, &noteChild, parentLength, ending, ended);
+						walk = walkToTick(parent, &noteChild, patternCursor, noteChildIndex);
 					}
 				}
 #endif
@@ -737,16 +723,21 @@ void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 
 	}
 
+	/* do any note off events schedules for this block
+
+	while (noteO
+	
 	blockCursor = blockCursor + blockSize;
 
 	calcMeasureBeat();
 
-} // generateMidi
 
+} // generateMidi
+*/
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifndef PRESETZ
-
+/*
 void TOPIARYMODEL::cleanPattern(int p)
 {
 	// if there were edits done, recalculate stuff
@@ -757,7 +748,8 @@ void TOPIARYMODEL::cleanPattern(int p)
 	// regenerate any variations that depend on this pattern
 
 	jassert(p < 8);
-
+	
+	jassert(false); // still to do
 	XmlElement *child = patternData[p].noteData->getFirstChildElement();
 
 	while (child != nullptr)
@@ -765,20 +757,11 @@ void TOPIARYMODEL::cleanPattern(int p)
 
 		child = child->getNextElement();
 	}
+	
 } // cleanPattern
+*/
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-void TOPIARYMODEL::setLength(int p, l)
-{
-	// set LinInTicks, based on l in measures
-	// delete all events possbily after the ticklength
 
-	l = TOPIARY::TICKS_PER_QUARTER * denominator;
-
-
-
-} // setLength
-*/
 #endif
