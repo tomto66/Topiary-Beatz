@@ -53,7 +53,7 @@ private:
 
 class Topiary 
 {  public:
-	
+
 	enum VariationButtonIds
 	{
 		VariationButtons = 1001,
@@ -76,7 +76,6 @@ class Topiary
 		Running = 1,     // really running, producing output
 		Recording = 2,   // running & recording (never in performance, only in setup)
 		Armed = 3,  	 // ready to start running  @first note in
-		//Ended = 4,       // transport still running, but has produced last note (after an ending pattern; will not produce more notes)
 		Ending = 5		 // stop command given, but finishing the last notes; goes to Ended when totally done
 	};
 
@@ -100,6 +99,8 @@ class Topiary
 		//Sixteenth = 7,
 		//Thirty2nd = 8
 	};
+
+	
 
 	enum VariationSwitch : int
 	{
@@ -136,7 +137,7 @@ class Topiary
 		NoteLabel = 3608
 	};
 
-	static const int TICKS_PER_QUARTER = 240;
+	static const int TicksPerQuarter = 240;
 	static const int ToDeleteID = 999999999;
 private:
 

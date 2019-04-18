@@ -220,19 +220,11 @@ bool TOPIARYMODEL::processVariationSwitch() // called just before generateMidi -
 //Logger::outputDebugString("Need to switch, now ???");
 //Logger::outputDebugString("blockcursor "+String(blockCursor)+" NextRTcursor "+String(nextRTGenerationCursor));
 
-// nothing is going to happen now, so don't bother calculating
-//	if (nextRTGenerationCursor > (blockCursor + 2 * blockSize))
-//	{
-//		Logger::outputDebugString(" WAIT FOR NEXTRTGENERATIONCURSOR ---------------------------------------- >");
-//		return false;
-//	}
 	// first decide whether we should switch in this block
-
-	// we are at measure/beat/tick overall; time and tick apply to the pattern we are in, but not measure within the pattern so we calculate that by using patternCursorOn
-	//int patternMeasure = patternCursorOn % (numerator * Topiary::TICKS_PER_QUARTER);
+	// we are at measure/beat/tick overall; time and tick apply to the pattern we are in, but not measure within the pattern so we calculate that by using patternCursorO
 
 	//Logger::outputDebugString("Need to switch, now ???  Something is going to happen next");
-
+	calcMeasureBeat(); 
 	int64 cursorToSwitch = 0;  // time the switch should happen; if  cursorToSwitch < blockCursor+blockSize then we know we want to switch;
 	//Logger::outputDebugString("VariationStartQ " + String(variationStartQ));
 
@@ -247,21 +239,21 @@ bool TOPIARYMODEL::processVariationSwitch() // called just before generateMidi -
 	case (Topiary::Measure):
 	{
 		// moment of next measure = blockCursor + time to next beat (ticksperquarter - tick) + #beats to go till end of measure			
-		cursorToSwitch = (int64)(blockCursor + samplesPerTick * ((Topiary::TICKS_PER_QUARTER - tick - 1) + (numerator - beat - 1)* Topiary::TICKS_PER_QUARTER));
+		cursorToSwitch = (int64)(blockCursor + samplesPerTick * ((Topiary::TicksPerQuarter - tick - 1) + (numerator - beat - 1)* Topiary::TicksPerQuarter));
 		//Logger::outputDebugString(String("MEASURE Sel ") + String(variationSelected) + String(" Running ") + String(variationRunning));
 		break;
 	}
 	case (Topiary::Quarter):
 	{
 		// moment of next beat = blockCursor + time to next beat (ticksperquarter - tick) 
-		cursorToSwitch = (int64)(blockCursor + samplesPerTick * ((Topiary::TICKS_PER_QUARTER - tick - 1)));
+		cursorToSwitch = (int64)(blockCursor + samplesPerTick * ((Topiary::TicksPerQuarter - tick - 1)));
 		//Logger::outputDebugString(String("QUARTER Sel ") + String(variationSelected) + String(" Running ") + String(variationRunning));
 		break;
 	}
 	//case (Topiary::Half):
 	//{
 		// moment of next beat = blockCursor + time to next beat (ticksperquarter - tick) 
-	//	cursorToSwitch = (int64)(blockCursor + samplesPerTick * ((Topiary::TICKS_PER_QUARTER - tick - 1) + Topiary::TICKS_PER_QUARTER));
+	//	cursorToSwitch = (int64)(blockCursor + samplesPerTick * ((Topiary::TicksPerQuarter - tick - 1) + Topiary::TicksPerQuarter));
 	//	//Logger::outputDebugString(String("IMMEDIATE Half ") + String(variationSelected) + String(" Running ") + String(variationRunning));
 	//	break;
 	//}
@@ -290,11 +282,11 @@ bool TOPIARYMODEL::processVariationSwitch() // called just before generateMidi -
 			break;
 		case (Topiary::SwitchWithinBeat): 
 			patternCursorOffset = 0;
-			patternCursor = patternCursor % Topiary::TICKS_PER_QUARTER;
+			patternCursor = patternCursor % Topiary::TicksPerQuarter;
 			break;
 		case (Topiary::SwitchWithinMeasure): 
 			patternCursorOffset = 0;
-			patternCursor = patternCursor % (Topiary::TICKS_PER_QUARTER*numerator);
+			patternCursor = patternCursor % (Topiary::TicksPerQuarter*numerator);
 			break;
 		case (Topiary::SwitchWithinPattern):	
 			patternCursorOffset = 0;
@@ -304,6 +296,11 @@ bool TOPIARYMODEL::processVariationSwitch() // called just before generateMidi -
 
 		Log(String("Switch from variation ") + String(variationRunning) + String(" to ") + String(variationSelected), Topiary::LogType::Variations);
 		variationRunning = variationSelected;
+
+		if (variation[variationRunning].type == TopiaryBeatsModel::VariationTypeSteady)
+			previousSteadyVariation = variationRunning;
+
+
 #ifdef PRESETZ
 		threadRunnerState = Topiary::ThreadRunnerState::NothingToDo;
 #endif
@@ -763,5 +760,6 @@ void TOPIARYMODEL::cleanPattern(int p)
 #endif
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 #endif

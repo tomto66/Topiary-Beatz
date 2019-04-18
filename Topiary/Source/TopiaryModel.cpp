@@ -96,6 +96,8 @@ TopiaryModel::TopiaryModel()
 	runState = Topiary::Stopped;
 	BPM = 120;
 	numerator = 4; denominator = 4;
+	variationSelected = 0;
+	variationRunning = 0;
 	
 } // TopiaryModel
 
@@ -415,8 +417,6 @@ void TopiaryModel::setRunState(int n, bool lockIt)
 		case Topiary::Stopped:
 
 			// reset stuff
-			patternCursor = 0;
-			blockCursor = 0;
 			cursorToStop = (int64)-1;
 			
 			Log("Stopped.", Topiary::LogType::Transport);
@@ -435,7 +435,9 @@ void TopiaryModel::setRunState(int n, bool lockIt)
 			
 				// make sure there are variations enbabled
 				// and that we selected an enabled variation
-				
+				blockCursor = 0;
+				patternCursor = 0;
+
 				for (int i = 0; i < 8; i++)
 				{
 					if (getVariationEnabled(i))
@@ -644,6 +646,7 @@ void TopiaryModel::generateMidi(MidiBuffer *buffer, MidiBuffer* recBuffer)
 bool TopiaryModel::processVariationSwitch() // called just before generateMidi - to see if a variation is changed, and if so whether to switch now (and make the switch)
 {
 	// virtual, but standard code that is in TopiaryIncludes.h
+	jassert(false);
 	return true;
 } // processVariationSwitch
 
@@ -726,17 +729,17 @@ bool TopiaryModel::processEnding() // called just before generateMidi - to see i
 		}
 		case (Topiary::Measure):
 		{
-			cursorToStop = (int64)(blockCursor + samplesPerTick * ((Topiary::TICKS_PER_QUARTER - tick - 1) + (numerator - beat - 1)* Topiary::TICKS_PER_QUARTER));
+			cursorToStop = (int64)(blockCursor + samplesPerTick * ((Topiary::TicksPerQuarter - tick - 1) + (numerator - beat - 1)* Topiary::TicksPerQuarter));
 			break;
 		}
 		case (Topiary::Half):
 		{
-			cursorToStop = (int64)(blockCursor + samplesPerTick * ((Topiary::TICKS_PER_QUARTER - tick - 1) + Topiary::TICKS_PER_QUARTER));
+			cursorToStop = (int64)(blockCursor + samplesPerTick * ((Topiary::TicksPerQuarter - tick - 1) + Topiary::TicksPerQuarter));
 			break;
 		}
 		case (Topiary::Quarter):
 		{
-			cursorToStop = (int64)(blockCursor + samplesPerTick * ((Topiary::TICKS_PER_QUARTER - tick - 1)));
+			cursorToStop = (int64)(blockCursor + samplesPerTick * ((Topiary::TicksPerQuarter - tick - 1)));
 			break;
 		}
 
@@ -1115,3 +1118,24 @@ void TopiaryModel::processMidiRecording()
 {
 	// virtual
 }
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::timestampToMBT(int t, int& m, int& b, int& tck)
+{
+	m = (int)floor(t / (denominator*Topiary::TicksPerQuarter));
+	b = t - (m * denominator*Topiary::TicksPerQuarter);
+	b = (int)floor(b / Topiary::TicksPerQuarter);
+	tck = t % Topiary::TicksPerQuarter;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::MBTToTick(int& t, int m, int b, int tck)
+{
+	t = tck +
+		b * Topiary::TicksPerQuarter +
+		m * Topiary::TicksPerQuarter*denominator;
+}
+
+/////////////////////////////////////////////////////////////////////////////
