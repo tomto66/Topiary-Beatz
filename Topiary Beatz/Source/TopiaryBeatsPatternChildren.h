@@ -72,6 +72,8 @@ public:
 	TextButton pasteButton;		// pastes at current selection; disabled when nothing in paste buffer
 	TextButton clearButton;		// clears the pattern
 	TextButton deleteAllNotesButton;  // deletes all notes in the pattern that are same as selected one; disabled if nothing selected
+	TextButton quantizeButton;
+	ComboBox quantizeCombo;
 
 private:
 	TopiaryBeatsPatternComponent* parent;

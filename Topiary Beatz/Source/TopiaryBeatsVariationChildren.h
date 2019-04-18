@@ -60,8 +60,6 @@ public:
 	void resized() override;
 	void setParent(TopiaryBeatsVariationComponent* p);
 
-	//PoolTimingComponent poolStart[4];
-	//PoolTimingComponent poolStop[4];
 	
 	int width = 168;
 	int heigth = 215;
@@ -125,7 +123,7 @@ public:
 	TextEditor nameEditor;
 	TopiaryButton enableButton;
 	ComboBox patternCombo;
-	TopiaryButton endingButton;
+	//TopiaryButton endingButton;
 
 	int width = 140;
 	int heigth = 160;
@@ -311,3 +309,36 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TimingComponent)
 
 }; // TimingComponent
+
+////////////////////////////////////////////////////////////////////////////////
+// VariationTypeComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class VariationTypeComponent : public Component
+{
+public:
+
+	TopiaryButton introButton;
+	TopiaryButton steadyButton;
+	TopiaryButton fillButton;
+	TopiaryButton endButton;
+
+	int width = 140;
+	int heigth = 160;
+	int type = TopiaryBeatsModel::VariationTypeSteady;
+	VariationTypeComponent();
+	~VariationTypeComponent();
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+	void resized();
+	void paint(Graphics& g) override;
+
+private:
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int eW = 120; // editor & combo & enable button
+	static const int eH = 20;
+	
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VariationTypeComponent)
+
+}; // VariationTypeComponent

@@ -59,7 +59,7 @@ TopiaryPattern::TopiaryPattern()
 	headerList[3].type = Topiary::HeaderType::Int;
 	headerList[3].editable = true;
 	headerList[3].min = 0;
-	headerList[3].max = Topiary::TICKS_PER_QUARTER - 1;
+	headerList[3].max = Topiary::TicksPerQuarter - 1;
 	headerList[3].visible = true;
 
 	headerList[4].columnID = 5;
@@ -423,3 +423,20 @@ int TopiaryPattern::findID(int ID)
 } // findID
 
 /////////////////////////////////////////////////////////////////////////////
+
+void TopiaryPattern::quantize(int ticks)
+{
+	// ticks indicates what to quantize to, e.g. beat/quarter == Topiary::TICKSPERQUARTER
+
+	for (int i = 0; i < numItems; i++)
+	{
+		int deltaTick = dataList[i].timestamp % ticks;  //deltaTick is #ticks away from baseTick
+		int baseTick = (int)floor(dataList[i].timestamp / ticks) * ticks;
+		if ((deltaTick / ticks) > 0.5)
+			deltaTick = ticks;
+		else
+			deltaTick = 0;
+		dataList[i].timestamp = baseTick + deltaTick;
+	}
+
+} // quantize

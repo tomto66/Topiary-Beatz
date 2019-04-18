@@ -452,13 +452,7 @@ void  SwingComponent::paint(Graphics& g)
 			parent->setVariationDefinition();
 		};
 		
-		addAndMakeVisible(endingButton);
-		endingButton.setClickingTogglesState(true);
-		endingButton.setButtonText("Ending");
-		endingButton.onClick = [this]
-		{
-			parent->setVariationDefinition();
-		};
+		
 
 
 		
@@ -531,8 +525,8 @@ void  SwingComponent::paint(Graphics& g)
 
 		// topBounds is now fourth row which only has the patternCombo
 		// hBounds = topBounds.removeFromLeft(eW);
-		endingButton.setBounds(topBounds);
-		endingButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+		//endingButton.setBounds(topBounds);
+		//endingButton.setSize(topBounds.getWidth(), topBounds.getHeight());
 
 		inRecBounds.removeFromTop(4 * lineWidth);
 		topBounds = inRecBounds.removeFromTop(eH);
@@ -1002,3 +996,125 @@ void  SwingComponent::paint(Graphics& g)
 
 // End TimingComponent
 
+/////////////////////////////////////////////////////////////////////////
+// VariationTypeComponent
+/////////////////////////////////////////////////////////////////////////
+
+	VariationTypeComponent::VariationTypeComponent()
+	{
+		setSize(width, heigth);
+		
+		addAndMakeVisible(introButton);
+		introButton.setClickingTogglesState(true);
+		introButton.setButtonText("Intro");
+		introButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		introButton.onClick = [this]
+		{
+			type = TopiaryBeatsModel::VariationTypeIntro;
+			parent->setVariationDefinition();
+		};
+
+		addAndMakeVisible(fillButton);
+		fillButton.setClickingTogglesState(true);
+		fillButton.setButtonText("Fill");
+		fillButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		fillButton.onClick = [this]
+		{
+			type = TopiaryBeatsModel::VariationTypeFill;
+			parent->setVariationDefinition();
+		};
+
+		addAndMakeVisible(endButton);
+		endButton.setClickingTogglesState(true);
+		endButton.setButtonText("Ending");
+		endButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		endButton.onClick = [this]
+		{
+			type = TopiaryBeatsModel::VariationTypeEnd;
+			parent->setVariationDefinition();
+		};
+
+		addAndMakeVisible(steadyButton);
+		steadyButton.setClickingTogglesState(true);
+		steadyButton.setButtonText("Steady");
+		steadyButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		steadyButton.onClick = [this]
+		{
+			type = TopiaryBeatsModel::VariationTypeSteady;
+			parent->setVariationDefinition();
+		};
+
+	} // VariationTypeComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void VariationTypeComponent::setParent(TopiaryBeatsVariationComponent* p)
+	{
+		parent = p;
+	} // setparent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	VariationTypeComponent::~VariationTypeComponent()
+	{
+	} // ~VariationTypeComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  VariationTypeComponent::resized()
+	{
+
+	} // resized
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  VariationTypeComponent::paint(Graphics& g)
+	{
+		int labelOffset = 15;
+		int lineWidth = 2;
+		auto area = getLocalBounds();
+
+		g.fillAll(TopiaryColour::background);
+		g.setColour(TopiaryColour::foreground);
+		g.setFont(12.0f);
+		g.drawText("Variation type", lineWidth, lineWidth, 200, labelOffset, juce::Justification::centredLeft);
+
+		auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
+		g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
+
+		// turn it into inner rectangle
+		auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
+
+		// area for name and from editors
+		auto topBounds = inRecBounds.removeFromTop(eH);
+
+		// topBounds is first line of objects
+		//auto hBounds = topBounds.removeFromLeft(eW);
+		introButton.setBounds(topBounds);
+
+		inRecBounds.removeFromTop(4 * lineWidth);
+		topBounds = inRecBounds.removeFromTop(eH);
+
+		// topBounds is second line of objects
+		steadyButton.setBounds(topBounds);
+		steadyButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+		inRecBounds.removeFromTop(4 * lineWidth);
+		topBounds = inRecBounds.removeFromTop(eH);
+
+		// topBounds is now third row which only has the enablebutton
+		fillButton.setBounds(topBounds);
+		fillButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+		inRecBounds.removeFromTop(4 * lineWidth);
+		topBounds = inRecBounds.removeFromTop(eH);
+
+		// topBounds is now fourth row which only has the patternCombo
+		// hBounds = topBounds.removeFromLeft(eW);
+		endButton.setBounds(topBounds);
+		endButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+		
+
+
+	} // paint

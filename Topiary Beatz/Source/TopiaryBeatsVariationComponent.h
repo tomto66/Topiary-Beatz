@@ -49,7 +49,7 @@ private:
 	
 	VariationDefinitionComponent variationDefinitionComponent;
 	EnablePoolComponent enablePoolComponent;
-	//PoolLengthComponent poolLengthComponent;
+	VariationTypeComponent variationTypeComponent;
 	PoolChannelComponent poolChannelComponent;
 	RandomNoteComponent randomNoteComponent;
 	SwingComponent swingComponent;

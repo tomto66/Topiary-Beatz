@@ -39,6 +39,7 @@ public:
 	void pasteNote();
 	void clearPattern();
 	void deleteAllNotes(); // deletes all notes equal to selected one from pattern
+	void quantize();
 
 private:
 	TopiaryBeatsModel* beatsModel;

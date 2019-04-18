@@ -47,13 +47,13 @@ PatternLengthComponent::PatternLengthComponent()
 	addAndMakeVisible(keepTail);
 	keepTail.setButtonText("Keep tail");
 	keepTail.setClickingTogglesState(true);
-	
+
 	keepTail.onClick = [this]
 	{
 		// do nothing; it will get processed when the length is changed.
 	};
 
-	
+
 
 	setSize(width, heigth);
 
@@ -90,7 +90,7 @@ void PatternLengthComponent::paint(Graphics& g)
 	g.setColour(TopiaryColour::foreground);
 	g.setFont(12.0f);
 
-	g.drawText("Length in measures" , 0, 0, 200, (int)labelOffset, juce::Justification::centredLeft);
+	g.drawText("Length in measures", 0, 0, 200, (int)labelOffset, juce::Justification::centredLeft);
 	auto area = getLocalBounds();
 	auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
 	g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
@@ -160,6 +160,22 @@ ActionButtonsComponent::ActionButtonsComponent()
 		parent->deleteAllNotes();
 	};
 
+	addAndMakeVisible(quantizeButton);
+	quantizeButton.setSize(bW, bH);
+	quantizeButton.setButtonText("Quantize");
+	quantizeButton.onClick = [this]
+	{
+		parent->quantize();
+	};
+
+	addAndMakeVisible(quantizeCombo);
+	quantizeCombo.setSize(bW, bH);
+	quantizeCombo.addItem("1/4", 1);
+	quantizeCombo.addItem("1/8", 2);
+	quantizeCombo.addItem("1/16", 3);
+	quantizeCombo.addItem("1/32", 4);
+	quantizeCombo.setSelectedId(1, dontSendNotification);
+
 	setSize(width, heigth);
 
 } // ActionButtonsComponent
@@ -222,9 +238,18 @@ void ActionButtonsComponent::paint(Graphics& g)
 	columnBounds.removeFromTop(2 * lineWidth);
 	bBounds = columnBounds.removeFromTop(bH);
 	clearButton.setBounds(bBounds);
-	
+
 	columnBounds.removeFromTop(2 * lineWidth);
 	bBounds = columnBounds.removeFromTop(bH);
 	deleteAllNotesButton.setBounds(bBounds);
 
+	// quantize
+	inRecBounds.removeFromLeft(30);
+	columnBounds = inRecBounds.removeFromLeft(bW);
+	bBounds = columnBounds.removeFromTop(bH);
+	quantizeCombo.setBounds(bBounds);
+
+	columnBounds.removeFromTop(2 * lineWidth);
+	bBounds = columnBounds.removeFromTop(bH);
+	quantizeButton.setBounds(bBounds);
 } // paint

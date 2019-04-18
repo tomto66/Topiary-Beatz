@@ -51,6 +51,8 @@ TopiaryBeatsVariationComponent::TopiaryBeatsVariationComponent()
 	addAndMakeVisible(timingComponent);
 	timingComponent.setParent(this);
 	
+	addAndMakeVisible(variationTypeComponent);
+	variationTypeComponent.setParent(this);
 
 } // TopiaryBeatsVariationComponent() 
 
@@ -137,9 +139,10 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 		refused = true;
 	}
 
+	
 	if (!refused)
 	{
-		beatsModel->setVariationDefinition(variation, variationDefinitionComponent.enableButton.getToggleState(), variationDefinitionComponent.nameEditor.getText(), selectedPatternId, enables, poolChannel, variationDefinitionComponent.endingButton.getToggleState());
+		beatsModel->setVariationDefinition(variation, variationDefinitionComponent.enableButton.getToggleState(), variationDefinitionComponent.nameEditor.getText(), selectedPatternId, enables, poolChannel, variationTypeComponent.type);
 		beatsModel->Log("Variation "+String(variation+1)+" saved.", Topiary::LogType::Info);
 	}
 	else
@@ -169,7 +172,8 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 
 	if (variation <0 ) return;  // this should never happen, except when initializing
 
-	bool enable, ending;
+	bool enable;
+	int type;
 	String vname;
 	int patternId;
 
@@ -177,9 +181,8 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 	
 	int poolChannel[4];
 
-	beatsModel->getVariationDefinition(variation, enable, vname, patternId, enables, poolChannel, ending);
+	beatsModel->getVariationDefinition(variation, enable, vname, patternId, enables, poolChannel, type);
 	variationDefinitionComponent.enableButton.setToggleState(enable, dontSendNotification);
-	variationDefinitionComponent.endingButton.setToggleState(ending, dontSendNotification);
 	variationDefinitionComponent.nameEditor.setText(vname, dontSendNotification);
 
 	enablePoolComponent.enableButton1.setToggleState(enables[0], dontSendNotification);
@@ -191,6 +194,22 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 	poolChannelComponent.poolChannelEditor2.setText(String(poolChannel[1]));
 	poolChannelComponent.poolChannelEditor3.setText(String(poolChannel[2]));
 	poolChannelComponent.poolChannelEditor4.setText(String(poolChannel[3]));
+
+	switch (type) 
+	{
+	case (TopiaryBeatsModel::VariationTypeSteady):
+			variationTypeComponent.steadyButton.setToggleState(true, dontSendNotification);
+			break;
+	case (TopiaryBeatsModel::VariationTypeEnd):
+		variationTypeComponent.endButton.setToggleState(true, dontSendNotification);
+		break;
+	case (TopiaryBeatsModel::VariationTypeFill):
+		variationTypeComponent.fillButton.setToggleState(true, dontSendNotification);
+		break;
+	case (TopiaryBeatsModel::VariationTypeIntro):
+		variationTypeComponent.introButton.setToggleState(true, dontSendNotification);
+		break;
+	}
 	
 	// find the appropriate item in patternCombo, and select it; if nothing sel = variationDefinitionComponent.patternCombo.getSelectedId();
 	int items = variationDefinitionComponent.patternCombo.getNumItems();
@@ -454,6 +473,7 @@ void TopiaryBeatsVariationComponent::paint(Graphics& g)
 	swingComponent.setBounds(450, 10, swingComponent.width, swingComponent.heigth);
 	velocityComponent.setBounds(550, 10, velocityComponent.width, velocityComponent.heigth);
 	timingComponent.setBounds(650, 10, timingComponent.width, timingComponent.heigth);
+	variationTypeComponent.setBounds(200, 10, variationTypeComponent.width, variationTypeComponent.heigth);
 } // paint
 
 //////////////////////////////////////////////////

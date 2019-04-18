@@ -42,10 +42,21 @@ enum TopiaryLearnMidiId
 class TopiaryBeatsModel : public TopiaryModel
 {
 public:
+
+	enum VariationTypeButtonIds
+	{
+		VariationTypeSteady = 2001,
+		VariationTypeFill = 2002,
+		VariationTypeEnd = 2003,
+		VariationTypeIntro = 2004,
+		VariationTypeRadioID = 2005
+	};
+
 	TopiaryBeatsModel();
 	~TopiaryBeatsModel();
 
 	String name = "New Beatz Pattern"; // name of this preset
+	void quantize(int p, int ticks);
 
 	void getPatterns(String pats[8]);
 	
@@ -55,7 +66,7 @@ public:
 	void addPattern();
 	void duplicatePattern(int p);
 	void clearPattern(int p);
-	//void cleanPattern(int p) override;
+
 	void setPatternLength(int p, int l, bool keepTail);
 	void deleteNote(int p, int n);				// deletes the note with ID n from pattern p
 	void getNote(int p, int ID, int& note, int &velocity, int &timestamp, int &length);  // get note with id ID from pattern p
@@ -70,18 +81,14 @@ public:
 	
 	void setGMDrumMapLabels();
 	bool insertPatternFromFile(int patternIndex, bool overload);
-	XmlElement* addToModel(char* type);
-	//XmlElement* addToModel(char *type, int index);
-	void removeFromModel(char *type, XmlElement *child);
-	
 	void validateTableEdit(int p, XmlElement* child, String attribute); // see if user edits to this attribute make sense and do housekeeping
 
 	void saveStateToMemoryBlock(MemoryBlock& destData) override;
 	void restoreStateFromMemoryBlock(const void* data, int sizeInBytes) override;
 	bool processVariationSwitch() override;
 	bool switchingVariations() override;
-	//void getVariationDetailForGenerateMidi(int& parent, int& noteChild, int& parentLength, bool& ending, bool& ended) override;
 	void initializeVariationsForRunning() override;
+	void initializePreviousSteadyVariation();
 	void setEnded() override;
 	void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer) override;
 	
@@ -93,8 +100,8 @@ public:
 	bool getVariationEnabled(int v);
 	int getVariationLenInTicks(int v);
 
-	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4], bool& ending);   // pass variation Definition on to VariationComponent in editor
-	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolChannel[4], bool ending);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
+	void getVariationDefinition(int i, bool& enabled, String& vname, int& patternId, bool enables[4], int poolChannel[4], int& type);   // pass variation Definition on to VariationComponent in editor
+	void setVariationDefinition(int i, bool enabled, String vname, int patternId, bool enables[4], int poolChannel[4], int type);      // set variation Definition parameters from editor; return false if we try to disable the last enabled variation
 	bool validateVariationDefinition(int i, bool enable, String vname, int patternId);
 	void setRandomizeNotes(int v, bool enable, bool enablePool[4], int value);
 	void getRandomizeNotes(int v, bool &enable, bool enablePool[4], int &value);
@@ -118,7 +125,8 @@ public:
 		TopiaryVariation pattern;				// pattern  events in the variation
 		int currentPatternChild;			// where we are in generation 
 		
-		bool ending;						// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended)
+		//bool ending;						// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended)
+		int type;
 		bool ended;
 
 		bool enabled = false;
@@ -174,6 +182,8 @@ private:
 	Variation variation[8];  // struct to hold variation detail
 	NoteOffBuffer noteOffBuffer;
 
+	//int debugNote = 0;
+	//int debugTimestamp = 0;
 	///////////////////////////////////////////////////////////////////////
 
 	bool loadMidiDrumPattern(const File& fileToRead, int patternIndex, int& measures, int& lenInTicks)
@@ -260,13 +270,13 @@ private:
 
 					double timeStamp = message.getTimeStamp();
 					// recalculate timeStamp to our reference range
-					timeStamp = timeStamp * Topiary::TICKS_PER_QUARTER / ticksPerQuarter;
+					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;
 					lenInTicks = (int)timeStamp; // passed on to caller
 					patternData[patternIndex].dataList[index].timestamp = 	(int)floor(timeStamp);
-					timeStampMeasure = (int)floor(timeStamp / (num*Topiary::TICKS_PER_QUARTER));
-					timeStamp = timeStamp - (timeStampMeasure * num*Topiary::TICKS_PER_QUARTER);
-					int timeStampBeat = (int)floor(timeStamp / Topiary::TICKS_PER_QUARTER);
-					timeStamp = timeStamp - (timeStampBeat * Topiary::TICKS_PER_QUARTER);
+					timeStampMeasure = (int)floor(timeStamp / (num*Topiary::TicksPerQuarter));
+					timeStamp = timeStamp - (timeStampMeasure * num*Topiary::TicksPerQuarter);
+					int timeStampBeat = (int)floor(timeStamp / Topiary::TicksPerQuarter);
+					timeStamp = timeStamp - (timeStampBeat * Topiary::TicksPerQuarter);
 					int timeStampTicks = (int)timeStamp;
 					patternData[patternIndex].dataList[index].measure = timeStampMeasure;	
 					patternData[patternIndex].dataList[index].beat = timeStampBeat;
@@ -289,7 +299,7 @@ private:
 					double timeStamp = message.getTimeStamp();
 					
 					// recalculate timeStamp to our reference range
-					timeStamp = timeStamp * Topiary::TICKS_PER_QUARTER / ticksPerQuarter;
+					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;
 					lenInTicks = (int)timeStamp; // passed on to caller
 					if (index>=0)
 						patternData[patternIndex].dataList[index].length = (int)floor(timeStamp) - patternData[patternIndex].dataList[index].timestamp;
@@ -314,7 +324,7 @@ private:
 
 			measures = timeStampMeasure; // because that gets passed on to  caller !! and we do +1 at the end!
 			measures++;
-			int finalLength = measures * num * Topiary::TICKS_PER_QUARTER;
+			int finalLength = measures * num * Topiary::TicksPerQuarter;
 			lenInTicks = finalLength;
 			patternData[patternIndex].sortByTimestamp(); // this one renumbers!
 				
@@ -427,7 +437,6 @@ private:
 		addIntToModel(parameters, BPM, "BPM");
 		addIntToModel(parameters, numerator, "numerator");
 		addIntToModel(parameters, denominator, "denominator");
-		addIntToModel(parameters, variationSelected, "variationSelected");
 		addIntToModel(parameters, switchVariation, "switchVariation");
 		addIntToModel(parameters, runStopQ, "runStopQ");
 		addIntToModel(parameters, variationStartQ, "variationStartQ");
@@ -457,7 +466,7 @@ private:
 			addIntToModel(parameters, variation[i].patternToUse, "patternToUse", i);
 			addStringToModel(parameters, variation[i].name, "variationName", i);
 			addBoolToModel(parameters, variation[i].enabled, "variationEnabled", i);
-			addBoolToModel(parameters, variation[i].ending, "variationEnding", i);
+			addIntToModel(parameters, variation[i].type, "variationType", i);
 			addBoolToModel(parameters, variation[i].enablePool[0], "enablePool0", i);
 			addBoolToModel(parameters, variation[i].enablePool[1], "enablePool1", i);
 			addBoolToModel(parameters, variation[i].enablePool[2], "enablePool2", i);
@@ -554,11 +563,6 @@ private:
 						if (parameterName.compare("numerator") == 0) numerator = parameter->getIntAttribute("Value");
 						if (parameterName.compare("overrideHostTransport") == 0) rememberOverride = (bool)parameter->getIntAttribute("Value");
 						if (parameterName.compare("denominator") == 0) denominator = parameter->getIntAttribute("Value");
-						if (parameterName.compare("variationSelected") == 0)
-						{
-							variationSelected = parameter->getIntAttribute("Value");
-							variationRunning = variationSelected;
-						}
 
 						if (parameterName.compare("switchVariation") == 0) switchVariation = parameter->getIntAttribute("Value");
 						if (parameterName.compare("runStopQ") == 0) runStopQ = parameter->getIntAttribute("Value");
@@ -581,7 +585,7 @@ private:
 						if (parameterName.compare("lenInMeasures") == 0) variation[parameter->getIntAttribute("Index")].lenInMeasures = parameter->getIntAttribute("Value");
 						if (parameterName.compare("patternToUse") == 0) variation[parameter->getIntAttribute("Index")].patternToUse = parameter->getIntAttribute("Value");
 						if (parameterName.compare("variationEnabled") == 0) variation[parameter->getIntAttribute("Index")].enabled = parameter->getBoolAttribute("Value");
-						if (parameterName.compare("variationEnding") == 0) variation[parameter->getIntAttribute("Index")].ending = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("variationType") == 0) variation[parameter->getIntAttribute("Index")].type = parameter->getIntAttribute("Value");
 						if (parameterName.compare("enablePool0") == 0) variation[parameter->getIntAttribute("Index")].enablePool[0] = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("enablePool1") == 0) variation[parameter->getIntAttribute("Index")].enablePool[1] = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("enablePool2") == 0) variation[parameter->getIntAttribute("Index")].enablePool[2] = parameter->getBoolAttribute("Value");
@@ -661,6 +665,7 @@ private:
 
 		} // end block protected by lock
 
+		variationSelected = 0;
 		setRunState(Topiary::Stopped);
 		setOverrideHostTransport(rememberOverride);
 
@@ -690,33 +695,12 @@ private:
 		// lenght of 1 beat depends on denumerator (if 4 then beat == quarter)
 		if (numerator == 0) return; // not initialized!
 		if (denominator == 0) return;
-		ticksPerBeat = Topiary::TICKS_PER_QUARTER * 4 / denominator;
+		ticksPerBeat = Topiary::TicksPerQuarter * 4 / denominator;
 		samplesPerTick = (double)sampleRate / ((double)ticksPerBeat * BPM / 60.0);
 		Log("Samples per tick: " + String(samplesPerTick), Topiary::LogType::Info);
 
 	} // recalcRealTime
 
-	///////////////////////////////////////////////////////////////////////
-
-	void calcMeasureBeat()
-	{
-		int64 cursorInTicks = (int64)floor(blockCursor / samplesPerTick);  // use BlockCursor instead of rtCursor as rtCursor might jump back & forth
-		int newMeasure = (int)floor(cursorInTicks / (ticksPerBeat* denominator)) + 1;
-
-		int newBeat = (int)floor(cursorInTicks / ticksPerBeat);
-		newBeat = (newBeat % denominator) + 1;
-
-		jassert((newMeasure > 0));
-		jassert((newMeasure < 10000));
-
-		if (beat != newBeat)
-		{
-			beat = newBeat;
-			measure = newMeasure;
-			broadcaster.sendActionMessage(MsgTiming);
-		}
-	} // calcMeasureBeat
-	
 	///////////////////////////////////////////////////////////////////////
 
 	void initializeVariation(int i)
@@ -733,7 +717,7 @@ private:
 		}
 		variation[i].lenInMeasures = 0;
 		variation[i].pattern.patLenInTicks = 0;
-		variation[i].ending = false;				// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended) till done
+		variation[i].type = TopiaryBeatsModel::VariationTypeSteady;				// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended) till done
 
 		variation[i].name = "Variation " + String(i + 1);
 		variation[i].enabled = false;
@@ -875,7 +859,7 @@ private:
 						// recalc the timestamp, based on the swing lookup table
 						//Logger::outputDebugString("Timestamp pre " + String(timestamp));
 
-						int base = ((int)(timestamp / Topiary::TICKS_PER_QUARTER)) * Topiary::TICKS_PER_QUARTER;
+						int base = ((int)(timestamp / Topiary::TicksPerQuarter)) * Topiary::TicksPerQuarter;
 
 						//Logger::outputDebugString("Remainder pre " + String(timestamp-base));
 
@@ -885,7 +869,7 @@ private:
 						//Logger::outputDebugString("Remainder post" + String (remainder));
 						//Logger::outputDebugString("New Timestamp " + String(base + remainder) + " (DIFF: " + String (timestamp-base-remainder));
 
-						jassert((remainder) <= Topiary::TICKS_PER_QUARTER);
+						jassert((remainder) <= Topiary::TicksPerQuarter);
 						jassert((base + remainder) >= 0);
 						
 				} // swing
@@ -907,8 +891,8 @@ private:
 							direction = 1;
 													
 						rnd = randomizer.nextFloat();
-						//int debug = direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].timingValue /100;
-						timestamp = timestamp + (int)(direction * rnd * Topiary::TICKS_PER_QUARTER * variation[v].timingValue / 800);
+						//int debug = direction * rnd * Topiary::TicksPerQuarter * variation[v].timingValue /100;
+						timestamp = timestamp + (int)(direction * rnd * Topiary::TicksPerQuarter * variation[v].timingValue / 800);
 						if (timestamp < 0) timestamp = 0;
 
 						if (timestamp > (var->patLenInTicks-1)) timestamp = var->patLenInTicks - 1; // lenInTicks -1 because we need time for the note off event
@@ -942,7 +926,7 @@ private:
 		jassert(deviation < 101);
 		jassert(deviation > -101);
 
-		int maxMidiValue = Topiary::TICKS_PER_QUARTER-1;
+		int maxMidiValue = Topiary::TicksPerQuarter-1;
 		int midMidiValue = (int) (maxMidiValue / 2);
 
 		// This is our control point for the quadratic bezier curve

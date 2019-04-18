@@ -41,6 +41,7 @@ public:
 	void setBeatsModel(TopiaryBeatsModel* m);
 	int findID(int ID); // returns index of the ID; creates new record with that ID if not found
 	void duplicate(TopiaryPattern* p);
+	void quantize(int ticks);
 
 	static const int maxItems = 16000;
 
