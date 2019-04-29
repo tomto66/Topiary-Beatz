@@ -1,4 +1,4 @@
-# Topiary Beatz 0.9.5
+# Topiary Beatz 0.9.6
 
 Topiary Beatz is a plugin for beats & drums.
 
