@@ -36,8 +36,8 @@ void TOPIARYMODEL::setOverrideHostTransport(bool o)
 {
 	if (overrideHostTransport != o)
 	{
-		{   // block with a spinlock
-			const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		{   // block with a lock
+			const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 			if (o)
 				overrideHostTransport = o;
 			else
@@ -53,13 +53,13 @@ void TOPIARYMODEL::setOverrideHostTransport(bool o)
 				else
 					Log("Host can only be in control if there is at least one enabled variation.", Topiary::LogType::Warning);
 			}
-		} // end spinlock
+		} // end lock
 
 		broadcaster.sendActionMessage(MsgTransport);
 		// careful here - if we just set the runstate to Stopped - it might have been stopped already and variables may be undefined
 		// dirty hack below
 		{
-			const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+			const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 			runState = -1000000; // to force a runstate stopped below!!!
 		}
 		setRunState(Topiary::Stopped);
@@ -93,7 +93,7 @@ void TOPIARYMODEL::setNumeratorDenominator(int nu, int de)
 			return;
 		}
 #endif	
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 		numerator = nu;
 		denominator = de;
 		recalcRealTime();
@@ -192,8 +192,6 @@ bool TOPIARYMODEL::processVariationSwitch() // called just before generateMidi -
 	// generation is at patternCursorOn within the pattern - which is variationRunning, not (yet) variationSelected
 	// and both cursors go from 0 to the tickLength of that pattern
 	// we also know that we are currently at rtCursor, and given rtCursor and patternCursorOn we can calculate when the current pattern started in realtime 
-	
-	//const GenericScopedLock<SpinLock> myScopedLock(lockModel); 
 	
 	//Logger::outputDebugString(String("Sel ")+String(variationSelected)+String(" Running ")+String(variationRunning));
 	
@@ -344,7 +342,7 @@ bool TOPIARYMODEL::switchingVariations()
 void TOPIARYMODEL::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 { // main Generator
 
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
 	/ *************************************************************************************************************************************************
 	Uses a lot of model variables!  Summary of what is needed for what here

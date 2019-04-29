@@ -148,7 +148,7 @@ public:
 
 protected:
 
-	SpinLock lockModel;
+	CriticalSection lockModel;
 	
 	std::unique_ptr<XmlElement> model;
 	

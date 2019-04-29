@@ -372,7 +372,7 @@ void TopiaryModel::setBPM(int n)
 	if (n == 0) n = 120;  // do not allow 0 BPM
 	if (BPM != n)
 	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 		BPM = n;
 		recalcRealTime(); // housekeeping!
 		Log(String("BPM set to ") + String(n), Topiary::LogType::Transport);
@@ -657,7 +657,7 @@ void TopiaryModel::outputModelEvents(MidiBuffer& buffer)
 	// outputs what is in modelEventBuffer
 	MidiMessage msg;
 	int position;
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
 	auto iterator = MidiBuffer::Iterator(modelEventBuffer);
 
@@ -820,7 +820,7 @@ int TopiaryModel::getRunStopQ()
 
 void TopiaryModel::getTime(int& m, int& b)
 {
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel); // wait if it's generating
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel); // wait if it's generating
 	m = measure;
 	b = beat;
 
@@ -1080,7 +1080,7 @@ void TopiaryModel::learnMidi(int ID)
 
 void TopiaryModel::stopLearningMidi()
 {
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 	learningMidi = false;
 } // stopLearningMidi
 
@@ -1089,7 +1089,7 @@ void TopiaryModel::stopLearningMidi()
 void TopiaryModel::record(bool b)
 {
 	// carefulk - overridden in Beatsa & friends
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 	
 	recordingMidi = b;
 	// inform transport
