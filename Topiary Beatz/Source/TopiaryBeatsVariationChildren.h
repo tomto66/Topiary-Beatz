@@ -22,7 +22,6 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 class TopiaryBeatsVariationComponent;
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // EnablePoolComponent
 ////////////////////////////////////////////////////////////////////////////////
@@ -37,7 +36,7 @@ public:
 	void resized();
 	void paint(Graphics& g) override;
 	void setParent(TopiaryBeatsVariationComponent* p);
-	int width = 140;
+	int width = 85;
 	int heigth = 120;
 
 private:
@@ -71,7 +70,6 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 // RandomNoteComponent
-// Randomizes note occurrence
 ////////////////////////////////////////////////////////////////////////////////
 
 class RandomNoteComponent : public Component
@@ -123,10 +121,9 @@ public:
 	TextEditor nameEditor;
 	TopiaryButton enableButton;
 	ComboBox patternCombo;
-	//TopiaryButton endingButton;
 
 	int width = 140;
-	int heigth = 160;
+	int heigth = 120;
 
 	VariationDefinitionComponent();
 	~VariationDefinitionComponent();
@@ -242,7 +239,6 @@ public:
 
 	TextEditor poolChannelEditor1, poolChannelEditor2, poolChannelEditor3, poolChannelEditor4;
 	
-
 	int width = 140;
 	int heigth = 48;
 
@@ -323,8 +319,8 @@ public:
 	TopiaryButton fillButton;
 	TopiaryButton endButton;
 
-	int width = 140;
-	int heigth = 160;
+	int width = 85;
+	int heigth = 120; 
 	int type = TopiaryBeatsModel::VariationTypeSteady;
 	VariationTypeComponent();
 	~VariationTypeComponent();
@@ -342,3 +338,72 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VariationTypeComponent)
 
 }; // VariationTypeComponent
+
+////////////////////////////////////////////////////////////////////////////////
+// VelocityOffsetComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class VelocityOffsetComponent : public Component
+{
+public:
+	TopiaryLookAndFeel lookAndFeel;
+	TopiaryButton velocityOffsetButton;
+	Slider	velocityOffsetSlider0;
+	Slider	velocityOffsetSlider1;
+	Slider	velocityOffsetSlider2;
+	Slider	velocityOffsetSlider3;
+
+	int width = 250;
+	int heigth = 120;
+
+	VelocityOffsetComponent();
+	~VelocityOffsetComponent();
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+	void resized();
+	void paint(Graphics& g) override;
+
+private:
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int eW = 120; // editor & combo & enable button
+	static const int eH = 20;
+	static const int sliderH = 69;
+	static const int sliderW = 53;
+	static const int sliderTW = 60;
+	static const int sliderTH = 15;
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(VelocityOffsetComponent)
+
+}; // VariationOffsetComponent
+
+////////////////////////////////////////////////////////////////////////////////
+// SwingQComponent
+////////////////////////////////////////////////////////////////////////////////
+
+class SwingQComponent : public Component
+{
+public:
+
+	TopiaryButton fourButton, eightButton;
+
+	int width = 140;
+	int heigth = 48;
+	int swingQ;
+
+	SwingQComponent();
+	~SwingQComponent();
+	void setParent(TopiaryBeatsVariationComponent* p);
+
+	void resized();
+	void paint(Graphics& g) override;
+
+private:
+
+	TopiaryBeatsVariationComponent* parent;
+
+	static const int bW = 60; // button size
+	static const int bH = 20;
+
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SwingQComponent)
+
+}; // PoolChannelComponent

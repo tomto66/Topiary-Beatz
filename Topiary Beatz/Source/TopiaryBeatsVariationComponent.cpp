@@ -33,9 +33,6 @@ TopiaryBeatsVariationComponent::TopiaryBeatsVariationComponent()
 	addAndMakeVisible(enablePoolComponent);
 	enablePoolComponent.setParent(this);
 
-	//addAndMakeVisible(poolLengthComponent);
-	//poolLengthComponent.setParent(this);
-
 	addAndMakeVisible(poolChannelComponent);
 	poolChannelComponent.setParent(this);
 
@@ -53,6 +50,12 @@ TopiaryBeatsVariationComponent::TopiaryBeatsVariationComponent()
 	
 	addAndMakeVisible(variationTypeComponent);
 	variationTypeComponent.setParent(this);
+
+	addAndMakeVisible(velocityOffsetComponent);
+	velocityOffsetComponent.setParent(this);
+
+	addAndMakeVisible(swingQComponent);
+	swingQComponent.setParent(this);
 
 } // TopiaryBeatsVariationComponent() 
 
@@ -74,7 +77,7 @@ void TopiaryBeatsVariationComponent::setModel(TopiaryBeatsModel* m)
 	
 	variationDefinitionComponent.variationCombo.setSelectedId(1);  // this will trigger a call to getVariationDefinition which gets the data
 	
-} //setModel
+} // setModel
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -152,7 +155,8 @@ void TopiaryBeatsVariationComponent::setVariationDefinition()
 	setSwing();
 	setVelocity();
 	setTiming();
-
+	setVelocityOffset();
+	setSwingQ();
 	initializing = false;
 
 }  // setVariationDefinition
@@ -241,6 +245,8 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 	getSwing();
 	getVelocity();
 	getTiming();
+	getVelocityOffset();
+	getSwingQ();
 
 } // getVariationDefinition
 
@@ -405,6 +411,59 @@ void TopiaryBeatsVariationComponent::getVelocity()
 
 /////////////////////////////////////////////////////////////////////////
 
+void TopiaryBeatsVariationComponent::setVelocityOffset()
+{
+	bool enable = velocityOffsetComponent.velocityOffsetButton.getToggleState();
+	int offset[4];
+	offset[0] = (int) velocityOffsetComponent.velocityOffsetSlider0.getValue();
+	offset[1] = (int) velocityOffsetComponent.velocityOffsetSlider1.getValue();
+	offset[2] = (int) velocityOffsetComponent.velocityOffsetSlider2.getValue();
+	offset[3] = (int) velocityOffsetComponent.velocityOffsetSlider3.getValue();
+
+	beatsModel->setVelocityOffset(variationDefinitionComponent.variationCombo.getSelectedId() - 1, enable, offset);
+
+} // setVelocityOffset
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::getVelocityOffset()
+{
+	bool enable;
+	int offset[4];
+	beatsModel->getVelocityOffset(variationDefinitionComponent.variationCombo.getSelectedId() - 1, enable, offset);
+
+	velocityOffsetComponent.velocityOffsetButton.setToggleState(enable, dontSendNotification);
+	
+	velocityOffsetComponent.velocityOffsetSlider0.setValue(offset[0], dontSendNotification);
+	velocityOffsetComponent.velocityOffsetSlider1.setValue(offset[1], dontSendNotification);
+	velocityOffsetComponent.velocityOffsetSlider2.setValue(offset[2], dontSendNotification);
+	velocityOffsetComponent.velocityOffsetSlider3.setValue(offset[3], dontSendNotification);
+
+} // getVelocityOffset
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::setSwingQ()
+{
+	beatsModel->setSwingQ(variationDefinitionComponent.variationCombo.getSelectedId() - 1, swingQComponent.swingQ);
+
+} //setSwingQ
+
+/////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsVariationComponent::getSwingQ()
+{
+	int swingQ = beatsModel->getSwingQ(variationDefinitionComponent.variationCombo.getSelectedId() - 1);
+
+	if (swingQ == TopiaryBeatsModel::SwingQButtonIds::SwingQ8)
+		swingQComponent.eightButton.setToggleState(true, dontSendNotification);
+	else
+		swingQComponent.fourButton.setToggleState(true, dontSendNotification);
+
+} //setSwingQ
+
+/////////////////////////////////////////////////////////////////////////
+
 void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &message)
 {
 	if (message.compare(MsgVariationDefinition) == 0)
@@ -465,15 +524,21 @@ void TopiaryBeatsVariationComponent::paint(Graphics& g)
 {
 	UNUSED(g)
 	
-	variationDefinitionComponent.setBounds(10, 10, variationDefinitionComponent.width, variationDefinitionComponent.heigth);
-	enablePoolComponent.setBounds(10, 180, enablePoolComponent.width, enablePoolComponent.heigth);
+	variationDefinitionComponent.setBounds(100, 30, variationDefinitionComponent.width, variationDefinitionComponent.heigth);
+	variationTypeComponent.setBounds(255, 150, variationTypeComponent.width, variationTypeComponent.heigth);
+	
+	enablePoolComponent.setBounds(255, 30, enablePoolComponent.width, enablePoolComponent.heigth);
+	randomNoteComponent.setBounds(360, 30, randomNoteComponent.width, randomNoteComponent.heigth);
+	swingComponent.setBounds(465, 30, swingComponent.width, swingComponent.heigth);
+	velocityComponent.setBounds(570, 30, velocityComponent.width, velocityComponent.heigth);
+	timingComponent.setBounds(675, 30, timingComponent.width, timingComponent.heigth);
+	
+	velocityOffsetComponent.setBounds(360, 150, velocityOffsetComponent.width, velocityOffsetComponent.heigth);
 
-	poolChannelComponent.setBounds(10, 300, poolChannelComponent.width, poolChannelComponent.heigth);
-	randomNoteComponent.setBounds(350, 10, randomNoteComponent.width, randomNoteComponent.heigth);
-	swingComponent.setBounds(450, 10, swingComponent.width, swingComponent.heigth);
-	velocityComponent.setBounds(550, 10, velocityComponent.width, velocityComponent.heigth);
-	timingComponent.setBounds(650, 10, timingComponent.width, timingComponent.heigth);
-	variationTypeComponent.setBounds(200, 10, variationTypeComponent.width, variationTypeComponent.heigth);
+	poolChannelComponent.setBounds(620, 222, poolChannelComponent.width, poolChannelComponent.heigth);
+	swingQComponent.setBounds(620, 165, swingQComponent.width, swingQComponent.heigth);
+
+
 } // paint
 
 //////////////////////////////////////////////////

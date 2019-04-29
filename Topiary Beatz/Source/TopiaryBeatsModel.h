@@ -52,6 +52,13 @@ public:
 		VariationTypeRadioID = 2005
 	};
 
+	enum SwingQButtonIds
+	{
+		SwingQ4 = 3004,
+		SwingQ8 = 3008,
+		SwingQRadioID = 3000
+	};
+
 	TopiaryBeatsModel();
 	~TopiaryBeatsModel();
 
@@ -111,6 +118,10 @@ public:
 	void getRandomizeVelocity(int v, bool &enable, bool enablePool[4], int &value, bool &plus, bool &min);
 	void setRandomizeTiming(int v, bool enable, bool enablePool[4], int value, bool plus, bool min);
 	void getRandomizeTiming(int v, bool &enable, bool enablePool[4], int &value, bool &plus, bool &min);
+	void getVelocityOffset(int v, bool& offsetVelocity, int velocityOffset[4]);
+	void setVelocityOffset(int v, bool offsetVelocity, int velocityOffset[4]);
+	void setSwingQ(int v, int q);
+	int getSwingQ(int v);
 
 	void generateVariation(int i, int measureToGenerate); // Generates the variation;
 	void generateAllVariations(int measureToGenerate);
@@ -158,6 +169,11 @@ public:
 		bool timingPlus;
 		bool timingMin;
 
+		// velocity offset
+		bool offsetVelocity;
+		int velocityOffset[4];
+
+		int swingQ;
 	};
 
 	void swapVariation(int from, int to) override;
@@ -509,8 +525,17 @@ private:
 			addBoolToModel(parameters, variation[i].timingPlus, "timingPlus", i);
 			addBoolToModel(parameters, variation[i].timingMin, "timingMin", i);
 
+			addBoolToModel(parameters, variation[i].offsetVelocity, "offsetVelocity", i);
+			addIntToModel(parameters, variation[i].velocityOffset[0], "velocityOffset0", i);
+			addIntToModel(parameters, variation[i].velocityOffset[1], "velocityOffset1", i);
+			addIntToModel(parameters, variation[i].velocityOffset[2], "velocityOffset2", i);
+			addIntToModel(parameters, variation[i].velocityOffset[3], "velocityOffset3", i);
+			
+			addIntToModel(parameters, variation[i].swingQ, "swingQ", i);
+
 			// automation
 			addIntToModel(parameters, variationSwitch[i], "variationSwitch", i);
+
 		}
 
 	} // addParametersToModel
@@ -629,6 +654,14 @@ private:
 						if (parameterName.compare("timingPool3") == 0) variation[parameter->getIntAttribute("Index")].timingPool[3] = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("timingPlus") == 0) variation[parameter->getIntAttribute("Index")].timingPlus = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("timingMin") == 0) variation[parameter->getIntAttribute("Index")].timingMin = parameter->getBoolAttribute("Value");
+
+						if (parameterName.compare("offsetVelocity") == 0) variation[parameter->getIntAttribute("Index")].offsetVelocity = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("velocityOffset0") == 0) variation[parameter->getIntAttribute("Index")].velocityOffset[0] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("velocityOffset1") == 0) variation[parameter->getIntAttribute("Index")].velocityOffset[1] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("velocityOffset2") == 0) variation[parameter->getIntAttribute("Index")].velocityOffset[2] = parameter->getIntAttribute("Value");
+						if (parameterName.compare("velocityOffset3") == 0) variation[parameter->getIntAttribute("Index")].velocityOffset[3] = parameter->getIntAttribute("Value");
+
+						if (parameterName.compare("swingQ") == 0) variation[parameter->getIntAttribute("Index")].swingQ = parameter->getIntAttribute("Value");
 
 						// automation
 						if (parameterName.compare("variationSwitch") == 0)  variationSwitch[parameter->getIntAttribute("Index")] = parameter->getIntAttribute("Value");
@@ -775,6 +808,8 @@ private:
 		// if measureToGenerate == -1 it regenerates for all measures
 		// if not it generates for measureToGenerate - but if measure too long it resets to 0
 
+		Logger::outputDebugString("Generating pool");
+
 		if (measureToGenerate >= patternList.dataList[variation[v].patternToUse].measures) // we ran over end of pattern
 			measureToGenerate = 0;
 		
@@ -847,30 +882,55 @@ private:
 						rnd = randomizer.nextFloat();
 						//int debug = direction * rnd * 128 * variation[v].velocityValue /100;
 						vel = vel + (int) (direction * rnd * 128 * variation[v].velocityValue/50);   // originally / 100 but I want more of an effect
+
+						if (variation[v].offsetVelocity)
+							vel = vel + variation[v].velocityOffset[p];
+
 						if (vel > 127) vel = 127;
-						if (vel < 0) vel = 0;
+						else if (vel < 0) vel = 0;
 						var->dataList[vIndex].velocity = vel;
 
 					} // velocity randomization
 				
+				if ((variation[v].offsetVelocity) && (doNote))
+				{
+					int vel = var->dataList[vIndex].velocity;
+					vel = vel + variation[v].velocityOffset[p];
 
+					if (vel > 127) vel = 127;
+					else if (vel < 0) vel = 0;
+					var->dataList[vIndex].velocity = vel;
+				}
 				if (variation[v].swing && variation[v].swingPool[p] && doNote)
 				{
 						// recalc the timestamp, based on the swing lookup table
 						//Logger::outputDebugString("Timestamp pre " + String(timestamp));
+					int base;
 
-						int base = ((int)(timestamp / Topiary::TicksPerQuarter)) * Topiary::TicksPerQuarter;
+					//double debugFirst;
+					//int debugSecond;
+					//int debugThird;
+					if (variation[v].swingQ == TopiaryBeatsModel::SwingQButtonIds::SwingQ8)
+					{
+						base = ((int)floor(timestamp / (Topiary::TicksPerQuarter / 2))) * (int)(Topiary::TicksPerQuarter / 2);
+						//debugFirst = floor(timestamp / (Topiary::TicksPerQuarter / 2));
+						//debugSecond = (int)(Topiary::TicksPerQuarter / 2);
+						//debugThird = (int)floor(timestamp / (Topiary::TicksPerQuarter / 2));
 
-						//Logger::outputDebugString("Remainder pre " + String(timestamp-base));
+					}
+					else
+						base = ((int)floor(timestamp / Topiary::TicksPerQuarter)) * Topiary::TicksPerQuarter;
 
-						int remainder = swing(timestamp - base, variation[v].swingValue);
-						var->dataList[vIndex].timestamp = base + remainder;
+					//Logger::outputDebugString("Remainder pre " + String(timestamp-base));
 
-						//Logger::outputDebugString("Remainder post" + String (remainder));
-						//Logger::outputDebugString("New Timestamp " + String(base + remainder) + " (DIFF: " + String (timestamp-base-remainder));
+					int remainder = swing(timestamp - base, variation[v].swingValue, variation[v].swingQ);
+					var->dataList[vIndex].timestamp = base + remainder;
 
-						jassert((remainder) <= Topiary::TicksPerQuarter);
-						jassert((base + remainder) >= 0);
+					//Logger::outputDebugString("Remainder post" + String (remainder));
+					//Logger::outputDebugString("New Timestamp " + String(base + remainder) + " (DIFF: " + String (timestamp-base-remainder));
+
+					jassert((remainder) <= Topiary::TicksPerQuarter);
+					jassert((base + remainder) >= 0);
 						
 				} // swing
 
@@ -920,13 +980,23 @@ private:
 
 	///////////////////////////////////////////////////////////////////////
 
-	int swing(int value, int deviation)
+	int swing(int value, int deviation, int q) 
+		// q indicates whetherwe are swinging quarter or eight based
 	{ 
 		// value between 0 - ticksPerBeat; deviation -100 to 100
 		jassert(deviation < 101);
 		jassert(deviation > -101);
+		jassert(value >= 0);
 
-		int maxMidiValue = Topiary::TicksPerQuarter-1;
+		int maxMidiValue;
+		
+		if (q == TopiaryBeatsModel::SwingQButtonIds::SwingQ8)
+			maxMidiValue = (int) (Topiary::TicksPerQuarter/2) - 1;
+		else
+			maxMidiValue = Topiary::TicksPerQuarter - 1;
+
+		jassert(value <= maxMidiValue);
+
 		int midMidiValue = (int) (maxMidiValue / 2);
 
 		// This is our control point for the quadratic bezier curve

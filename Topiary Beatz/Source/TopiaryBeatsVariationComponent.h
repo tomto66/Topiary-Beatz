@@ -40,6 +40,10 @@ public:
 	void getVelocity();
 	void getTiming();
 	void setTiming();
+	void setVelocityOffset();
+	void getVelocityOffset();
+	void setSwingQ();
+	void getSwingQ();
 
 	void actionListenerCallback(const String &message) override;
 	TopiaryBeatsModel* beatsModel;
@@ -55,15 +59,11 @@ private:
 	SwingComponent swingComponent;
 	VelocityComponent velocityComponent;
 	TimingComponent timingComponent;
+	VelocityOffsetComponent velocityOffsetComponent;
+	SwingQComponent swingQComponent;
 
 	int variation; // the one we are working on; 0-7
 	
-	static const int buttonH = 20;
-	static const int sliderH = 80;
-	static const int sliderV = 80;
-	static const int sliderTW = 60;
-	static const int sliderTH = 20;
-
 	bool initializing = true; // to avoid unneeded warnings @init. Set to true when get/set detects numPatterns = 0; set to false as soons as a patternId of 1 gets written.
 	bool getVariationCalledFromChangeInVariationButton = false;
 

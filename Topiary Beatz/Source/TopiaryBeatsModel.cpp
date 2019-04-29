@@ -91,6 +91,8 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 		variation[i].timingPlus = true;
 		variation[i].timingMin = true;
 
+		variation[i].offsetVelocity = false;
+		variation[i].swingQ = TopiaryBeatsModel::SwingQButtonIds::SwingQ4;
 		for (int j = 0; j < 4; j++)
 		{
 			variation[i].enablePool[j] = true;
@@ -99,6 +101,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 			variation[i].swingPool[j] = false;
 			variation[i].velocityPool[j] = false;
 			variation[i].timingPool[j] = false;
+			variation[i].velocityOffset[j] = 0;
 		}
 	}
 
@@ -218,6 +221,8 @@ void TopiaryBeatsModel::addPattern()
 	}
 
 	patternList.add();
+	patternData[patternList.getNumItems() - 1].patLenInTicks = numerator * Topiary::TicksPerQuarter;
+	patternData[patternList.getNumItems() - 1].numItems = 0;
 
 	Log("New empty pattern created.", Topiary::LogType::Info);
 	
@@ -720,7 +725,7 @@ void TopiaryBeatsModel::setRandomizeTiming(int v, bool enable, bool enablePool[4
 
 	generateVariation(v, -1);
 
-} // getRandomizeTiming
+} // setRandomizeTiming
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -737,6 +742,21 @@ void TopiaryBeatsModel::getRandomizeTiming(int v, bool &enable, bool enablePool[
 	}
 
 } // getRandomizeTiming
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::setSwingQ(int v, int q)
+{
+	variation[v].swingQ = q;
+	generateVariation(v, -1);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+int TopiaryBeatsModel::getSwingQ(int v)
+{
+	return variation[v].swingQ;
+}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -1107,12 +1127,34 @@ int TopiaryBeatsModel::getNumPatterns()
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+void TopiaryBeatsModel::getVelocityOffset(int v,  bool& offsetVelocity, int velocityOffset[4])
+{
+	offsetVelocity = variation[v].offsetVelocity;
+	for (int i = 0; i < 4; i++)
+		velocityOffset[i] = variation[v].velocityOffset[i];
+
+} // getVelocityOffset
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::setVelocityOffset(int v, bool offsetVelocity, int velocityOffset[4])
+{
+	variation[v].offsetVelocity = offsetVelocity;
+	for (int i = 0; i < 4; i++)
+		variation[v].velocityOffset[i] = velocityOffset[i];
+
+	generateVariation(v, -1);
+
+} // setVelocityOffset
+
+///////////////////////////////////////////////////////////////////////////////////////
+
 void TopiaryBeatsModel::swapVariation(int from, int to)
 {
 	jassert((from < 8) && (from >= 0));
 	jassert((to < 8) && (to >= 0));
 	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
 		intSwap(variation[from].patternToUse, variation[to].patternToUse);
 		//intSwap(variation[from].lenInTicks, variation[to].lenInTicks);
@@ -1139,6 +1181,9 @@ void TopiaryBeatsModel::swapVariation(int from, int to)
 		intSwap(variation[from].timingValue, variation[to].timingValue);
 		boolSwap(variation[from].timingPlus, variation[to].timingPlus);
 		boolSwap(variation[from].timingMin, variation[to].timingMin);
+		boolSwap(variation[from].offsetVelocity, variation[to].offsetVelocity);
+
+		intSwap(variation[from].swingQ, variation[to].swingQ);
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -1148,6 +1193,7 @@ void TopiaryBeatsModel::swapVariation(int from, int to)
 			boolSwap(variation[from].swingPool[i], variation[to].swingPool[i]);
 			boolSwap(variation[from].velocityPool[i], variation[to].velocityPool[i]);
 			boolSwap(variation[from].timingPool[i], variation[to].timingPool[i]);
+			intSwap(variation[from].velocityOffset[i], variation[to].velocityOffset[i]);
 		}		
 	} // end scope of lock
 
@@ -1166,10 +1212,9 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 	jassert((from < 8) && (from >= 0));
 	jassert((to < 8) && (to >= 0));
 	{
-		const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
 		variation[to].patternToUse = variation[from].patternToUse;
-		//variation[to].lenInTicks = variation[from].lenInTicks;
 		variation[to].lenInMeasures = variation[from].lenInMeasures;
 		variation[to].type = variation[from].type;
 		variation[to].ended = variation[from].ended;
@@ -1186,6 +1231,8 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 		variation[to].timingValue = variation[from].timingValue;
 		variation[to].timingMin = variation[from].timingMin;
 		variation[to].timingPlus = variation[from].timingPlus;
+		variation[to].offsetVelocity = variation[from].offsetVelocity;
+		variation[to].swingQ = variation[from].swingQ;
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -1195,10 +1242,11 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 			variation[to].swingPool[i] = variation[from].swingPool[i];
 			variation[to].velocityPool[i] = variation[from].velocityPool[i];
 			variation[to].timingPool[i] = variation[from].timingPool[i];
+			variation[to].velocityOffset[i] = variation[from].velocityOffset[i];
 		}
 
 		variation[to].currentPatternChild = 0;
-		// pattern and currentPatternChild are not copied; former is recreated @generateVariation and latter is nullptr;
+		
 	} // end oif lock scope
 
 	generateAllVariations(-1);
@@ -1214,7 +1262,7 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 bool TopiaryBeatsModel::midiLearn(MidiMessage m)
 {
 	// called by processor; if midiLearn then learn based on what came in
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 	bool remember = learningMidi;
 	if (learningMidi)
 	{
@@ -1255,7 +1303,7 @@ void TopiaryBeatsModel::record(bool b)
 {
 	// set the recording state (does not record = recording happens in the processor!
 
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
 	// check there are pool(s) enabled; otherwise we don't know the channel when recording
 	if (b) {
@@ -1447,7 +1495,7 @@ void TopiaryBeatsModel::initializePreviousSteadyVariation()
 void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer)
 { // main Generator
 
-	const GenericScopedLock<SpinLock> myScopedLock(lockModel);
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
 	/*************************************************************************************************************************************************
 	Uses a lot of model variables!  Summary of what is needed for what here
@@ -1775,7 +1823,7 @@ void TopiaryBeatsModel::generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuff
 					{
 						// can only happen in recording in empty pattern; note OFF but no note ON yet
 						// force end
-						rtCursor = rtCursor + blockSize; jassert(false);
+						rtCursor = rtCursor + blockSize; 
 					}
 					//Logger::outputDebugString(String("nxtcursor ") + String(nextRTGenerationCursor));
 

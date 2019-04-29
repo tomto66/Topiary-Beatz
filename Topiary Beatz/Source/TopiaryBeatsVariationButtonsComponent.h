@@ -22,22 +22,3 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #define TOPIARYMODEL TopiaryBeatsModel
 #define TOPIARYVARIATIONBUTTONSCOMPONENT TopiaryBeatsVariationButtonsComponent
 #include "../../Topiary/Source/TopiaryVariationButtonsComponent.h"
-
-/*
-class TopiaryBeatsVariationButtonsComponent : public TopiaryVariationButtonsComponent
-{
-public:
-	TopiaryBeatsVariationButtonsComponent();
-	~TopiaryBeatsVariationButtonsComponent();
-	void setModel(TopiaryBeatsModel *m);
-	void checkModel();
-	void updateToggleState(TextButton*) override;
-	void getEnabled();     // get enablement data from model and enable/disable buttons
-
-private:
-	TopiaryBeatsModel* beatsModel;
-	
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsVariationButtonsComponent)
-
-};
-*/

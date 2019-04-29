@@ -31,7 +31,6 @@ EnablePoolComponent::EnablePoolComponent()
 
 	addAndMakeVisible(enableButton1);
 	enableButton1.setButtonText("Pool 1");
-	//enableButton1.setSize(eW, eH);
 	enableButton1.setClickingTogglesState(true);
 	enableButton1.onClick = [this]
 	{
@@ -40,7 +39,6 @@ EnablePoolComponent::EnablePoolComponent()
 
 	addAndMakeVisible(enableButton2);
 	enableButton2.setButtonText("Pool 2");
-	//enableButton2.setSize(eW, eH);
 	enableButton2.setClickingTogglesState(true);
 	enableButton2.onClick = [this]
 	{
@@ -49,7 +47,6 @@ EnablePoolComponent::EnablePoolComponent()
 
 	addAndMakeVisible(enableButton3);
 	enableButton3.setButtonText("Pool 3");
-	//enableButton3.setSize(eW, eH);
 	enableButton3.setClickingTogglesState(true);
 	enableButton3.onClick = [this]
 	{
@@ -58,7 +55,6 @@ EnablePoolComponent::EnablePoolComponent()
 
 	addAndMakeVisible(enableButton4);
 	enableButton4.setButtonText("Pool 4");
-	//enableButton4.setSize(eW, eH);
 	enableButton4.setClickingTogglesState(true);
 	enableButton4.onClick = [this]
 	{
@@ -124,7 +120,6 @@ void  EnablePoolComponent::paint(Graphics& g)
 
 /////////////////////////////////////////////////////////////////////////
 // RandomNoteComponent
-// Randomizes note occurrence
 /////////////////////////////////////////////////////////////////////////
 
 RandomNoteComponent::RandomNoteComponent()
@@ -151,7 +146,6 @@ RandomNoteComponent::RandomNoteComponent()
 
 		pool3Button.setClickingTogglesState(true);
 		pool3Button.setLookAndFeel(&rndLookAndFeel);
-		//pool3Button.setSize(buttonH - 2, buttonH - 2);
 		addAndMakeVisible(pool3Button);
 		pool3Button.setButtonText("3");
 		pool3Button.onClick = [this]
@@ -181,7 +175,6 @@ RandomNoteComponent::RandomNoteComponent()
 
 		addAndMakeVisible(percentSlider);
 		percentSlider.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
-		//percentSlider.setSize(sliderH, sliderV);
 		percentSlider.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
 		percentSlider.setTextBoxIsEditable(true);
 		percentSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
@@ -260,8 +253,6 @@ void  RandomNoteComponent::paint(Graphics& g)
 	percentSlider.setLookAndFeel(&rndLookAndFeel);
 		
 } // paint
-
-// End RandomNoteComponent
 
 /////////////////////////////////////////////////////////////////////////
 // SwingComponent
@@ -402,8 +393,6 @@ void  SwingComponent::paint(Graphics& g)
 
 } // paint
 
-// End SwingComponent
-
 /////////////////////////////////////////////////////////////////////////
 // VariationDefinitionComponent
 /////////////////////////////////////////////////////////////////////////
@@ -504,7 +493,7 @@ void  SwingComponent::paint(Graphics& g)
 		//auto hBounds = topBounds.removeFromLeft(eW);
 		nameEditor.setBounds(topBounds);
 
-		inRecBounds.removeFromTop(4 * lineWidth);
+		inRecBounds.removeFromTop(2 * lineWidth);
 		topBounds = inRecBounds.removeFromTop(eH);
 
 		// topBounds is second line of objects
@@ -512,7 +501,7 @@ void  SwingComponent::paint(Graphics& g)
 		
 		variationCombo.setBounds(topBounds);
 		
-		inRecBounds.removeFromTop(4 * lineWidth);
+		inRecBounds.removeFromTop(2 * lineWidth);
 		topBounds = inRecBounds.removeFromTop(eH);
 		
 		// topBounds is now third row which only has the enablebutton
@@ -520,19 +509,8 @@ void  SwingComponent::paint(Graphics& g)
 		enableButton.setBounds(topBounds);
 		enableButton.setSize(topBounds.getWidth(), topBounds.getHeight());
 
-		inRecBounds.removeFromTop(4 * lineWidth);
+		inRecBounds.removeFromTop(2 * lineWidth);
 		topBounds = inRecBounds.removeFromTop(eH);
-
-		// topBounds is now fourth row which only has the patternCombo
-		// hBounds = topBounds.removeFromLeft(eW);
-		//endingButton.setBounds(topBounds);
-		//endingButton.setSize(topBounds.getWidth(), topBounds.getHeight());
-
-		inRecBounds.removeFromTop(4 * lineWidth);
-		topBounds = inRecBounds.removeFromTop(eH);
-
-		// topBounds is now third row which only has the enablebutton
-		//hBounds = topBounds.removeFromLeft(eW);
 		
 		patternCombo.setBounds(topBounds);
 		patternCombo.setSize(topBounds.getWidth(), topBounds.getHeight());
@@ -978,6 +956,7 @@ void  SwingComponent::paint(Graphics& g)
 		pool1Button.setBounds(pBounds);
 		pool1Button.setSize(pBounds.getWidth(), pBounds.getHeight());
 		inRecBounds.removeFromLeft(2 * lineWidth);
+
 		timingSlider.setBounds(inRecBounds);
 		timingSlider.setSize(inRecBounds.getWidth(), inRecBounds.getHeight());
 		timingSlider.setLookAndFeel(&rndLookAndFeel);
@@ -1092,21 +1071,21 @@ void  SwingComponent::paint(Graphics& g)
 		//auto hBounds = topBounds.removeFromLeft(eW);
 		introButton.setBounds(topBounds);
 
-		inRecBounds.removeFromTop(4 * lineWidth);
+		inRecBounds.removeFromTop(2 * lineWidth);
 		topBounds = inRecBounds.removeFromTop(eH);
 
 		// topBounds is second line of objects
 		steadyButton.setBounds(topBounds);
 		steadyButton.setSize(topBounds.getWidth(), topBounds.getHeight());
 
-		inRecBounds.removeFromTop(4 * lineWidth);
+		inRecBounds.removeFromTop(2 * lineWidth);
 		topBounds = inRecBounds.removeFromTop(eH);
 
 		// topBounds is now third row which only has the enablebutton
 		fillButton.setBounds(topBounds);
 		fillButton.setSize(topBounds.getWidth(), topBounds.getHeight());
 
-		inRecBounds.removeFromTop(4 * lineWidth);
+		inRecBounds.removeFromTop(2 * lineWidth);
 		topBounds = inRecBounds.removeFromTop(eH);
 
 		// topBounds is now fourth row which only has the patternCombo
@@ -1114,7 +1093,234 @@ void  SwingComponent::paint(Graphics& g)
 		endButton.setBounds(topBounds);
 		endButton.setSize(topBounds.getWidth(), topBounds.getHeight());
 
-		
+	} // paint
 
+/////////////////////////////////////////////////////////////////////////
+// VelocityOffsetComponent
+/////////////////////////////////////////////////////////////////////////
+
+	VelocityOffsetComponent::VelocityOffsetComponent()
+	{
+		setSize(width, heigth);
+
+		addAndMakeVisible(velocityOffsetButton);
+		velocityOffsetButton.setClickingTogglesState(true);
+		velocityOffsetButton.setButtonText("Velocity Offset");
+		velocityOffsetButton.onClick = [this]
+		{
+			parent->setVelocityOffset();
+		};
+
+		addAndMakeVisible(velocityOffsetSlider0);
+		velocityOffsetSlider0.setLookAndFeel(&lookAndFeel);
+		velocityOffsetSlider0.setSize(sliderW, sliderH);
+		velocityOffsetSlider0.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+		velocityOffsetSlider0.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider0.setTextBoxIsEditable(true);
+		velocityOffsetSlider0.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider0.setRange((double)-127, (double)127, (double)1);
+		velocityOffsetSlider0.setTextValueSuffix("");
+		velocityOffsetSlider0.onValueChange = [this]
+		{
+			parent->setVelocityOffset();
+		};
+
+		addAndMakeVisible(velocityOffsetSlider1);
+		velocityOffsetSlider1.setLookAndFeel(&lookAndFeel);
+		velocityOffsetSlider1.setSize(sliderW, sliderH);
+		velocityOffsetSlider1.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+		velocityOffsetSlider1.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider1.setTextBoxIsEditable(true);
+		velocityOffsetSlider1.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider1.setRange((double)-127, (double)127, (double)1);
+		velocityOffsetSlider1.setTextValueSuffix("");
+		velocityOffsetSlider1.onValueChange = [this]
+		{
+			parent->setVelocityOffset();
+		};
+
+		addAndMakeVisible(velocityOffsetSlider2);
+		velocityOffsetSlider2.setLookAndFeel(&lookAndFeel);
+		velocityOffsetSlider2.setSize(sliderW, sliderH);
+		velocityOffsetSlider2.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+		velocityOffsetSlider2.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider2.setTextBoxIsEditable(true);
+		velocityOffsetSlider2.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider2.setRange((double)-127, (double)127, (double)1);
+		velocityOffsetSlider2.setTextValueSuffix("");
+		velocityOffsetSlider2.onValueChange = [this]
+		{
+			parent->setVelocityOffset();
+		};
+
+		addAndMakeVisible(velocityOffsetSlider3);
+		velocityOffsetSlider3.setLookAndFeel(&lookAndFeel);
+		velocityOffsetSlider3.setSize(sliderW, sliderH);
+		velocityOffsetSlider3.setSliderStyle(Slider::RotaryHorizontalVerticalDrag);
+		velocityOffsetSlider3.setTextBoxStyle(Slider::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider3.setTextBoxIsEditable(true);
+		velocityOffsetSlider3.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxBelow, false, sliderTW, sliderTH);
+		velocityOffsetSlider3.setRange((double)-127, (double)127, (double)1);
+		velocityOffsetSlider3.setTextValueSuffix("");
+		velocityOffsetSlider3.onValueChange = [this]
+		{
+			parent->setVelocityOffset();
+		};
+
+
+	} // VariationTypeComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void VelocityOffsetComponent::setParent(TopiaryBeatsVariationComponent* p)
+	{
+		parent = p;
+	} // setparent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	VelocityOffsetComponent::~VelocityOffsetComponent()
+	{
+	} // ~VariationTypeComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  VelocityOffsetComponent::resized()
+	{
+
+	} // resized
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  VelocityOffsetComponent::paint(Graphics& g)
+	{
+		int labelOffset = 15;
+		int lineWidth = 2;
+		auto area = getLocalBounds();
+
+		g.fillAll(TopiaryColour::background);
+		g.setColour(TopiaryColour::foreground);
+		g.setFont(12.0f);
+		g.drawText("Velocity Offset", lineWidth, lineWidth, 200, labelOffset, juce::Justification::centredLeft);
+
+		auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
+		g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
+
+		// turn it into inner rectangle
+		auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
+
+		// area for name and from editors
+		auto topBounds = inRecBounds.removeFromTop(eH);
+
+		// topBounds is first line of objects
+		//auto hBounds = topBounds.removeFromLeft(eW);
+		velocityOffsetButton.setBounds(topBounds);
+		velocityOffsetButton.setSize(topBounds.getWidth(), topBounds.getHeight());
+
+		//inRecBounds.removeFromTop(4 * lineWidth);
+		inRecBounds = inRecBounds.removeFromBottom(sliderH);
+		topBounds = inRecBounds.removeFromLeft(sliderW);
+		velocityOffsetSlider0.setSize(topBounds.getWidth(), topBounds.getHeight());
+		velocityOffsetSlider0.setBounds(topBounds);
+
+		inRecBounds.removeFromLeft(4 * lineWidth);
+		topBounds = inRecBounds.removeFromLeft(sliderW);
+		velocityOffsetSlider1.setSize(topBounds.getWidth(), topBounds.getHeight());
+		velocityOffsetSlider1.setBounds(topBounds);
+
+		inRecBounds.removeFromLeft(4 * lineWidth);
+		topBounds = inRecBounds.removeFromLeft(sliderW);
+		velocityOffsetSlider2.setSize(topBounds.getWidth(), topBounds.getHeight());
+		velocityOffsetSlider2.setBounds(topBounds);
+
+		inRecBounds.removeFromLeft(4 * lineWidth);
+		topBounds = inRecBounds.removeFromLeft(sliderW);
+		velocityOffsetSlider3.setSize(topBounds.getWidth(), topBounds.getHeight());
+		velocityOffsetSlider3.setBounds(topBounds);
 
 	} // paint
+
+/////////////////////////////////////////////////////////////////////////
+// SwingQComponent
+/////////////////////////////////////////////////////////////////////////
+
+	SwingQComponent::SwingQComponent()
+	{
+		setSize(width, heigth);
+		
+		addAndMakeVisible(fourButton);
+		fourButton.setClickingTogglesState(true);
+		fourButton.setButtonText("1/4");
+		fourButton.setRadioGroupId(TopiaryBeatsModel::SwingQButtonIds::SwingQRadioID);
+		fourButton.onClick = [this]
+		{
+			swingQ = TopiaryBeatsModel::SwingQButtonIds::SwingQ4;
+			parent->setSwingQ();
+		};
+
+		addAndMakeVisible(eightButton);
+		eightButton.setClickingTogglesState(true);
+		eightButton.setButtonText("1/8");
+		eightButton.setRadioGroupId(TopiaryBeatsModel::SwingQButtonIds::SwingQRadioID);
+		eightButton.onClick = [this]
+		{
+			swingQ = TopiaryBeatsModel::SwingQButtonIds::SwingQ8;
+			parent->setSwingQ();
+		};
+
+
+	} // SwingQComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void SwingQComponent::setParent(TopiaryBeatsVariationComponent* p)
+	{
+		parent = p;
+	} // setparent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	SwingQComponent::~SwingQComponent()
+	{
+	} // ~PoolChannelComponent
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  SwingQComponent::resized()
+	{
+
+	} // resized
+
+	///////////////////////////////////////////////////////////////////////////////////
+
+	void  SwingQComponent::paint(Graphics& g)
+	{
+		int labelOffset = 15;
+		int lineWidth = 2;
+		auto area = getLocalBounds();
+
+		g.fillAll(TopiaryColour::background);
+		g.setColour(TopiaryColour::foreground);
+		g.setFont(12.0f);
+		g.drawText("Swing resolution", lineWidth, lineWidth, 200, labelOffset, juce::Justification::centredLeft);
+
+		auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
+		g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
+
+		// turn it into inner rectangle
+		auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
+
+		// area for name and from editors
+		auto topBounds = inRecBounds.removeFromTop(bH);
+
+		// topBounds is first line of objects
+		auto eBounds = topBounds.removeFromLeft(bW);
+		fourButton.setBounds(eBounds);
+
+		topBounds.removeFromLeft(4 * lineWidth);
+		eBounds = topBounds.removeFromLeft(bW);
+		eightButton.setBounds(eBounds);
+
+	} // paint
+
+
