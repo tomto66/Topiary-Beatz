@@ -31,9 +31,10 @@ class PatternLengthComponent : public Component
 {
 
 public:
+
 	TextEditor lengthEditor;
 	ToggleButton keepTail; // when shortening; keep the tail
-
+	
 	PatternLengthComponent();
 	~PatternLengthComponent();
 	void resized();

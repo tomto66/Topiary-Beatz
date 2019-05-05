@@ -65,6 +65,9 @@ public:
 	String name = "New Beatz Pattern"; // name of this preset
 	void quantize(int p, int ticks);
 
+	bool getFixedOutputChannels();
+	void setFixedOutputChannels(bool b);
+
 	void getPatterns(String pats[8]);
 	
 	int getPatternLengthInMeasures(int i);  // needed in variationComponent for validating pool length values;
@@ -136,7 +139,6 @@ public:
 		TopiaryVariation pattern;				// pattern  events in the variation
 		int currentPatternChild;			// where we are in generation 
 		
-		//bool ending;						// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended)
 		int type;
 		bool ended;
 
@@ -197,9 +199,8 @@ private:
 	TopiaryPattern patternData[8];
 	Variation variation[8];  // struct to hold variation detail
 	NoteOffBuffer noteOffBuffer;
-
-	//int debugNote = 0;
-	//int debugTimestamp = 0;
+	bool fixedOutputChannels; // force those the same for every variation
+	
 	///////////////////////////////////////////////////////////////////////
 
 	bool loadMidiDrumPattern(const File& fileToRead, int patternIndex, int& measures, int& lenInTicks)
@@ -460,7 +461,7 @@ private:
 		addStringToModel(parameters, name, "name");
 		addBoolToModel(parameters, overrideHostTransport, "overrideHostTransport");
 		addBoolToModel(parameters, notePassThrough, "notePassThrough");
-
+		addBoolToModel(parameters, fixedOutputChannels, "fixedOutputChannels");
 		addBoolToModel(parameters, logMidiIn, "logMidiIn");
 		addBoolToModel(parameters, logMidiOut, "logMidiOut");
 		addBoolToModel(parameters, logDebug, "logDebug");
@@ -595,8 +596,8 @@ private:
 						if (parameterName.compare("name") == 0) name = parameter->getStringAttribute("Value");
 
 						if (parameterName.compare("WFFN") == 0)	WFFN = parameter->getBoolAttribute("Value");
-						if (parameterName.compare("notePassThrough") == 0) 	notePassThrough = (bool)parameter->getIntAttribute("Value");
-
+						if (parameterName.compare("notePassThrough") == 0) 	notePassThrough = parameter->getBoolAttribute("Value");
+						if (parameterName.compare("fixedOutputChannels") == 0) 	fixedOutputChannels = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("logMidiIn") == 0) logMidiIn = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("logMidiOut") == 0)	logMidiOut = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("logDebug") == 0)	logDebug = parameter->getBoolAttribute("Value");

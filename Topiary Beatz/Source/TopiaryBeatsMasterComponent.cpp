@@ -72,8 +72,6 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 		
 		beatsModel->deletePattern(selection);
 		patternsTable.updateContent();
-		//patternsTable.selectRow(1);   // select the first row
-		//setButtonStates();
 		beatsModel->sendActionMessage(MsgPatternList); // tables resort the data!
 	};
 
@@ -85,8 +83,6 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	newPatternButton.onClick = [this] {
 		beatsModel->addPattern();
 		patternsTable.updateContent();
-		//patternsTable.selectRow(beatsModel->getNumPatterns() - 1);   // select the new row
-		//setButtonStates();
 		beatsModel->sendActionMessage(MsgPatternList); // tables resort the data!
 		patternsTable.selectRow(beatsModel->getNumPatterns()-1);   // select the new row
 	};
@@ -174,120 +170,10 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 	// Settings
 	/////////////////////////////////
 
-	// WFFNButton
+	addAndMakeVisible(settingComponent);
+	settingComponent.setParent(this);
 
-	WFFNButton.setClickingTogglesState(true);
-	WFFNButton.setLookAndFeel(&topiaryLookAndFeel);
-	WFFNButton.setSize(100, buttonH);
-	addAndMakeVisible(WFFNButton);
-	WFFNButton.setButtonText("WFFN");
-	WFFNButton.onClick = [this]
-	{
-		setSettings();
-	};
-
-	// notePassThoughButton
-
-	notePassThroughButton.setClickingTogglesState(true);
-	notePassThroughButton.setLookAndFeel(&topiaryLookAndFeel);
-	notePassThroughButton.setSize(100, buttonH);
-	addAndMakeVisible(notePassThroughButton);
-	notePassThroughButton.setButtonText("Echo MIDI");
-	notePassThroughButton.onClick = [this]
-	{
-		setSettings();
-	};
-
-	// quantizeVariationStartCombo;
-
-	quantizeVariationStartCombo.setSize(100, buttonH);
-	addAndMakeVisible(quantizeVariationStartCombo);
-	quantizeVariationStartCombo.setSize(100, buttonH);
-	quantizeVariationStartCombo.addItem("Immediate", Topiary::Immediate);
-	//quantizeVariationStartCombo.addItem("Whole variation", TopiaryBeatsModel::WholePattern);
-	quantizeVariationStartCombo.addItem("Measure", Topiary::Measure);
-	//quantizeVariationStartCombo.addItem("1/2", Topiary::Half);
-	//quantizeVariationStartCombo.addItem("1/3", 4);
-	quantizeVariationStartCombo.addItem("Beat", Topiary::Quarter);
-	//quantizeVariationStartCombo.addItem("1/8", 6);
-	//quantizeVariationStartCombo.addItem("1/16", 7);
-	//quantizeVariationStartCombo.addItem("1/32", 8);
-
-	quantizeVariationStartCombo.onChange = [this]
-	{
-		setSettings();
-	};
-
-	// quantizeRunStop
-
-	quantizeRunStopCombo.setSize(100, buttonH);
-	addAndMakeVisible(quantizeRunStopCombo);
-	quantizeRunStopCombo.setSize(100, buttonH);
-	quantizeRunStopCombo.addItem("Immediate", 100);
-	quantizeRunStopCombo.addItem("Whole variation", Topiary::WholePattern);
-	quantizeRunStopCombo.addItem("Measure", 1);
-	quantizeRunStopCombo.addItem("1/2", 3);
-	//quantizeRunStopCombo.addItem("1/3", 4);
-	quantizeRunStopCombo.addItem("1/4", 5);
-	//quantizeRunStopCombo.addItem("1/8", 6);
-	//quantizeRunStopCombo.addItem("1/16", 7);
-	//quantizeRunStopCombo.addItem("1/32", 8);
-
-	quantizeRunStopCombo.onChange = [this]
-	{
-		setSettings();
-	};
-
-	addAndMakeVisible(saveButton);
-	saveButton.setSize(100, buttonH);
-	saveButton.setButtonText("Save");
-	saveButton.onClick = [this]
-	{
-		
-		beatsModel->savePreset("Please select Topiay Beats file to load...", "*.tbe" );
-	};
 	
-	addAndMakeVisible(loadButton);
-	loadButton.setSize(100, buttonH);
-	loadButton.setButtonText("Load");
-	loadButton.onClick = [this]
-	{		
-		beatsModel->loadPreset("Please select Topiary Beats file to load...", "*.tbe");
-		//setModel(beatsModel); // does this make sense? NO it doesn't - replaced by actionlistener for MsgLoad
-		actionListenerCallback(MsgLoad);
-		getSettings();
-		patternsTable.updateContent();
-		poolTable.updateContent();
-		setButtonStates();
-	};
-
-	addAndMakeVisible(nameEditor);
-	nameEditor.setSize(210, buttonH);
-	
-	nameEditor.onReturnKey = [this]
-	{
-		setSettings();
-	};
-	nameEditor.onFocusLost = [this]
-	{
-		setSettings();
-	};
-	
-
-	// switchVariationCombo
-
-	switchVariationCombo.setSize(150, buttonH);
-	addAndMakeVisible(switchVariationCombo);
-	switchVariationCombo.addItem("Switch from start", 1);
-	switchVariationCombo.addItem("Switch within beat", 2);
-	switchVariationCombo.addItem("Switch within measure", 3);
-	switchVariationCombo.addItem("Switch within pattern", 4);
-	
-	switchVariationCombo.onChange = [this]
-	{
-		setSettings();
-	};	
-
 } // TopiaryBeatsMasterComponent() 
 
 /////////////////////////////////////////////////////////////////////////
@@ -321,17 +207,18 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 {
 	int lineSize = 2;
 	int labelOffset = 15;
-	
+	int patternButtonOffsetX = 270 + 93;
+	int patternBlockOffsetX = 93;
 	g.fillAll(TopiaryColour::background);
 	g.setColour(TopiaryColour::foreground);
 	g.setFont(12.0f);
 
 	//// Patterns
 
-	g.drawText("Patterns", 10, 10, 200, labelOffset, juce::Justification::centredLeft);
-	g.drawRoundedRectangle((float)lineSize + 10, (float)labelOffset + 10, (float)patternButtonOffsetX + buttonW + 20, (float)patternTH + (2 * lineSize + 5), (float)4, (float)lineSize);
+	g.drawText("Patterns", patternBlockOffsetX, 10, 200, labelOffset, juce::Justification::centredLeft);
+	g.drawRoundedRectangle((float)lineSize + patternBlockOffsetX, (float)labelOffset + 10, (float)patternButtonOffsetX + buttonW -73, (float)patternTH + (2 * lineSize + 5), (float)4, (float)lineSize);
 
-	patternsTable.setBounds(20, 30, patternTW - 5, patternTH);
+	patternsTable.setBounds(patternBlockOffsetX + 10, 30, patternTW - 5, patternTH);
 	insertPatternButton.setBounds(patternButtonOffsetX, 40, buttonW, buttonH);
 	newPatternButton.setBounds(patternButtonOffsetX, 70, buttonW, buttonH);
 	deletePatternButton.setBounds(patternButtonOffsetX, 100, buttonW, buttonH);
@@ -340,40 +227,19 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 
 	//// Pool
 
-	g.drawText("Note Pool", 440, 10, 200, labelOffset, juce::Justification::centredLeft);
-	g.drawRoundedRectangle((float)lineSize + 440, (float)labelOffset + 10, (float)545, (float)patternTH + (2 * lineSize + 5), (float)4, (float)lineSize);
-	poolTable.setBounds(455, 30, poolTW - 5, poolTH);
+	g.drawText("Note Pool", 420 + 83, 10, 200, labelOffset, juce::Justification::centredLeft);
+	g.drawRoundedRectangle((float)lineSize + 420 + 83, (float)labelOffset + 10, (float)400, (float)patternTH + (2 * lineSize + 5), (float)4, (float)lineSize);
+	poolTable.setBounds(435 + 83, 30, poolTW - 5, poolTH);
 
-	cleanPoolButton.setBounds(patternButtonOffsetX + 450, 40, buttonW, buttonH);
-	newPoolButton.setBounds(patternButtonOffsetX + 450, 70, buttonW, buttonH);
-	deletePoolButton.setBounds(patternButtonOffsetX + 450, 100, buttonW, buttonH);
-	GMDrumMapButton.setBounds(patternButtonOffsetX + 450, 130, buttonW, buttonH);
-	regeneratePoolButton.setBounds(patternButtonOffsetX + 450, 160, buttonW, buttonH);
-	//// Settings
+	int cleanButtonOffsetX = patternButtonOffsetX + 415;
 
-	g.drawText("Settings", 10, 290, 800, labelOffset, juce::Justification::centredLeft);
-	g.drawRoundedRectangle((float)lineSize + 10, (float)305, (float)975, (float)60, (float)4, (float)lineSize);
-
-	WFFNButton.setBounds(20, 310, 100, buttonH);
-
-	notePassThroughButton.setBounds(130, 310, 100, buttonH);
-
-	g.setColour(Colours::white);
-	//g.drawText("Q Run Start:", 240, 310, 100, labelOffset + 3, juce::Justification::centredLeft);
-	//quantizeRunStartCombo.setBounds(310, 310, 100, buttonH);
-
-	g.drawText("Q Variation Start:", 250, 310, 200, labelOffset + 3, juce::Justification::centredLeft);
-	quantizeVariationStartCombo.setBounds(345, 310, 110, buttonH);
-
-	g.drawText("Q Variation End:", 470, 310, 200, labelOffset + 3, juce::Justification::centredLeft);
-	quantizeRunStopCombo.setBounds(555, 310, 100, buttonH);
-
-	g.drawText("Q Variation Switch:", 675, 310, 200, labelOffset + 3, juce::Justification::centredLeft);
-	switchVariationCombo.setBounds(780, 310, 150, buttonH);
+	cleanPoolButton.setBounds(cleanButtonOffsetX , 40, buttonW, buttonH);
+	newPoolButton.setBounds(cleanButtonOffsetX , 70, buttonW, buttonH);
+	deletePoolButton.setBounds(cleanButtonOffsetX , 100, buttonW, buttonH);
+	GMDrumMapButton.setBounds(cleanButtonOffsetX , 130, buttonW, buttonH);
+	regeneratePoolButton.setBounds(cleanButtonOffsetX , 160, buttonW, buttonH);
 	
-	nameEditor.setBounds(20, 340, 210, buttonH);
-	saveButton.setBounds(250, 340,100,buttonH);   
-	loadButton.setBounds(360, 340, 100, buttonH);
+	settingComponent.setBounds(patternBlockOffsetX, 280, settingComponent.width, settingComponent.heigth);
 	
 } // paint
 
@@ -418,3 +284,40 @@ void TopiaryBeatsMasterComponent::actionListenerCallback(const String &message)
 } // actionListenerCallback
 
 ///////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsMasterComponent::setSettings()
+{
+	// called when settings changes
+
+	beatsModel->setWFFN(settingComponent.WFFNButton.getToggleState());
+	beatsModel->setNotePassThrough(settingComponent.notePassThroughButton.getToggleState());
+	beatsModel->setVariationStartQ(settingComponent.quantizeVariationStartCombo.getSelectedId());
+	beatsModel->setRunStopQ(settingComponent.quantizeRunStopCombo.getSelectedId());
+	beatsModel->setName(settingComponent.nameEditor.getText());
+	beatsModel->setSwitchVariation(settingComponent.switchVariationCombo.getSelectedId());
+	beatsModel->setFixedOutputChannels(settingComponent.forceOutputChannelButton.getToggleState());
+} // setSettings
+
+//////////////////////////////////////////////////////
+
+void TopiaryBeatsMasterComponent::loadPreset()
+{
+	beatsModel->loadPreset("Please select Topiary Beats file to load...", "*.tbe");
+
+	actionListenerCallback(MsgLoad);
+	getSettings();
+	patternsTable.updateContent();
+	poolTable.updateContent();
+	setButtonStates();
+
+} // loadPreset
+
+//////////////////////////////////////////////////////
+
+void TopiaryBeatsMasterComponent::savePreset()
+{
+	beatsModel->savePreset("Please select Topiay Beats file to load...", "*.tbe");
+
+} // savePreset
+
+//////////////////////////////////////////////////////

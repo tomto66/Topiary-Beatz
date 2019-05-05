@@ -18,7 +18,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "TopiaryBeatsModel.h"
+#include "TopiaryBeatsMasterChildren.h"
 #include "../../Topiary/Source/TopiaryTableList.h"
 
 class TopiaryBeatsMasterComponent : public Component, ActionListener
@@ -30,12 +30,17 @@ public:
 	void paint(Graphics&) override;
 	void resized() override;
 	void setModel(TopiaryBeatsModel* m);
+	void setSettings();
+	void loadPreset();
+	void savePreset();
 
 private:
 	TopiaryBeatsModel* beatsModel;
 	TopiaryLookAndFeel topiaryLookAndFeel;
 	void actionListenerCallback(const String &message);
+
 	// patterns stuff
+
 	TopiaryTableList patternsTable;
 	XmlElement *patternListHeader = nullptr;
 	XmlElement *patternListData = nullptr;
@@ -47,7 +52,6 @@ private:
 
 	int buttonH = 20;
 	int buttonW = 100;
-	int patternButtonOffsetX = 280;
 
 	int patternTW = 253;
 	int patternTH = 240;
@@ -64,12 +68,14 @@ private:
 	TextButton regeneratePoolButton;
 	TextButton cleanPoolButton;
 
-	int poolTW = 250;
+	int poolTW = 249;
 	int poolTH = 240;
 
 
 	// settings stuff
+	SettingComponent settingComponent;
 
+	/*
 	TopiaryButton WFFNButton;
 	TopiaryButton notePassThroughButton;
 	ComboBox switchVariationCombo;
@@ -78,6 +84,7 @@ private:
 	TextButton saveButton;
 	TextButton loadButton;
 	TextEditor nameEditor;
+	*/
 
 	//////////////////////////////////////////////////////
 
@@ -126,35 +133,18 @@ private:
 
 	//////////////////////////////////////////////////////
 
-	void setSettings()
-	{  
-		// called when settings changes
-		
-		beatsModel->setWFFN(WFFNButton.getToggleState());
-		beatsModel->setNotePassThrough(notePassThroughButton.getToggleState());
-		beatsModel->setVariationStartQ(quantizeVariationStartCombo.getSelectedId());
-		//beatsModel->setRunStartQ(quantizeRunStartCombo.getSelectedId());
-		beatsModel->setRunStopQ(quantizeRunStopCombo.getSelectedId());
-		beatsModel->setName(nameEditor.getText());
-		beatsModel->setSwitchVariation(switchVariationCombo.getSelectedId());
-
-	} // setSettings
-
-	//////////////////////////////////////////////////////
-
-
 	void getSettings()
 	{  
 		// called when settings change
 		
-		WFFNButton.setToggleState(beatsModel->getWFFN(), dontSendNotification);
-		notePassThroughButton.setToggleState(beatsModel->getNotePassThrough(), dontSendNotification);
-		quantizeVariationStartCombo.setSelectedId(beatsModel->getVariationStartQ(), dontSendNotification);
-		//quantizeRunStartCombo.setSelectedId(beatsModel->getRunStartQ(), dontSendNotification);
-		quantizeRunStopCombo.setSelectedId(beatsModel->getRunStopQ(), dontSendNotification);
-		switchVariationCombo.setSelectedId(beatsModel->getSwitchVariation(), dontSendNotification);
+		settingComponent.WFFNButton.setToggleState(beatsModel->getWFFN(), dontSendNotification);
+		settingComponent.notePassThroughButton.setToggleState(beatsModel->getNotePassThrough(), dontSendNotification);
+		settingComponent.quantizeVariationStartCombo.setSelectedId(beatsModel->getVariationStartQ(), dontSendNotification);
+		settingComponent.quantizeRunStopCombo.setSelectedId(beatsModel->getRunStopQ(), dontSendNotification);
+		settingComponent.switchVariationCombo.setSelectedId(beatsModel->getSwitchVariation(), dontSendNotification);
+		settingComponent.forceOutputChannelButton.setToggleState(beatsModel->getFixedOutputChannels(), dontSendNotification);
 		auto name = beatsModel->getName();
-		nameEditor.setText(name, dontSendNotification);
+		settingComponent.nameEditor.setText(name, dontSendNotification);
 		
 		// disable when host overridden
 		int b, n, d, bs;

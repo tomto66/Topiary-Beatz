@@ -61,6 +61,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	for (int p = 0; p < 8; p++)
 		patternData[p].setBeatsModel(this);
 
+	fixedOutputChannels = true;
 
 	/////////////////////////////////////
 	// variations initialisation
@@ -465,6 +466,21 @@ void TopiaryBeatsModel::setGMDrumMapLabels()
 	}
 } // setGMDrumMapLabels
 
+///////////////////////////////////////////////////////////////////////
+
+bool TopiaryBeatsModel::getFixedOutputChannels()
+{
+	return fixedOutputChannels;
+	
+} // getFixedOutputChannels
+
+///////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::setFixedOutputChannels(bool b)
+{
+	fixedOutputChannels = b;
+
+} // setFixedOutputChannels
 
 ///////////////////////////////////////////////////////////////////////
 //  VARIATIONS
@@ -546,14 +562,29 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 	else
 		initializePatternToVariation(patternId, i);
 
-	for (int j = 0; j < 4; j++)
+	if (fixedOutputChannels)
 	{
-		variation[i].poolChannel[j] = poolChannel[j];
-	}
-	
-	// regenerate!
+		for (i = 0; i<8; i++)
+		{
+			for (int j = 0; j < 4; j++)
+			{
+				variation[i].poolChannel[j] = poolChannel[j];
+			}
+			// regenerate!
+			generateVariation(i, -1);
+		}
 
-	generateVariation(i, -1);
+	}
+	else
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			variation[i].poolChannel[j] = poolChannel[j];
+		}
+		// regenerate!
+		generateVariation(i, -1);
+	}
+
 	broadcaster.sendActionMessage(MsgVariationDefinition);
 	broadcaster.sendActionMessage(MsgVariationEnables);  // may need to update the enable buttons
 

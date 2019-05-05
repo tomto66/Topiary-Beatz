@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" jucerVersion="5.3.2"
-              version="0.9.6" companyName="Topiary" pluginManufacturer="Topiary"
+              version="0.9.7" companyName="Topiary" pluginManufacturer="Topiary"
               pluginVSTCategory="kPlugCategGenerator" pluginManufacturerCode="Beat"
               pluginCode="Beat" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               splashScreenColour="Light" pluginFormats="buildStandalone,buildVST">
@@ -57,6 +57,10 @@
     <FILE id="mtXvgF" name="topiaryBeatsLogo - 75.png" compile="0" resource="1"
           file="Resources/topiaryBeatsLogo - 75.png"/>
     <GROUP id="{D5BC8FF7-D48D-665F-7CA5-E964EDAA0535}" name="Source">
+      <FILE id="E6lh7x" name="TopiaryBeatsMasterChildren.cpp" compile="1"
+            resource="0" file="Source/TopiaryBeatsMasterChildren.cpp"/>
+      <FILE id="zpPBNA" name="TopiaryBeatsMasterChildren.h" compile="0" resource="0"
+            file="Source/TopiaryBeatsMasterChildren.h"/>
       <FILE id="MLUN3y" name="TopiaryNoteOffBuffer.cpp" compile="1" resource="0"
             file="Source/TopiaryNoteOffBuffer.cpp"/>
       <FILE id="LnpTea" name="TopiaryNoteOffBuffer.h" compile="0" resource="0"
