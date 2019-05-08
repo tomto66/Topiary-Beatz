@@ -75,12 +75,12 @@ void TopiaryBeatsPatternComponent::paint(Graphics& g)
 	g.fillAll(TopiaryColour::background);
 	g.setColour(TopiaryColour::foreground);
 	g.setFont(12.0f);
-	patternTable.setBounds(10, 10, patternTW + 10, patternTH + 10);
+	patternTable.setBounds(160, 10, patternTW, patternTH);
 
-	patternCombo.setBounds(420, 25, 200, 30);
+	patternCombo.setBounds(600, 25, 240, 30);
 
-	patternLengthComponent.setBounds(630, 10, patternLengthComponent.getWidth(), patternLengthComponent.getHeight());
-	actionButtonsComponent.setBounds(420, 60, actionButtonsComponent.getWidth(), actionButtonsComponent.getHeight());
+	patternLengthComponent.setBounds(600, 60, patternLengthComponent.getWidth(), patternLengthComponent.getHeight());
+	actionButtonsComponent.setBounds(600, 110, actionButtonsComponent.getWidth(), actionButtonsComponent.getHeight());
 
 } // paint
 
@@ -158,7 +158,7 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 void TopiaryBeatsPatternComponent::setPatternLength()
 {
 	// validate the input
-	int len = patternLengthComponent.lengthEditor.getText().getIntValue();
+	int len = patternLengthComponent.measureEditor.getText().getIntValue();
 	if ((len <= 0) || len > 16)
 	{
 		beatsModel->Log("Invalid pattern length.", Topiary::LogType::Warning);

@@ -32,20 +32,21 @@ class PatternLengthComponent : public Component
 
 public:
 
-	TextEditor lengthEditor;
+	TextEditor measureEditor, beatEditor, tickEditor;
 	ToggleButton keepTail; // when shortening; keep the tail
-	
+	TextButton goButton;
+
 	PatternLengthComponent();
 	~PatternLengthComponent();
 	void resized();
 	void paint(Graphics& g) override;
 	void setParent(TopiaryBeatsPatternComponent* p);
 	int width = 240;
-	int heigth = 45;
+	int heigth = 48;
 
 private:
 	TopiaryBeatsPatternComponent* parent;
-	static const int eW = 120; //  size
+	static const int eW = 30; //  size
 	static const int eH = 20;
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PatternLengthComponent)
 };
@@ -65,8 +66,8 @@ public:
 	void resized();
 	void paint(Graphics& g) override;
 	void setParent(TopiaryBeatsPatternComponent* p);
-	int width = 555;
-	int heigth = 200;
+	int width = 240;
+	int heigth = 240;
 	TextButton deleteButton;	// deletes currently selected; disabled if nothing selected
 	TextButton addButton;		// adds at current selection; adds at 0 0 0 if nothing selected
 	TextButton copyButton;		// copies selected note
@@ -79,7 +80,7 @@ public:
 private:
 	TopiaryBeatsPatternComponent* parent;
 
-	static const int bW = 120; //  size
+	static const int bW = 230; //  size
 	static const int bH = 20;
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ActionButtonsComponent)
 };

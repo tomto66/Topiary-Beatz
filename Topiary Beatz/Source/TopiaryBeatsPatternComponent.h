@@ -45,7 +45,7 @@ private:
 	TopiaryBeatsModel* beatsModel;
 	TopiaryTableList patternTable;
 	int patternTW = 380;
-	int patternTH = 360;
+	int patternTH = 348;
 	
 	ComboBox patternCombo;
 	PatternLengthComponent patternLengthComponent;
@@ -68,7 +68,7 @@ private:
 		patternTable.updateContent();
 		patternTable.setPattern(patternCombo.getSelectedId() - 1);
 		
-		patternLengthComponent.lengthEditor.setText(String(beatsModel->getPatternLengthInMeasures( patternCombo.getSelectedId() - 1)));
+		patternLengthComponent.measureEditor.setText(String(beatsModel->getPatternLengthInMeasures( patternCombo.getSelectedId() - 1)));
 		
 		setButtonStates();
 

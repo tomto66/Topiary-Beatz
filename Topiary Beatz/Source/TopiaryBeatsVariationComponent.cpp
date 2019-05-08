@@ -482,8 +482,7 @@ void  TopiaryBeatsVariationComponent::actionListenerCallback(const String &messa
 		for (int i = 0; i < 8; i++) patterns[i] = "";
 
 		beatsModel->getPatterns(patterns);
-		//int i = 0;
-		//while (patterns[i].compare("") && (i<8))
+		
 		for (int i=0; i<8; i++)
 		{
 			if (patterns[i].compare(""))

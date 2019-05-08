@@ -30,16 +30,27 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 PatternLengthComponent::PatternLengthComponent()
 {
-	addAndMakeVisible(lengthEditor);
-	lengthEditor.setSelectAllWhenFocused(true);
-	lengthEditor.setEnabled(true);
-	lengthEditor.setSize(eW, eH);
+	addAndMakeVisible(measureEditor);
+	measureEditor.setSelectAllWhenFocused(true);
+	measureEditor.setEnabled(true);
+	measureEditor.setSize(eW, eH);
 
-	lengthEditor.onFocusLost = [this]
-	{
-		parent->setPatternLength();
-	};
-	lengthEditor.onReturnKey = [this]
+	addAndMakeVisible(beatEditor);
+	beatEditor.setSelectAllWhenFocused(true);
+	beatEditor.setEnabled(false);
+	beatEditor.setSize(eW, eH);
+	beatEditor.setText("0", dontSendNotification);
+
+	addAndMakeVisible(tickEditor);
+	tickEditor.setSelectAllWhenFocused(true);
+	tickEditor.setEnabled(false);
+	tickEditor.setSize(eW, eH);
+	tickEditor.setText("0", dontSendNotification);
+
+	addAndMakeVisible(goButton);
+	goButton.setButtonText("Go");
+	goButton.setEnabled(true);
+	goButton.onClick = [this]
 	{
 		parent->setPatternLength();
 	};
@@ -90,7 +101,7 @@ void PatternLengthComponent::paint(Graphics& g)
 	g.setColour(TopiaryColour::foreground);
 	g.setFont(12.0f);
 
-	g.drawText("Length in measures", 0, 0, 200, (int)labelOffset, juce::Justification::centredLeft);
+	g.drawText("Length in measures/beats/ticks", 0, 0, 200, (int)labelOffset, juce::Justification::centredLeft);
 	auto area = getLocalBounds();
 	auto recBounds = area.removeFromBottom(area.getHeight() - labelOffset);
 	g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
@@ -99,9 +110,19 @@ void PatternLengthComponent::paint(Graphics& g)
 	auto inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
 
 	auto eBounds = inRecBounds.removeFromTop(eH);
-	auto tBounds = eBounds.removeFromRight(130);
-	lengthEditor.setBounds(eBounds);
-	keepTail.setBounds(tBounds);
+	auto tBounds = eBounds.removeFromRight(width - 6*lineWidth - eW);
+	measureEditor.setBounds(eBounds);
+	tBounds.removeFromLeft(5);
+	eBounds = tBounds.removeFromLeft(eW);
+	beatEditor.setBounds(eBounds);
+	tBounds.removeFromLeft(5);
+	eBounds = tBounds.removeFromLeft(eW);
+	tickEditor.setBounds(eBounds);
+
+	eBounds = tBounds.removeFromLeft(90);
+	keepTail.setBounds(eBounds);
+
+	goButton.setBounds(tBounds);
 
 } // paint
 
@@ -243,13 +264,17 @@ void ActionButtonsComponent::paint(Graphics& g)
 	bBounds = columnBounds.removeFromTop(bH);
 	deleteAllNotesButton.setBounds(bBounds);
 
-	// quantize
-	inRecBounds.removeFromLeft(30);
-	columnBounds = inRecBounds.removeFromLeft(bW);
+	columnBounds.removeFromTop(2 * lineWidth);
 	bBounds = columnBounds.removeFromTop(bH);
+	g.drawText("Quantize", bBounds, juce::Justification::centredLeft);
+
+	columnBounds.removeFromTop(2 * lineWidth);
+	bBounds = columnBounds.removeFromTop(bH);
+
 	quantizeCombo.setBounds(bBounds);
 
 	columnBounds.removeFromTop(2 * lineWidth);
 	bBounds = columnBounds.removeFromTop(bH);
+
 	quantizeButton.setBounds(bBounds);
 } // paint
