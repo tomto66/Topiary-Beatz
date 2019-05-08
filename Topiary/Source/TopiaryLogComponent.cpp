@@ -109,7 +109,7 @@ void TOPIARYLOGCOMPONENT::setModel(TOPIARYMODEL* m)
 void TOPIARYLOGCOMPONENT::paint(Graphics& g)
 {
 	auto area = getLocalBounds();
-	logEditor.setBounds(10, 10, w, h);
+	logEditor.setBounds(100, 10, w-90, h);
 		
 	g.fillAll(TopiaryColour::background);
 	g.setColour(TopiaryColour::foreground);
