@@ -19,4 +19,4 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #include "BeatsPluginProcessor.h"
 #include "BeatsPluginEditor.h"
-#include "../../Topiary/Source/PluginProcessor.cpp"
+#include "../../Topiary/Source/PluginProcessor.cpp.h"

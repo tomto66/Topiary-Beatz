@@ -321,7 +321,7 @@ public:
 
 	int width = 85;
 	int heigth = 120; 
-	int type = TopiaryBeatsModel::VariationTypeSteady;
+	int type = Topiary::VariationTypeSteady;
 	VariationTypeComponent();
 	~VariationTypeComponent();
 	void setParent(TopiaryBeatsVariationComponent* p);

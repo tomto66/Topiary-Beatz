@@ -15,9 +15,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
 
-#include "../JuceLibraryCode/JuceHeader.h"
-#include "TopiaryBeatsTransportComponent.h"
-#include "../../Topiary/Source/TopiaryTransportComponent.cpp.h"
-
+#pragma once
+#include "TopiaryBeatsVariation.h"
+#include "../../Topiary/Source/TopiaryVariation.cpp.h"

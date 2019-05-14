@@ -18,39 +18,19 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "../../Topiary/Source/TopiaryModel.h"
-#define TOPIARYMODEL TopiaryBeatsModel
-#define TOPIARYLOGCOMPONENT TopiaryBeatsLogComponent
-#define TOPIARYTRANSPORTCOMPONENT TopiaryBeatsTransportComponent
-#define TOPIARYUTILITYCOMPONENT TopiaryBeatsUtilityComponent
-#define BEATZ
 
+#include "TopiaryBeats.h"
 #include "TopiaryPatternList.h"
 #include "TopiaryPoolList.h"
 #include "TopiaryPattern.h"
 #include "../../Topiary/Source/TopiaryVariation.h"
 #include "TopiaryNoteOffBuffer.h"
 
-enum TopiaryLearnMidiId
-{
-	variationSwitch = 0, // meaning any 0 <= ID < 8 is learn midi for variation switchers
-	other = 10
-};
-
 #include "../../Topiary/Source/TopiaryMidiLearnEditor.h"
 
 class TopiaryBeatsModel : public TopiaryModel
 {
 public:
-
-	enum VariationTypeButtonIds
-	{
-		VariationTypeSteady = 2001,
-		VariationTypeFill = 2002,
-		VariationTypeEnd = 2003,
-		VariationTypeIntro = 2004,
-		VariationTypeRadioID = 2005
-	};
 
 	enum SwingQButtonIds
 	{
@@ -99,12 +79,11 @@ public:
 	bool switchingVariations() override;
 	void initializeVariationsForRunning() override;
 	void initializePreviousSteadyVariation();
-	void setEnded() override;
 	void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer) override;
 	
 	////// Variations
 
-	void setVariation(int i, bool lockIt=true) override;
+	void setVariation(int i) override;
 	void getVariation(int& running, int& selected);
 	void getVariationEnables(bool enables[8]);
 	bool getVariationEnabled(int v);
@@ -188,6 +167,9 @@ public:
 	TopiaryPoolList* getPoolList();
 	TopiaryPattern* getPattern(int p);
 	int getNumPatterns();
+
+	bool walkToTick(TopiaryVariation* parent, int& childIndex, int toTick);
+	void nextTick(TopiaryVariation* parent, int& childIndex);
 
 #define NUMBEROFQUANTIZERS 10
 
@@ -751,7 +733,7 @@ private:
 		}
 		variation[i].lenInMeasures = 0;
 		variation[i].pattern.patLenInTicks = 0;
-		variation[i].type = TopiaryBeatsModel::VariationTypeSteady;				// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended) till done
+		variation[i].type = Topiary::VariationTypeSteady;				// indicates that once pattern played, we no longer generate notes! (but we keep running (status Ended) till done
 
 		variation[i].name = "Variation " + String(i + 1);
 		variation[i].enabled = false;
@@ -1028,59 +1010,7 @@ private:
 	
 	} // swing
 
-	///////////////////////////////////////////////////////////////////////
-
-	bool walkToTick(TopiaryVariation* parent, int& childIndex, int toTick)
-	{
-		// Find the first child on or after this tick, starting from current child; 
-		// Caller has to make sure that child is child of parent, or pass nullptr to initialize
-		// Return false if pattern is empty or nothing to do within the blockSize; if empty then child == nullptr; 
-		// This loops around the pattern! 
-		// returns childIndex when called from recording (before record we set nextPatternChild to nullptr to make this correct)
-		// returns correct prevChild if there is one
-
-		int childTick;
-
-		if (childIndex == 0)
-		{
-			if (parent->numItems == 0)
-			{
-				return false; // empty pattern!
-			}
-		}
-		childTick = parent->dataList[childIndex].timestamp;
-
-		while (childTick < toTick)
-		{   // as long as our child is behind time we're looking for
-
-			childIndex++;
-			if (childIndex == parent->numItems) break; // there are no events afther the given time
-			childTick = parent->dataList[childIndex].timestamp;
-		}
-
-		if (childIndex == parent->numItems) // wrap around the pattern
-		{
-			childIndex = 0;
-			return true;
-		}
-		return true;
-
-	} // walkToTick
-
-	///////////////////////////////////////////////////////////////////////
-
-	void nextTick(TopiaryVariation* parent, int& childIndex)
-	{	// assert that parent has at least 1 child of each!!! (do a walk to a tick first!)
-		// this one loops around the pattern
-
-		childIndex++;
-		if (childIndex == parent->numItems)
-		{
-			childIndex = 0;
-			//Logger::outputDebugString(String("-------- LOOPING OVER END OFF PATTERN ==================== "));
-		}
-
-	}  // nextTick
+	
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsModel)
 };

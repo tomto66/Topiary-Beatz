@@ -19,7 +19,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include"TopiaryBeatsModel.h"
-#include"../../Topiary/Source/TopiaryTableList.h"  
+#include"../../Topiary/Source/TopiaryTable.h"  
 #include "TopiaryBeatsPatternChildren.h"
 
 class TopiaryBeatsPatternComponent : public Component, ActionListener
@@ -43,7 +43,7 @@ public:
 
 private:
 	TopiaryBeatsModel* beatsModel;
-	TopiaryTableList patternTable;
+	TopiaryTable patternTable;
 	int patternTW = 380;
 	int patternTH = 348;
 	

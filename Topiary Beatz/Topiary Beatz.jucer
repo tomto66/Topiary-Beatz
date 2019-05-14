@@ -1,62 +1,66 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" jucerVersion="5.3.2"
-              version="0.9.8" companyName="Topiary" pluginManufacturer="Topiary"
+              version="0.9.9" companyName="Topiary" pluginManufacturer="Topiary"
               pluginVSTCategory="kPlugCategGenerator" pluginManufacturerCode="Beat"
               pluginCode="Beat" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               splashScreenColour="Light" pluginFormats="buildStandalone,buildVST">
   <MAINGROUP id="MiVGXn" name="Topiary Beatz">
-    <FILE id="p9YlMg" name="TopiaryVariation.cpp" compile="1" resource="0"
-          file="../Topiary/Source/TopiaryVariation.cpp"/>
+    <FILE id="p9YlMg" name="TopiaryVariation.cpp.h" compile="1" resource="0"
+          file="../Topiary/Source/TopiaryVariation.cpp.h"/>
     <FILE id="E7syTT" name="TopiaryVariation.h" compile="0" resource="0"
           file="../Topiary/Source/TopiaryVariation.h"/>
     <FILE id="LflKhh" name="TopiaryListModel.cpp" compile="1" resource="0"
           file="../Topiary/Source/TopiaryListModel.cpp"/>
     <FILE id="ZcUeid" name="TopiaryListModel.h" compile="0" resource="0"
           file="../Topiary/Source/TopiaryListModel.h"/>
-    <FILE id="l6987W" name="TopiaryTableList.cpp" compile="1" resource="0"
-          file="../Topiary/Source/TopiaryTableList.cpp"/>
-    <FILE id="KuUdwX" name="TopiaryTableList.h" compile="0" resource="0"
-          file="../Topiary/Source/TopiaryTableList.h"/>
-    <FILE id="PpiPoh" name="TopiaryMidiLearnEditor.cpp" compile="1" resource="0"
-          file="../Topiary/Source/TopiaryMidiLearnEditor.cpp"/>
+    <FILE id="l6987W" name="TopiaryTable.cpp" compile="1" resource="0"
+          file="../Topiary/Source/TopiaryTable.cpp"/>
+    <FILE id="KuUdwX" name="TopiaryTable.h" compile="0" resource="0" file="../Topiary/Source/TopiaryTable.h"/>
+    <FILE id="PpiPoh" name="TopiaryMidiLearnEditor.cpp.h" compile="1" resource="0"
+          file="../Topiary/Source/TopiaryMidiLearnEditor.cpp.h"/>
     <FILE id="dYDN1c" name="TopiaryMidiLearnEditor.h" compile="0" resource="0"
           file="../Topiary/Source/TopiaryMidiLearnEditor.h"/>
-    <FILE id="j1HhmL" name="TopiaryUtilityComponent.cpp" compile="1" resource="0"
-          file="../Topiary/Source/TopiaryUtilityComponent.cpp"/>
+    <FILE id="j1HhmL" name="TopiaryUtilityComponent.cpp.h" compile="1"
+          resource="0" file="../Topiary/Source/TopiaryUtilityComponent.cpp.h"/>
     <FILE id="RtN7sl" name="TopiaryUtilityComponent.h" compile="0" resource="0"
           file="../Topiary/Source/TopiaryUtilityComponent.h"/>
     <FILE id="Q9iV3U" name="PluginEditor.h" compile="0" resource="0" file="../Topiary/Source/PluginEditor.h"/>
     <FILE id="wciZ72" name="PluginProcessor.h" compile="0" resource="0"
           file="../Topiary/Source/PluginProcessor.h"/>
-    <FILE id="HJNtrb" name="PluginEditor.cpp" compile="1" resource="0"
-          file="../Topiary/Source/PluginEditor.cpp"/>
-    <FILE id="AOrKEd" name="PluginProcessor.cpp" compile="1" resource="0"
-          file="../Topiary/Source/PluginProcessor.cpp"/>
+    <FILE id="HJNtrb" name="PluginEditor.cpp.h" compile="1" resource="0"
+          file="../Topiary/Source/PluginEditor.cpp.h"/>
+    <FILE id="AOrKEd" name="PluginProcessor.cpp.h" compile="1" resource="0"
+          file="../Topiary/Source/PluginProcessor.cpp.h"/>
     <FILE id="VPivn9" name="Topiary.cpp" compile="1" resource="0" file="../Topiary/Source/Topiary.cpp"/>
     <FILE id="UAuPFW" name="Topiary.h" compile="0" resource="0" file="../Topiary/Source/Topiary.h"/>
-    <FILE id="dwndRF" name="TopiaryLogComponent.cpp" compile="1" resource="0"
-          file="../Topiary/Source/TopiaryLogComponent.cpp"/>
+    <FILE id="dwndRF" name="TopiaryLogComponent.cpp.h" compile="1" resource="0"
+          file="../Topiary/Source/TopiaryLogComponent.cpp.h"/>
     <FILE id="dgPkrk" name="TopiaryLogComponent.h" compile="0" resource="0"
           file="../Topiary/Source/TopiaryLogComponent.h"/>
     <FILE id="lMG4kL" name="TopiaryModel.cpp" compile="1" resource="0"
           file="../Topiary/Source/TopiaryModel.cpp"/>
     <FILE id="eievjQ" name="TopiaryModel.h" compile="0" resource="0" file="../Topiary/Source/TopiaryModel.h"/>
-    <FILE id="nwt6zH" name="TopiaryModelIncludes.cpp" compile="1" resource="0"
-          file="../Topiary/Source/TopiaryModelIncludes.cpp"/>
-    <FILE id="CaWztU" name="TopiaryTransportComponent.cpp" compile="1"
-          resource="0" file="../Topiary/Source/TopiaryTransportComponent.cpp"/>
+    <FILE id="nwt6zH" name="TopiaryModel.cpp.h" compile="1" resource="0"
+          file="../Topiary/Source/TopiaryModel.cpp.h"/>
+    <FILE id="CaWztU" name="TopiaryTransportComponent.cpp.h" compile="1"
+          resource="0" file="../Topiary/Source/TopiaryTransportComponent.cpp.h"/>
     <FILE id="ipOmti" name="BinaryData.h" compile="0" resource="0" file="JuceLibraryCode/BinaryData.h"/>
     <FILE id="SJfEY3" name="BinaryData.cpp" compile="1" resource="0" file="JuceLibraryCode/BinaryData.cpp"/>
     <FILE id="OlVdGy" name="TopiaryTransportComponent.h" compile="0" resource="0"
           file="../Topiary/Source/TopiaryTransportComponent.h"/>
-    <FILE id="bNT5q9" name="TopiaryVariationButtonsComponent.cpp" compile="1"
-          resource="0" file="../Topiary/Source/TopiaryVariationButtonsComponent.cpp"/>
+    <FILE id="bNT5q9" name="TopiaryVariationButtonsComponent.cpp.h" compile="1"
+          resource="0" file="../Topiary/Source/TopiaryVariationButtonsComponent.cpp.h"/>
     <FILE id="sF5FGm" name="TopiaryVariationButtonsComponent.h" compile="0"
           resource="0" file="../Topiary/Source/TopiaryVariationButtonsComponent.h"/>
     <FILE id="mtXvgF" name="topiaryBeatsLogo - 75.png" compile="0" resource="1"
           file="Resources/topiaryBeatsLogo - 75.png"/>
     <GROUP id="{D5BC8FF7-D48D-665F-7CA5-E964EDAA0535}" name="Source">
+      <FILE id="dCXLi5" name="TopiaryBeatsVariation.cpp" compile="1" resource="0"
+            file="Source/TopiaryBeatsVariation.cpp"/>
+      <FILE id="yobriP" name="TopiaryBeatsVariation.h" compile="0" resource="0"
+            file="Source/TopiaryBeatsVariation.h"/>
+      <FILE id="cMeGz1" name="TopiaryBeats.h" compile="0" resource="0" file="Source/TopiaryBeats.h"/>
       <FILE id="E6lh7x" name="TopiaryBeatsMasterChildren.cpp" compile="1"
             resource="0" file="Source/TopiaryBeatsMasterChildren.cpp"/>
       <FILE id="zpPBNA" name="TopiaryBeatsMasterChildren.h" compile="0" resource="0"

@@ -19,7 +19,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "TopiaryBeatsMasterChildren.h"
-#include "../../Topiary/Source/TopiaryTableList.h"
+#include "../../Topiary/Source/TopiaryTable.h"
 
 class TopiaryBeatsMasterComponent : public Component, ActionListener
 {
@@ -41,7 +41,7 @@ private:
 
 	// patterns stuff
 
-	TopiaryTableList patternsTable;
+	TopiaryTable patternsTable;
 	XmlElement *patternListHeader = nullptr;
 	XmlElement *patternListData = nullptr;
 	TextButton insertPatternButton;
@@ -58,7 +58,7 @@ private:
 
 	// pool stuff
 	
-	TopiaryTableList poolTable;
+	TopiaryTable poolTable;
 	XmlElement *poolListHeader = nullptr;
 	XmlElement *poolListData = nullptr;
 	

@@ -986,40 +986,40 @@ void  SwingComponent::paint(Graphics& g)
 		addAndMakeVisible(introButton);
 		introButton.setClickingTogglesState(true);
 		introButton.setButtonText("Intro");
-		introButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		introButton.setRadioGroupId(Topiary::VariationTypeRadioID);
 		introButton.onClick = [this]
 		{
-			type = TopiaryBeatsModel::VariationTypeIntro;
+			type = Topiary::VariationTypeIntro;
 			parent->setVariationDefinition();
 		};
 
 		addAndMakeVisible(fillButton);
 		fillButton.setClickingTogglesState(true);
 		fillButton.setButtonText("Fill");
-		fillButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		fillButton.setRadioGroupId(Topiary::VariationTypeRadioID);
 		fillButton.onClick = [this]
 		{
-			type = TopiaryBeatsModel::VariationTypeFill;
+			type = Topiary::VariationTypeFill;
 			parent->setVariationDefinition();
 		};
 
 		addAndMakeVisible(endButton);
 		endButton.setClickingTogglesState(true);
 		endButton.setButtonText("Ending");
-		endButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		endButton.setRadioGroupId(Topiary::VariationTypeRadioID);
 		endButton.onClick = [this]
 		{
-			type = TopiaryBeatsModel::VariationTypeEnd;
+			type = Topiary::VariationTypeEnd;
 			parent->setVariationDefinition();
 		};
 
 		addAndMakeVisible(steadyButton);
 		steadyButton.setClickingTogglesState(true);
 		steadyButton.setButtonText("Steady");
-		steadyButton.setRadioGroupId(TopiaryBeatsModel::VariationTypeButtonIds::VariationTypeRadioID);
+		steadyButton.setRadioGroupId(Topiary::VariationTypeRadioID);
 		steadyButton.onClick = [this]
 		{
-			type = TopiaryBeatsModel::VariationTypeSteady;
+			type = Topiary::VariationTypeSteady;
 			parent->setVariationDefinition();
 		};
 

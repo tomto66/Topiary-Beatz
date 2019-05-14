@@ -201,16 +201,16 @@ void TopiaryBeatsVariationComponent::getVariationDefinition()
 
 	switch (type) 
 	{
-	case (TopiaryBeatsModel::VariationTypeSteady):
+	case (Topiary::VariationTypeSteady):
 			variationTypeComponent.steadyButton.setToggleState(true, dontSendNotification);
 			break;
-	case (TopiaryBeatsModel::VariationTypeEnd):
+	case (Topiary::VariationTypeEnd):
 		variationTypeComponent.endButton.setToggleState(true, dontSendNotification);
 		break;
-	case (TopiaryBeatsModel::VariationTypeFill):
+	case (Topiary::VariationTypeFill):
 		variationTypeComponent.fillButton.setToggleState(true, dontSendNotification);
 		break;
-	case (TopiaryBeatsModel::VariationTypeIntro):
+	case (Topiary::VariationTypeIntro):
 		variationTypeComponent.introButton.setToggleState(true, dontSendNotification);
 		break;
 	}
