@@ -14,10 +14,20 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with Topiary. If not, see <https://www.gnu.org/licenses/>.
+/////////////////////////////////////////////////////////////////////////////
+
+This code has a generic automation component that can be included in every Topiary plugin.
+
+CAREFUL: needs symbols:
+- TOPIARYMODEL e.g. TOPIARYBEATSMODEL
+
 */
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+
+#ifdef TOPIARYMODEL
+
 #include "../../Topiary/Source/TopiaryListModel.h"
 
 class TopiaryBeatsModel;
@@ -28,15 +38,12 @@ class TopiaryVariation : public TopiaryListModel
 public:
 	TopiaryVariation();
 	~TopiaryVariation();
-	
 
 	void sortByID() override; 
 	void sortByTimestamp(bool keepIDs=false);
 	void del(int n) override;
 	void add();
 	int findID(int ID); // returns index of the ID; creates new record with that ID if not found
-
-	static const int maxItems = 16000;
 
 	struct data // MUST match what has been defined in the headerlist data!!!
 	{
@@ -51,8 +58,8 @@ public:
 		int CC;		
 	};
 
-    	int patLenInTicks; // not in header
-	data dataList[maxItems];
+    int patLenInTicks; // not in header
+	data dataList[MAXVARIATIONITEMS];
 
 	void renumber() override;
 	void swapPatternData(data a, data b);
@@ -104,3 +111,4 @@ private:
 
 }; // TopiaryVariation
 
+#endif

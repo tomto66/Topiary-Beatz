@@ -121,11 +121,10 @@ int TopiaryModel::getVariationLenInTicks(int v)
 	return(0);
 }
 
-void TopiaryModel::setVariation(int v, bool lockIt)
+void TopiaryModel::setVariation(int v)
 {
 	// virtual
 	UNUSED(v)
-	UNUSED(lockIt)
 }
 
 bool TopiaryModel::getVariationEnabled(int v)
@@ -383,9 +382,9 @@ void TopiaryModel::setBPM(int n)
 
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryModel::setRunState(int n, bool lockIt)
+void TopiaryModel::setRunState(int n)
 {
-	// lockIt is by default TRUE
+	
 	// only call with false when called from generateMidi - because there we already have the lock!
 
 	int remember;
@@ -396,10 +395,7 @@ void TopiaryModel::setRunState(int n, bool lockIt)
 
 	if (runState != n)
 	{
-		//const GenericScopedLock<SpinLock> myScopedLock(lockModel);  // because we may need to call setVariation and that also relies on the lock!
-		if (lockIt)
-			lockModel.enter();
-
+		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 		
 		switch (n)
 		{
@@ -477,24 +473,23 @@ void TopiaryModel::setRunState(int n, bool lockIt)
 		}
 		
 		broadcaster.sendActionMessage(MsgTransport);
-		if (lockIt)
-			lockModel.exit();
+		
 	}
 
 	if (changeSetVariation)
 	{
 		// if the currently selected variation is disabled switch to one that has been selected!
 		// we do that here because setVariation needs the model lock!
-		setVariation(enabledVariation, lockIt);
+		setVariation(enabledVariation);
 	}
 	else
 	{
-		setVariation(variationSelected, lockIt);	// so that if the button was orange, it becomes blue again
+		setVariation(variationSelected);	// so that if the button was orange, it becomes blue again
 	}
 
 	// now the first waiting variation might stil be orange; fix that below
 	if (remember == Topiary::Armed)
-		setVariation(variationSelected, lockIt);
+		setVariation(variationSelected);
 
 } // setRunState
 
@@ -566,13 +561,6 @@ void TopiaryModel::processTransportControls(int buttonEnabled)  // buttonEnabled
 // GENERATOR STUFF
 ///////////////////////////////////////////////////////////////////////
 
-void TopiaryModel::threadRunner()
-{
-	// virtual
-} // threadRunner
-
-///////////////////////////////////////////////////////////////////////
-
 void TopiaryModel::setSampleRate(double sr)
 {
 	if (sr != sampleRate)  // not really needed because also checked in processor !!!
@@ -612,26 +600,6 @@ void TopiaryModel::setBlockSize(int blocksz)
 		Log(String("Blocksize ") + String(blockSize), Topiary::LogType::Info);
 	}
 } // setBlockSize
-
-///////////////////////////////////////////////////////////////////////
-
-void TopiaryModel::getVariationDetailForGenerateMidi(int& parent, int& noteChild, int& parentLength, bool& ending, bool& ended)
-{                  
-	// virtual
-	UNUSED(parent);
-	UNUSED(noteChild);
-	UNUSED(parentLength);
-	UNUSED(ending);
-	UNUSED(ended);
-} //getVariationDetailForGenerateMidi
-
-///////////////////////////////////////////////////////////////////////
-
-void TopiaryModel::setEnded()
-{
-	// virtual
-} // setEnded
-
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -990,23 +958,6 @@ ActionBroadcaster* TopiaryModel::getBroadcaster()
 
 }
 
-///////////////////////////////////////////////////////////////////////
-/*
-void TopiaryModel::cleanPattern(int p)
-{
-	// virtual
-	// if there were edits done, recalculate stuff
-	// check the length; if turns out to be longer than what the length should be; delete unneeded event
-	// redo the Ids (might have added or deleted somthing
-	// recalculate timestamps based on meabure, beat and tick
-	// set the note number as the note label may have changed
-	// regenerate any variations that depend on this pattern
-
-	jassert(false); // should have been overridden
-	UNUSED(p)
-
-} // cleanPattern
-*/
 ///////////////////////////////////////////////////////////////////////
 
 void TopiaryModel::copyVariation(int from, int to)

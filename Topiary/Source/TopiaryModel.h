@@ -32,7 +32,6 @@ public:
 	virtual void restoreStateFromMemoryBlock(const void* data, int sizeInBytes);
 	virtual void addParametersToModel();
 	virtual void restoreParametersToModel();
-	//virtual void cleanPattern(int p); // if there were edits done, recalculate stuff
 
 	////// Logger 
 
@@ -52,14 +51,14 @@ public:
 	void getTransportState(int& b, int& n, int& d, int& bs, bool& o, bool &waitFFN);
 	virtual void setOverrideHostTransport(bool o);
 	void removeRecordButton();
-	void setRunState(int n, bool lockIt=false);
+	void setRunState(int n);
 	int getRunState();
 	void processTransportControls(int buttonEnabled); // // buttonEnabled; 0=Stop; 1=start; 2=rec
 	
 	////// Variations
 
 	virtual int getVariationLenInTicks(int v);
-	virtual void setVariation(int v, bool lockIt=true);
+	virtual void setVariation(int v);
 	virtual bool getVariationEnabled(int v);
 	virtual void initializeVariationsForRunning();
 
@@ -76,10 +75,7 @@ public:
 	virtual void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer);
 	virtual bool processVariationSwitch();
 	virtual bool switchingVariations();
-	virtual void getVariationDetailForGenerateMidi(int& parent, int& noteChild, int& parentLength, bool& ending, bool& ended);
-	virtual void setEnded(); // flag and ending variation has actually ended
-	virtual void threadRunner(); // does generation of patterns on a separate thread
-
+	
 	void setWFFN(bool wffn);
 	bool getWFFN();
 	void setNotePassThrough(bool echo);
@@ -190,7 +186,7 @@ protected:
 	int64 nextRTGenerationCursor;		// real time cursor of next event to generate
 	int blockSize;						// size of block to generate 
 	int patternCursor;					// patternCursor  to disappear in the future
-	//int numPatterns = -1;				// set to 1 in Presetz (as long as it's not -1 in presetz :)
+	
 	int variationStartQ = Topiary::Quantization::Immediate;			// when to switch variations
 	int runStopQ = Topiary::Quantization::Immediate;				// when to stop running
 	bool WFFN = false;												// start at first note in if true; otherwize immediate

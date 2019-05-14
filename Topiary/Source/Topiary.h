@@ -100,7 +100,14 @@ class Topiary
 		//Thirty2nd = 8
 	};
 
-	
+	enum VariationTypeIds
+	{
+		VariationTypeSteady = 2001,
+		VariationTypeFill = 2002,
+		VariationTypeEnd = 2003,
+		VariationTypeIntro = 2004,
+		VariationTypeRadioID = 2005
+	};
 
 	enum VariationSwitch : int
 	{
@@ -122,19 +129,19 @@ class Topiary
 		License = 7		// License info
 	};
 
-	enum ThreadRunnerState : int
-	{
-		NothingToDo = 2604,
-		Generating = 2605,
-		DoneGenerating = 2607 // meaning it needs to go back to NothingToDo
-	};
-
 	enum HeaderType : int
 	{
 		Int = 3604,
 		Bool = 3605,
 		String = 3607,
 		NoteLabel = 3608
+	};
+
+	enum LearnMidiId
+	{
+		variationSwitch = 0, // meaning any 0 <= ID < 8 is learn midi for variation switchers
+		presetMidiCin = 10,
+		other = 20
 	};
 
 	static const int TicksPerQuarter = 240;

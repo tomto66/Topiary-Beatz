@@ -40,6 +40,7 @@ public:
 	void processUIChanges(bool override, int& n, int& d, int& bpm, int buttonEnabled);
 	void setModel(TOPIARYMODEL *m);
 	void checkModel();
+
 private:
 	TopiaryLookAndFeel topiaryLookAndFeel;
 	TOPIARYMODEL* model;
