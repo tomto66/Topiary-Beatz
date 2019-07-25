@@ -416,6 +416,7 @@ void  SwingComponent::paint(Graphics& g)
 		};
 
 		addAndMakeVisible(nameEditor);
+		nameEditor.setSelectAllWhenFocused(true);
 		nameEditor.onFocusLost = [this]
 		{
 			parent->setVariationDefinition();
@@ -442,8 +443,6 @@ void  SwingComponent::paint(Graphics& g)
 		};
 		
 		
-
-
 		
 	} // VariationDefinitionComponent
 
@@ -527,6 +526,7 @@ void  SwingComponent::paint(Graphics& g)
 		setSize(width, heigth);
 		addAndMakeVisible(poolChannelEditor1);
 		poolChannelEditor1.setSize(eW, eH);
+		poolChannelEditor1.setSelectAllWhenFocused(true);
 		poolChannelEditor1.onFocusLost = [this]
 		{
 			parent->setVariationDefinition();
@@ -538,6 +538,7 @@ void  SwingComponent::paint(Graphics& g)
 		
 		addAndMakeVisible(poolChannelEditor2);
 		poolChannelEditor2.setSize(eW, eH);
+		poolChannelEditor2.setSelectAllWhenFocused(true);
 		poolChannelEditor2.onFocusLost = [this]
 		{
 			parent->setVariationDefinition();
@@ -549,6 +550,7 @@ void  SwingComponent::paint(Graphics& g)
 
 		addAndMakeVisible(poolChannelEditor3);
 		poolChannelEditor3.setSize(eW, eH);
+		poolChannelEditor3.setSelectAllWhenFocused(true);
 		poolChannelEditor3.onFocusLost = [this]
 		{
 			parent->setVariationDefinition();
@@ -560,6 +562,7 @@ void  SwingComponent::paint(Graphics& g)
 
 		addAndMakeVisible(poolChannelEditor4);
 		poolChannelEditor4.setSize(eW, eH);
+		poolChannelEditor4.setSelectAllWhenFocused(true);
 		poolChannelEditor4.onFocusLost = [this]
 		{
 			parent->setVariationDefinition();

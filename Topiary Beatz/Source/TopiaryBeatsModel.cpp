@@ -873,10 +873,13 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 		}
 
 	}
+	else if (measureToGenerate == patternList.dataList[variation[i].patternToUse].measures) // we ran over end of pattern
+		measureToGenerate = 0;
 
 	for (int j = 0; j < pat->numItems; j++)
 	{
-		int measre = pat->dataList[i].timestamp % (numerator * Topiary::TicksPerQuarter);
+		//int measre = pat->dataList[i].timestamp % (numerator * Topiary::TicksPerQuarter);
+		int measre = (int) pat->dataList[j].timestamp / (numerator * Topiary::TicksPerQuarter);
 		if ((measre == measureToGenerate) || (measureToGenerate == -1))
 			var->dataList[j].midiType = Topiary::MidiType::NOP;
 	}

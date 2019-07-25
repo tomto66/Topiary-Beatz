@@ -85,7 +85,7 @@ TopiaryPattern::TopiaryPattern()
 	headerList[6].editable = true;
 	headerList[6].min = 1;
 	headerList[6].max = 10000;
-	headerList[7].visible = true;
+	headerList[6].visible = true;
 
 	headerList[7].columnID = 8;
 	headerList[7].name = "Velocity";

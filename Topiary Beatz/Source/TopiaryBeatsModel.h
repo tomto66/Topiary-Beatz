@@ -215,6 +215,7 @@ private:
 		int framesPerSecond = 0;
 		int ticksPerQuarter = 0;
 		int timeStampMeasure = 0;
+		measures = -1; // logic for multi-track stuff to find longest track
 
 		MidiFile midifile;
 		if (!midifile.readFrom(inputStream))
@@ -244,9 +245,15 @@ private:
 
 		//Logger::writeToLog(String("Tracks:" + String(numTracks)));
 		// careful: if the file contains more than 1 midi track the result will be undefined!!!
+
+		if (numTracks >1)
+			Log("Multiple tracks ("+String(numTracks)+") in input file; result may be unexpected!" , Topiary::LogType::Warning);
+
 		for (int t = 0; t < numTracks; t++) {
 			auto sequence = midifile.getTrack(t);
 			Logger::writeToLog(String("Track " + String(t)));
+			timeStampMeasure = 0; // in case of empty tracks!!!
+
 			for (int i = 0; i < sequence->getNumEvents(); i++) {
 				auto event = sequence->getEventPointer(i);
 				auto message = event->message;
@@ -319,16 +326,20 @@ private:
 						//Logger::writeToLog(String("SIGNATURE META EVENT: " + String(num) + String("/") + String(den)));
 					}
 				}
-			}
+			} // loop over events
 
-			measures = timeStampMeasure; // because that gets passed on to  caller !! and we do +1 at the end!
-			measures++;
+			// careful - we may have empty tracks11
+			if (timeStampMeasure > (measures))
+			{
+				measures = timeStampMeasure; // because that gets passed on to  caller !! and we do +1 at the end!
+				measures++;
+			}
 			int finalLength = measures * num * Topiary::TicksPerQuarter;
 			lenInTicks = finalLength;
 			patternData[patternIndex].sortByTimestamp(); // this one renumbers!
 				
+		} // loop over tracks
 
-		}
 		Log("File " + fileToRead.getFileName() + " imported.", Topiary::LogType::Info);
 
 		if ((num != numerator) || (den != denominator))
@@ -792,9 +803,6 @@ private:
 		// if not it generates for measureToGenerate - but if measure too long it resets to 0
 
 		Logger::outputDebugString("Generating pool");
-
-		if (measureToGenerate >= patternList.dataList[variation[v].patternToUse].measures) // we ran over end of pattern
-			measureToGenerate = 0;
 		
 		Random randomizer;
 		TopiaryVariation *var = &(variation[v].pattern);
