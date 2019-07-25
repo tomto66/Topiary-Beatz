@@ -20,7 +20,7 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 This code has a generic log component that can be included in every Topiary plugin.
 
 CAREFUL: needs symbols:
-- TOPIARYMODEL e.g. TopiaryPresetzModel
+- TOPIARYMODEL e.g. TopiaryPadzModel
 - TOPIARYLOGCOMPONENT e.g. TopiaryPresetzLogComponent 
 
 */

@@ -133,12 +133,6 @@ void TOPIARYMODEL::setVariation(int n)
 		return;
 	}
 
- 	if (variation[n].enabled == false)
-	{
-		// do not allow switching of disabled variations
-		Log("Cannot switch to disabled variation.", Topiary::LogType::Warning);
-		return;
-	}
 	if ((n != variationSelected) || (runState == Topiary::Stopped))
 		// the || runState || is needed because we may need to re-set a waiting variation to non-waiting; in that case we want the update to happen otherwise the buttons stays orange
 	{

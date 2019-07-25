@@ -56,6 +56,7 @@ TOPIARYUTILITYCOMPONENT::TOPIARYUTILITYCOMPONENT()
 
 
 	addAndMakeVisible(variationChannelEditor);
+	variationChannelEditor.setSelectAllWhenFocused(true);
 	variationChannelEditor.setText("16");
 	variationChannelEditor.onFocusLost = [this]
 	{
