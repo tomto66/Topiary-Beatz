@@ -13,7 +13,7 @@ Careful: binary data is provided in the Topiary/JuceLibraryCode folder - make su
 
 ## Compatibility / Testing
 
-* Tested/Compiled with Juce 5.3 / Visual Studio 2017 / VST2 / Windows10/X64.
+* Tested/Compiled with Juce 5.4 / Visual Studio 2019 / VST2 / Windows10/X64.
 * Tested in Cantabile 3, Reaper and Cubase LE.
 * See here for known bugs (none @ release time)  ( https://github.com/tomto66/Topiary-Beatz/issues?q=is%3Aopen+is%3Aissue+label%3Abug )
 
