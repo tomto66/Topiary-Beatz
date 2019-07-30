@@ -163,7 +163,25 @@ TopiaryBeatsMasterComponent::TopiaryBeatsMasterComponent()
 		beatsModel->generateAllVariations(-1);
 		beatsModel->sendActionMessage(MsgNotePool); // tables resort the data!
 	};
+	 
+	auditionButton.setClickingTogglesState(true);
+	auditionButton.setSize(buttonW, buttonH);
+	addAndMakeVisible(auditionButton);
+	auditionButton.setButtonText("Audition");
+	auditionButton.onClick = [this] {
+		auto selection = poolTable.getSelectedRow();
+		jassert(selection > -1);
+		auto debug = poolTable.getText(2, selection);
+		int noteNumber = poolTable.getText(2 ,selection).getIntValue();
+		jassert(noteNumber >= 0);
+		jassert(noteNumber < 128);
 
+		if (auditionButton.getToggleState())
+			beatsModel->outputNoteOn(noteNumber);
+		else
+			beatsModel->outputNoteOff(noteNumber);
+	};
+	
 	setButtonStates();
 
 	/////////////////////////////////
@@ -238,7 +256,7 @@ void TopiaryBeatsMasterComponent::paint(Graphics& g)
 	deletePoolButton.setBounds(cleanButtonOffsetX , 100, buttonW, buttonH);
 	GMDrumMapButton.setBounds(cleanButtonOffsetX , 130, buttonW, buttonH);
 	regeneratePoolButton.setBounds(cleanButtonOffsetX , 160, buttonW, buttonH);
-	
+	auditionButton.setBounds(cleanButtonOffsetX, 190, buttonW, buttonH);
 	settingComponent.setBounds(patternBlockOffsetX, 280, settingComponent.width, settingComponent.heigth);
 	
 } // paint

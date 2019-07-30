@@ -67,6 +67,7 @@ private:
 	TextButton GMDrumMapButton;
 	TextButton regeneratePoolButton;
 	TextButton cleanPoolButton;
+	TopiaryButton auditionButton;
 
 	int poolTW = 249;
 	int poolTH = 240;
@@ -74,17 +75,6 @@ private:
 
 	// settings stuff
 	SettingComponent settingComponent;
-
-	/*
-	TopiaryButton WFFNButton;
-	TopiaryButton notePassThroughButton;
-	ComboBox switchVariationCombo;
-	ComboBox quantizeVariationStartCombo;
-	ComboBox quantizeRunStopCombo;
-	TextButton saveButton;
-	TextButton loadButton;
-	TextEditor nameEditor;
-	*/
 
 	//////////////////////////////////////////////////////
 
@@ -124,10 +114,12 @@ private:
 		if (poolTable.getNumRows() == 0)
 		{
 			deletePoolButton.setEnabled(false);
+			auditionButton.setEnabled(false);
 		}
 		else
 		{
 			deletePoolButton.setEnabled(true);
+			auditionButton.setEnabled(true);
 		}
 	}
 

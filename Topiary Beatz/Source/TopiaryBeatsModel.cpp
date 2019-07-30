@@ -56,7 +56,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	Log(String("VST PlugIn Technology by Steinberg Media Technologies."), Topiary::LogType::License);
 	Log(String(""), Topiary::LogType::License);
 
-	// give some of the childres yourself as model
+	// give some of the children yourself as model
 	poolList.setBeatsModel(this);
 	for (int p = 0; p < 8; p++)
 		patternData[p].setBeatsModel(this);
@@ -129,6 +129,8 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 
 	ccVariationSwitching = true;
 	variationSwitchChannel = 0;
+
+	overrideHostTransport = true;
 
 } // TopiaryBeatsModel
 
@@ -547,7 +549,10 @@ void TopiaryBeatsModel::setVariationDefinition(int i, bool enabled, String vname
 		}
 
 		if (!ok && !overrideHostTransport)
+		{
 			setOverrideHostTransport(true);
+			Log("Host overridden because no variation enabled; don't forget to re-enablde if needed.", Topiary::Warning);
+		}
 	}
 
 	// if we are changing patterns there is no need to pass in from/to - those will be reinitialized
@@ -1522,7 +1527,60 @@ void TopiaryBeatsModel::initializePreviousSteadyVariation()
 		}
 	}
 
-}
+} //initializePreviousSteadyVariation
 
+///////////////////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::outputNoteOn(int noteNumber)
+{
+	// always velocity 127!!! - output on the poolChannel of this note!!!
+	// find the poolchannel; find the pool first
+	int channel = -1;
+
+	for (int i = 0; i < poolList.numItems; i++)
+	{
+		if (poolList.dataList[i].note == noteNumber)
+		{
+			channel = variation[variationSelected].poolChannel[poolList.dataList[i].pool-1];
+			i = poolList.numItems;
+		}
+	}
+
+	if (channel >= 0)
+	{
+		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
+		MidiMessage msg = MidiMessage::noteOn(channel, noteNumber, (float) 1.0);
+		modelEventBuffer.addEvent(msg, 0);
+	}
+
+} // outputNoteOn
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+void TopiaryBeatsModel::outputNoteOff(int noteNumber)
+{
+	// output on the poolChannel of this note!!!
+	// find the poolchannel; find the pool first
+	int channel = -1;
+
+	for (int i = 0; i < poolList.numItems; i++)
+	{
+		if (poolList.dataList[i].note == noteNumber)
+		{
+			channel = variation[variationSelected].poolChannel[poolList.dataList[i].pool-1];
+			i = poolList.numItems;
+		}
+	}
+
+	if (channel >= 0)
+	{
+		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
+		MidiMessage msg = MidiMessage::noteOff(channel, noteNumber, (float) 1.0);
+		modelEventBuffer.addEvent(msg, 0);
+	}
+
+} // outputNoteOff
+
+///////////////////////////////////////////////////////////////////////////////////////
 
 #include "../../Topiary/Source/TopiaryMidiLearnEditor.cpp.h"

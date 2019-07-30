@@ -171,6 +171,10 @@ public:
 	bool walkToTick(TopiaryVariation* parent, int& childIndex, int toTick);
 	void nextTick(TopiaryVariation* parent, int& childIndex);
 
+
+	void outputNoteOn(int noteNumber);
+	void outputNoteOff(int noteNumber);
+
 #define NUMBEROFQUANTIZERS 10
 
 	
