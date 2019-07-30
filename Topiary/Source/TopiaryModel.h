@@ -142,6 +142,8 @@ public:
 	void timestampToMBT(int t, int& m, int& b, int& tck);
 	void MBTToTick(int& t, int m, int b, int tck);
 
+	void addToModelEventBuffer(MidiMessage* msg);
+
 protected:
 
 	CriticalSection lockModel;

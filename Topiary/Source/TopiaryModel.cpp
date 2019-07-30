@@ -1090,3 +1090,14 @@ void TopiaryModel::MBTToTick(int& t, int m, int b, int tck)
 }
 
 /////////////////////////////////////////////////////////////////////////////
+
+void TopiaryModel::addToModelEventBuffer(MidiMessage* msg)
+{
+	// adds the msg to the modelEventBuffer
+
+	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
+	modelEventBuffer.addEvent(*msg, 0);
+
+}  // outputModelEvents
+
+/////////////////////////////////////////////////////////////////////////////

@@ -253,9 +253,8 @@ void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer&
 
 
 	// first see if there are (CC) messages to be output by the model
-#ifdef PRESETZ
 	model.outputModelEvents(processedMidi);
-#endif
+
 
 	int ignore;  // for the samplePosition in getnextEvent - we ignore that c'se we process immeditately
 	for (MidiBuffer::Iterator it(midiMessages); it.getNextEvent(msg, ignore);)
