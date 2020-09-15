@@ -26,31 +26,4 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #endif
 
 #define TOPIARYEDITORCOMPONENT TopiaryBeatsComponent
-#include "../../Topiary/Source/PluginEditor.h"
-
-/*
-
-//==============================================================================
-
-
-class TopiaryBeatsAudioProcessorEditor  : public AudioProcessorEditor
-{
-public:
-    TopiaryBeatsAudioProcessorEditor (TopiaryBeatsAudioProcessor&);
-    ~TopiaryBeatsAudioProcessorEditor();
-
-    //==============================================================================
-    void paint (Graphics&) override;
-    void resized() override;
-
-private:
-    // This reference is provided as a quick way for your editor to
-    // access the processor object that created it.
-    TopiaryBeatsAudioProcessor& processor;
-	TopiaryBeatsModel* beatsModel;
-
-	TopiaryBeatsComponent topiaryBeatsComponent;
-
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (TopiaryBeatsAudioProcessorEditor)
-};
-*/
+#include "../../Topiary/Source/Plugin/PluginEditor.h"

@@ -16,10 +16,13 @@ You should have received a copy of the GNU General Public License
 along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 */
 /////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "TopiaryBeatsModel.h" 
 #define TOPIARYMODEL TopiaryBeatsModel
 #define TOPIARYEDITORCOMPONENT TopiaryBeatsComponent
 
-#include "../../Topiary/Source/PluginProcessor.h"
+#include "../../Topiary/Source/Plugin/PluginProcessor.h"
+
+

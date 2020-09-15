@@ -21,4 +21,4 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #include"TopiaryBeatsModel.h"
 #define TOPIARYMODEL TopiaryBeatsModel
 #define TOPIARYLOGCOMPONENT TopiaryBeatsLogComponent
-#include "../../Topiary/Source/TopiaryLogComponent.h"
+#include "../../Topiary/Source/Components/TopiaryLogComponent.h"

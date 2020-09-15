@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-20.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,29 +20,21 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include "TopiaryBeats.h"
-#include "TopiaryPatternList.h"
+#include "../..//Topiary/Source/Model/TopiaryPatternList.h"
 #include "TopiaryPoolList.h"
-#include "TopiaryPattern.h"
-#include "../../Topiary/Source/TopiaryVariation.h"
-#include "TopiaryNoteOffBuffer.h"
-
-#include "../../Topiary/Source/TopiaryMidiLearnEditor.h"
+#include "../../Topiary/Source/Model/TopiaryPattern.h"
+#include "../../Topiary/Source/Model/TopiaryVariation.h"
+#include "../../Topiary/Source/Model/TopiaryNoteOffBuffer.h"
+#include "../../Topiary/Source/Components/TopiaryMidiLearnEditor.h"
 
 class TopiaryBeatsModel : public TopiaryModel
 {
 public:
 
-	enum SwingQButtonIds
-	{
-		SwingQ4 = 3004,
-		SwingQ8 = 3008,
-		SwingQRadioID = 3000
-	};
 
 	TopiaryBeatsModel();
 	~TopiaryBeatsModel();
 
-	String name = "New Beatz Pattern"; // name of this preset
 	void quantize(int p, int ticks);
 
 	bool getFixedOutputChannels();
@@ -115,7 +107,7 @@ public:
 
 		int patternToUse;					// index in patterndata
 		int lenInMeasures;
-		TopiaryVariation pattern;				// pattern  events in the variation
+		TopiaryVariation pattern;			// pattern  events in the variation
 		int currentPatternChild;			// where we are in generation 
 		
 		int type;
@@ -184,244 +176,14 @@ private:
 	TopiaryPoolList poolList;
 	TopiaryPattern patternData[8];
 	Variation variation[8];  // struct to hold variation detail
-	NoteOffBuffer noteOffBuffer;
+	TopiaryNoteOffBuffer noteOffBuffer;
 	bool fixedOutputChannels; // force those the same for every variation
 	
 	///////////////////////////////////////////////////////////////////////
 
-	bool loadMidiDrumPattern(const File& fileToRead, int patternIndex, int& measures, int& lenInTicks)
-	{
-		// fileToRead must have been initialized!!
-		// if the input file contains more than 1 real track, the result will
-		// be undefined and possibly mix note data from different channels
-		// note data need not be on Channel 10 (any channel will do as long as it's one track and one channel
-
-		int index; // index of the new even in the TopiaryPattern
-
-		if (!fileToRead.existsAsFile())
-		{
-			Log("File " + fileToRead.getFileName() + " does not exist.)", Topiary::LogType::Warning);  // file doesn't exist
-			return false;
-		}
-		FileInputStream inputStream(fileToRead);
-
-		if (!inputStream.openedOk())
-		{
-			Log("Cannot open file " + fileToRead.getFileName() + ".", Topiary::LogType::Warning);
-			return false;  // failed to open
-		}
-
-		double bpm = 120.0; // default 
-		int num = numerator; // default 
-		int den = denominator; // default 
-
-		int ticksPerFrame = 0;
-		int framesPerSecond = 0;
-		int ticksPerQuarter = 0;
-		int timeStampMeasure = 0;
-		measures = -1; // logic for multi-track stuff to find longest track
-
-		MidiFile midifile;
-		if (!midifile.readFrom(inputStream))
-		{
-			Log("Invalid MIDI format in file " + fileToRead.getFileName() + ".", Topiary::LogType::Warning);
-			return false;
-		}
-
-		int numTracks = midifile.getNumTracks();
-		/// check header value like timing info
-		short timeFormat = midifile.getTimeFormat();
-		
-		int noteCounter = 0; // index (ID) of the Notes
-
-		if (timeFormat > 0)
-		{
-			Logger::writeToLog("Ticks per quarter note :" + String(timeFormat));
-			ticksPerQuarter = timeFormat; // what is the tick then -> need to know BPM for that!
-		}
-		else
-		{
-
-			ticksPerFrame = timeFormat & 0xFF;
-			framesPerSecond = -(timeFormat >> 8);
-			//Logger::writeToLog("SMTP format; frames per second:" + String(framesPerSecond) + " ; ticks/frame: " + String(ticksPerFrame));
-		}
-
-		//Logger::writeToLog(String("Tracks:" + String(numTracks)));
-		// careful: if the file contains more than 1 midi track the result will be undefined!!!
-
-		if (numTracks >1)
-			Log("Multiple tracks ("+String(numTracks)+") in input file; result may be unexpected!" , Topiary::LogType::Warning);
-
-		for (int t = 0; t < numTracks; t++) {
-			auto sequence = midifile.getTrack(t);
-			Logger::writeToLog(String("Track " + String(t)));
-			timeStampMeasure = 0; // in case of empty tracks!!!
-
-			for (int i = 0; i < sequence->getNumEvents(); i++) {
-				auto event = sequence->getEventPointer(i);
-				auto message = event->message;
-				if (message.isNoteOn())
-				{
-					//Logger::writeToLog(message.getDescription());
-					//Logger::writeToLog(String(message.getTimeStamp()));
-
-					// create a note
-					
-					patternData[patternIndex].add();
-
-					index = patternData[patternIndex].numItems-1;
-					patternData[patternIndex].dataList[index].ID = noteCounter + 1;
-					patternData[patternIndex].dataList[index].note = message.getNoteNumber();
-					patternData[patternIndex].dataList[index].velocity = message.getVelocity();
-					patternData[patternIndex].dataList[index].label = MidiMessage::getMidiNoteName(message.getNoteNumber(), true, true, 5);
-					// calculate start markers
-					// duration will follow @noteoff event
-
-					double timeStamp = message.getTimeStamp();
-					// recalculate timeStamp to our reference range
-					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;
-					lenInTicks = (int)timeStamp; // passed on to caller
-					patternData[patternIndex].dataList[index].timestamp = 	(int)floor(timeStamp);
-					timeStampMeasure = (int)floor(timeStamp / (num*Topiary::TicksPerQuarter));
-					timeStamp = timeStamp - (timeStampMeasure * num*Topiary::TicksPerQuarter);
-					int timeStampBeat = (int)floor(timeStamp / Topiary::TicksPerQuarter);
-					timeStamp = timeStamp - (timeStampBeat * Topiary::TicksPerQuarter);
-					int timeStampTicks = (int)timeStamp;
-					patternData[patternIndex].dataList[index].measure = timeStampMeasure;	
-					patternData[patternIndex].dataList[index].beat = timeStampBeat;
-					patternData[patternIndex].dataList[index].tick =  timeStampTicks;
-					noteCounter++;
-					
-				}
-				if (message.isNoteOff())
-				{
-					// find the note that is off and set the length
-					int oldNote = message.getNoteNumber();
-					
-					// now find the last occurrence of this note in the children of noteList
-					index = patternData[patternIndex].numItems - 1;
-					while ((index >=0) && patternData[patternIndex].dataList[index].note != oldNote)
-					{
-						index--;
-					}
-
-					double timeStamp = message.getTimeStamp();
-					
-					// recalculate timeStamp to our reference range
-					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;
-					lenInTicks = (int)timeStamp; // passed on to caller
-					if (index>=0)
-						patternData[patternIndex].dataList[index].length = (int)floor(timeStamp) - patternData[patternIndex].dataList[index].timestamp;
-
-				}
-				if (message.isMetaEvent())
-				{
-					if (message.isTempoMetaEvent())
-					{
-						//getTempoMetaEventTickLength(short timeFormat)
-						//Logger::writeToLog(String("TEMPO META EVENT tempo seconds per quarter note: " + String(message.getTempoSecondsPerQuarterNote())));
-						bpm = (60 / message.getTempoSecondsPerQuarterNote());
-						//Logger::writeToLog(String("=====> BPM " + String(bpm)));
-					}
-					if (message.isTimeSignatureMetaEvent())
-					{
-						message.getTimeSignatureInfo(num, den);
-						//Logger::writeToLog(String("SIGNATURE META EVENT: " + String(num) + String("/") + String(den)));
-					}
-				}
-			} // loop over events
-
-			// careful - we may have empty tracks11
-			if (timeStampMeasure > (measures))
-			{
-				measures = timeStampMeasure; // because that gets passed on to  caller !! and we do +1 at the end!
-				measures++;
-			}
-			int finalLength = measures * num * Topiary::TicksPerQuarter;
-			lenInTicks = finalLength;
-			patternData[patternIndex].sortByTimestamp(); // this one renumbers!
-				
-		} // loop over tracks
-
-		Log("File " + fileToRead.getFileName() + " imported.", Topiary::LogType::Info);
-
-		if ((num != numerator) || (den != denominator))
-			Log("Time signature in file is different from plugin timesignature; results may be unexpected!", Topiary::LogType::Warning);
-
-		return true;
-	}; // loadMidiDrumPattern
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-	// load & save stuff stuff	
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void addIntToModel(XmlElement *p, int i, char* iname)
-	{
-		auto parameter = new XmlElement("Parameter");
-		parameter->setAttribute("Name", iname);
-		parameter->setAttribute("Value", i);
-		p->addChildElement(parameter);
-
-	} //addIntToModel
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void addIntToModel(XmlElement *p, int i, char* iname, int index)
-	{
-		auto parameter = new XmlElement("Parameter");
-		parameter->setAttribute("Name", iname);
-		parameter->setAttribute("Value", i);
-		parameter->setAttribute("Index", index);
-		p->addChildElement(parameter);
-
-	} // addIntToModel
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void addBoolToModel(XmlElement *p, bool b, char* bname)
-	{
-		auto parameter = new XmlElement("Parameter");
-		parameter->setAttribute("Name", bname);
-		parameter->setAttribute("Value", (int)b);
-		p->addChildElement(parameter);
-
-	} // addBoolToModel
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void addBoolToModel(XmlElement *p, bool b, char* bname, int index)
-	{
-		auto parameter = new XmlElement("Parameter");
-		parameter->setAttribute("Name", bname);
-		parameter->setAttribute("Value", (int)b);
-		parameter->setAttribute("Index", index);
-		p->addChildElement(parameter);
-
-	} // addBoolToModel
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void addStringToModel(XmlElement *p, String value, char* sname)
-	{
-		auto parameter = new XmlElement("Parameter");
-		parameter->setAttribute("Name", sname);
-		parameter->setAttribute("Value", value);
-		p->addChildElement(parameter);
-
-	} // addStringToModel
-
-	//////////////////////////////////////////////////////////////////////////////////////////////////
-
-	void addStringToModel(XmlElement *p, String value, char* sname, int index)
-	{
-		auto parameter = new XmlElement("Parameter");
-		parameter->setAttribute("Name", sname);
-		parameter->setAttribute("Value", value);
-		parameter->setAttribute("Index", index);
-		p->addChildElement(parameter);
-
-	} // addStringToModel
+#include "..//..//Topiary/Source/Model/LoadMidiPattern.cpp.h"	
+#include "..//..//Topiary/Source/Model/Swing.cpp.h"
+#include "..//..//Topiary/Source/Model/RecalcRealTime.cpp.h"
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -447,92 +209,92 @@ private:
 		auto parameters = new XmlElement("Parameters");
 		model->addChildElement(parameters);
 
-		addStringToModel(parameters, name, "name");
-		addIntToModel(parameters, BPM, "BPM");
-		addIntToModel(parameters, numerator, "numerator");
-		addIntToModel(parameters, denominator, "denominator");
-		addIntToModel(parameters, switchVariation, "switchVariation");
-		addIntToModel(parameters, runStopQ, "runStopQ");
-		addIntToModel(parameters, variationStartQ, "variationStartQ");
-		addBoolToModel(parameters, WFFN, "WFFN");
-		addStringToModel(parameters, name, "name");
-		addBoolToModel(parameters, overrideHostTransport, "overrideHostTransport");
-		addBoolToModel(parameters, notePassThrough, "notePassThrough");
-		addBoolToModel(parameters, fixedOutputChannels, "fixedOutputChannels");
-		addBoolToModel(parameters, logMidiIn, "logMidiIn");
-		addBoolToModel(parameters, logMidiOut, "logMidiOut");
-		addBoolToModel(parameters, logDebug, "logDebug");
-		addBoolToModel(parameters, logTransport, "logTransport");
-		addBoolToModel(parameters, logVariations, "logVariations");
-		addBoolToModel(parameters, logInfo, "logInfo");
-		addStringToModel(parameters, filePath, "filePath");
+		addToModel(parameters, name, "name");
+		addToModel(parameters, BPM, "BPM");
+		addToModel(parameters, numerator, "numerator");
+		addToModel(parameters, denominator, "denominator");
+		addToModel(parameters, switchVariation, "switchVariation");
+		addToModel(parameters, runStopQ, "runStopQ");
+		addToModel(parameters, variationStartQ, "variationStartQ");
+		addToModel(parameters, WFFN, "WFFN");
+		addToModel(parameters, name, "name");
+		addToModel(parameters, overrideHostTransport, "overrideHostTransport");
+		addToModel(parameters, notePassThrough, "notePassThrough");
+		addToModel(parameters, fixedOutputChannels, "fixedOutputChannels");
+		addToModel(parameters, logMidiIn, "logMidiIn");
+		addToModel(parameters, logMidiOut, "logMidiOut");
+		addToModel(parameters, logDebug, "logDebug");
+		addToModel(parameters, logTransport, "logTransport");
+		addToModel(parameters, logVariations, "logVariations");
+		addToModel(parameters, logInfo, "logInfo");
+		addToModel(parameters, filePath, "filePath");
 
-		addIntToModel(parameters, poolList.getNumItems(), "numPoolNotes");
+		addToModel(parameters, poolList.getNumItems(), "numPoolNotes");
 		
-		addIntToModel(parameters, variationSwitchChannel, "variationSwitchChannel");
-		addBoolToModel(parameters, ccVariationSwitching, "ccVariationSwitching");
+		addToModel(parameters, variationSwitchChannel, "variationSwitchChannel");
+		addToModel(parameters, ccVariationSwitching, "ccVariationSwitching");
 
 		for (int i = 0; i < 8; i++) {
 			
 			// Variations
 			
-			addIntToModel(parameters, variation[i].lenInMeasures, "lenInMeasures", i);
-			addIntToModel(parameters, variation[i].patternToUse, "patternToUse", i);
-			addStringToModel(parameters, variation[i].name, "variationName", i);
-			addBoolToModel(parameters, variation[i].enabled, "variationEnabled", i);
-			addIntToModel(parameters, variation[i].type, "variationType", i);
-			addBoolToModel(parameters, variation[i].enablePool[0], "enablePool0", i);
-			addBoolToModel(parameters, variation[i].enablePool[1], "enablePool1", i);
-			addBoolToModel(parameters, variation[i].enablePool[2], "enablePool2", i);
-			addBoolToModel(parameters, variation[i].enablePool[3], "enablePool3", i);
+			addToModel(parameters, variation[i].lenInMeasures, "lenInMeasures", i);
+			addToModel(parameters, variation[i].patternToUse, "patternToUse", i);
+			addToModel(parameters, variation[i].name, "variationName", i);
+			addToModel(parameters, variation[i].enabled, "variationEnabled", i);
+			addToModel(parameters, variation[i].type, "variationType", i);
+			addToModel(parameters, variation[i].enablePool[0], "enablePool0", i);
+			addToModel(parameters, variation[i].enablePool[1], "enablePool1", i);
+			addToModel(parameters, variation[i].enablePool[2], "enablePool2", i);
+			addToModel(parameters, variation[i].enablePool[3], "enablePool3", i);
 
-			addIntToModel(parameters, variation[i].poolChannel[0], "poolChannel0", i);
-			addIntToModel(parameters, variation[i].poolChannel[1], "poolChannel1", i);
-			addIntToModel(parameters, variation[i].poolChannel[2], "poolChannel2", i);
-			addIntToModel(parameters, variation[i].poolChannel[3], "poolChannel3", i);
+			addToModel(parameters, variation[i].poolChannel[0], "poolChannel0", i);
+			addToModel(parameters, variation[i].poolChannel[1], "poolChannel1", i);
+			addToModel(parameters, variation[i].poolChannel[2], "poolChannel2", i);
+			addToModel(parameters, variation[i].poolChannel[3], "poolChannel3", i);
 
-			addBoolToModel(parameters, variation[i].randomizeNotes, "randomizeNotes", i);
-			addIntToModel(parameters, variation[i].randomizeNotesValue, "randomizeNotesValue", i);
-			addBoolToModel(parameters, variation[i].randomizeNotePool[0], "randomizeNotePool0", i);
-			addBoolToModel(parameters, variation[i].randomizeNotePool[1], "randomizeNotePool1", i);
-			addBoolToModel(parameters, variation[i].randomizeNotePool[2], "randomizeNotePool2", i);
-			addBoolToModel(parameters, variation[i].randomizeNotePool[3], "randomizeNotePool3", i);
+			addToModel(parameters, variation[i].randomizeNotes, "randomizeNotes", i);
+			addToModel(parameters, variation[i].randomizeNotesValue, "randomizeNotesValue", i);
+			addToModel(parameters, variation[i].randomizeNotePool[0], "randomizeNotePool0", i);
+			addToModel(parameters, variation[i].randomizeNotePool[1], "randomizeNotePool1", i);
+			addToModel(parameters, variation[i].randomizeNotePool[2], "randomizeNotePool2", i);
+			addToModel(parameters, variation[i].randomizeNotePool[3], "randomizeNotePool3", i);
 
-			addBoolToModel(parameters, variation[i].swing, "swing", i);
-			addIntToModel(parameters, variation[i].swingValue, "swingValue", i);
-			addBoolToModel(parameters, variation[i].swingPool[0], "swingPool0", i);
-			addBoolToModel(parameters, variation[i].swingPool[1], "swingPool1", i);
-			addBoolToModel(parameters, variation[i].swingPool[2], "swingPool2", i);
-			addBoolToModel(parameters, variation[i].swingPool[3], "swingPool3", i);
+			addToModel(parameters, variation[i].swing, "swing", i);
+			addToModel(parameters, variation[i].swingValue, "swingValue", i);
+			addToModel(parameters, variation[i].swingPool[0], "swingPool0", i);
+			addToModel(parameters, variation[i].swingPool[1], "swingPool1", i);
+			addToModel(parameters, variation[i].swingPool[2], "swingPool2", i);
+			addToModel(parameters, variation[i].swingPool[3], "swingPool3", i);
 
-			addBoolToModel(parameters, variation[i].randomizeVelocity, "randomizeVelocity", i);
-			addIntToModel(parameters, variation[i].velocityValue, "velocityValue", i);
-			addBoolToModel(parameters, variation[i].velocityPool[0], "velocityPool0", i);
-			addBoolToModel(parameters, variation[i].velocityPool[1], "velocityPool1", i);
-			addBoolToModel(parameters, variation[i].velocityPool[2], "velocityPool2", i);
-			addBoolToModel(parameters, variation[i].velocityPool[3], "velocityPool3", i);
-			addBoolToModel(parameters, variation[i].velocityPlus, "velocityPlus", i);
-			addBoolToModel(parameters, variation[i].velocityMin, "velocityMin", i);
+			addToModel(parameters, variation[i].randomizeVelocity, "randomizeVelocity", i);
+			addToModel(parameters, variation[i].velocityValue, "velocityValue", i);
+			addToModel(parameters, variation[i].velocityPool[0], "velocityPool0", i);
+			addToModel(parameters, variation[i].velocityPool[1], "velocityPool1", i);
+			addToModel(parameters, variation[i].velocityPool[2], "velocityPool2", i);
+			addToModel(parameters, variation[i].velocityPool[3], "velocityPool3", i);
+			addToModel(parameters, variation[i].velocityPlus, "velocityPlus", i);
+			addToModel(parameters, variation[i].velocityMin, "velocityMin", i);
 
-			addBoolToModel(parameters, variation[i].randomizeTiming, "randomizeTiming", i);
-			addIntToModel(parameters, variation[i].timingValue, "timingValue", i);
-			addBoolToModel(parameters, variation[i].timingPool[0], "timingPool0", i);
-			addBoolToModel(parameters, variation[i].timingPool[1], "timingPool1", i);
-			addBoolToModel(parameters, variation[i].timingPool[2], "timingPool2", i);
-			addBoolToModel(parameters, variation[i].timingPool[3], "timingPool3", i);
-			addBoolToModel(parameters, variation[i].timingPlus, "timingPlus", i);
-			addBoolToModel(parameters, variation[i].timingMin, "timingMin", i);
+			addToModel(parameters, variation[i].randomizeTiming, "randomizeTiming", i);
+			addToModel(parameters, variation[i].timingValue, "timingValue", i);
+			addToModel(parameters, variation[i].timingPool[0], "timingPool0", i);
+			addToModel(parameters, variation[i].timingPool[1], "timingPool1", i);
+			addToModel(parameters, variation[i].timingPool[2], "timingPool2", i);
+			addToModel(parameters, variation[i].timingPool[3], "timingPool3", i);
+			addToModel(parameters, variation[i].timingPlus, "timingPlus", i);
+			addToModel(parameters, variation[i].timingMin, "timingMin", i);
 
-			addBoolToModel(parameters, variation[i].offsetVelocity, "offsetVelocity", i);
-			addIntToModel(parameters, variation[i].velocityOffset[0], "velocityOffset0", i);
-			addIntToModel(parameters, variation[i].velocityOffset[1], "velocityOffset1", i);
-			addIntToModel(parameters, variation[i].velocityOffset[2], "velocityOffset2", i);
-			addIntToModel(parameters, variation[i].velocityOffset[3], "velocityOffset3", i);
+			addToModel(parameters, variation[i].offsetVelocity, "offsetVelocity", i);
+			addToModel(parameters, variation[i].velocityOffset[0], "velocityOffset0", i);
+			addToModel(parameters, variation[i].velocityOffset[1], "velocityOffset1", i);
+			addToModel(parameters, variation[i].velocityOffset[2], "velocityOffset2", i);
+			addToModel(parameters, variation[i].velocityOffset[3], "velocityOffset3", i);
 			
-			addIntToModel(parameters, variation[i].swingQ, "swingQ", i);
+			addToModel(parameters, variation[i].swingQ, "swingQ", i);
 
 			// automation
-			addIntToModel(parameters, variationSwitch[i], "variationSwitch", i);
+			addToModel(parameters, variationSwitch[i], "variationSwitch", i);
 
 		}
 
@@ -720,17 +482,7 @@ private:
 	// Generator stuff	
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
-	void recalcRealTime()
-	{ // housekeeping in case sampleRate and/or BPM changes
-		// BPM/60 = beatPerSecond
-		// lenght of 1 beat depends on denumerator (if 4 then beat == quarter)
-		if (numerator == 0) return; // not initialized!
-		if (denominator == 0) return;
-		ticksPerBeat = Topiary::TicksPerQuarter * 4 / denominator;
-		samplesPerTick = (double)sampleRate / ((double)ticksPerBeat * BPM / 60.0);
-		Log("Samples per tick: " + String(samplesPerTick), Topiary::LogType::Info);
-
-	} // recalcRealTime
+	
 
 	///////////////////////////////////////////////////////////////////////
 
@@ -807,174 +559,174 @@ private:
 		// if not it generates for measureToGenerate - but if measure too long it resets to 0
 
 		Logger::outputDebugString("Generating pool");
-		
+
 		Random randomizer;
-		TopiaryVariation *var = &(variation[v].pattern);
-		TopiaryPattern *pat = &(patternData[variation[v].patternToUse]);
-		
+		TopiaryVariation* var = &(variation[v].pattern);
+		TopiaryPattern* pat = &(patternData[variation[v].patternToUse]);
+
 		var->patLenInTicks = pat->patLenInTicks; // make sure length is correct
 
 		int note;
 		int vIndex;
-		
+
 		if (!variation[v].enabled) return; // might not be decently initialized!!!
 		if (!variation[v].enablePool[p]) return; // might not be decently initialized!!!
 
-	
-		for (int pIndex=0; pIndex< pat->numItems; pIndex++)
+
+		for (int pIndex = 0; pIndex < pat->numItems; pIndex++)
 		{
-		   if ( ((*pat).dataList[pIndex].measure == measureToGenerate) || (measureToGenerate == -1) )
-		   {
-			note = (*pat).dataList[pIndex].note;
-
-			if (poolNote[note] == p) // note in this pool
+			if (((*pat).dataList[pIndex].measure == measureToGenerate) || (measureToGenerate == -1))
 			{
-				// note randomization logic
-				bool doNote = true;
-				vIndex = var->findID(pIndex+1);
+				note = (*pat).dataList[pIndex].note;
 
-				if (variation[v].randomizeNotes && variation[v].randomizeNotePool[p])
+				if (poolNote[note] == p) // note in this pool
 				{
-					float rnd = randomizer.nextFloat();
-					// decide whether we're generating this one or not
-					if (rnd > ((float) variation[v].randomizeNotesValue / 100))
-					{
-						doNote = false;
-					}
-					
-				};
+					// note randomization logic
+					bool doNote = true;
+					vIndex = var->findID(pIndex + 1);
 
-				// if (doNote) we will generate a note on event; if not it will be a NOP event
-				if (doNote)
-					var->dataList[vIndex].midiType = Topiary::MidiType::NoteOn;
-				else
-					var->dataList[vIndex].midiType = Topiary::MidiType::NOP;
-
-				var->dataList[vIndex].note = note;
-				var->dataList[vIndex].channel = variation[v].poolChannel[p];
-				var->dataList[vIndex].length = pat->dataList[pIndex].length;
-				var->dataList[vIndex].velocity = pat->dataList[pIndex].velocity;
-				int timestamp  = pat->dataList[pIndex].timestamp;			
-				var->dataList[vIndex].timestamp = timestamp;
-				if (doNote)
-					if (variation[v].randomizeVelocity && (variation[v].velocityPlus || variation[v].velocityMin)  && variation[v].velocityPool[p])
+					if (variation[v].randomizeNotes && variation[v].randomizeNotePool[p])
 					{
-						int vel = pat->dataList[pIndex].velocity;
-						float rnd;
-						int direction;
-						if (variation[v].velocityPlus && variation[v].velocityMin)
+						float rnd = randomizer.nextFloat();
+						// decide whether we're generating this one or not
+						if (rnd > ((float)variation[v].randomizeNotesValue / 100))
 						{
-							rnd = randomizer.nextFloat();
-							if (rnd > 0.5)
-								direction = 1;
-							else
-								direction = -1;
+							doNote = false;
 						}
-						else if (variation[v].velocityPlus)
-							direction = 1;
-						else direction = -1;
 
-						rnd = randomizer.nextFloat();
-						//int debug = direction * rnd * 128 * variation[v].velocityValue /100;
-						vel = vel + (int) (direction * rnd * 128 * variation[v].velocityValue/50);   // originally / 100 but I want more of an effect
+					};
 
-						if (variation[v].offsetVelocity)
-							vel = vel + variation[v].velocityOffset[p];
+					// if (doNote) we will generate a note on event; if not it will be a NOP event
+					if (doNote)
+						var->dataList[vIndex].midiType = Topiary::MidiType::NoteOn;
+					else
+						var->dataList[vIndex].midiType = Topiary::MidiType::NOP;
+
+					var->dataList[vIndex].note = note;
+					var->dataList[vIndex].channel = variation[v].poolChannel[p];
+					var->dataList[vIndex].length = pat->dataList[pIndex].length;
+					var->dataList[vIndex].velocity = pat->dataList[pIndex].velocity;
+					int timestamp = pat->dataList[pIndex].timestamp;
+					var->dataList[vIndex].timestamp = timestamp;
+					if (doNote)
+						if (variation[v].randomizeVelocity && (variation[v].velocityPlus || variation[v].velocityMin) && variation[v].velocityPool[p])
+						{
+							int vel = pat->dataList[pIndex].velocity;
+							float rnd;
+							int direction;
+							if (variation[v].velocityPlus && variation[v].velocityMin)
+							{
+								rnd = randomizer.nextFloat();
+								if (rnd > 0.5)
+									direction = 1;
+								else
+									direction = -1;
+							}
+							else if (variation[v].velocityPlus)
+								direction = 1;
+							else direction = -1;
+
+							rnd = randomizer.nextFloat();
+							//int debug = direction * rnd * 128 * variation[v].velocityValue /100;
+							vel = vel + (int)(direction * rnd * 128 * variation[v].velocityValue / 50);   // originally / 100 but I want more of an effect
+
+							if (variation[v].offsetVelocity)
+								vel = vel + variation[v].velocityOffset[p];
+
+							if (vel > 127) vel = 127;
+							else if (vel < 0) vel = 0;
+							var->dataList[vIndex].velocity = vel;
+
+						} // velocity randomization
+
+					if ((variation[v].offsetVelocity) && (doNote))
+					{
+						int vel = var->dataList[vIndex].velocity;
+						vel = vel + variation[v].velocityOffset[p];
 
 						if (vel > 127) vel = 127;
 						else if (vel < 0) vel = 0;
 						var->dataList[vIndex].velocity = vel;
-
-					} // velocity randomization
-				
-				if ((variation[v].offsetVelocity) && (doNote))
-				{
-					int vel = var->dataList[vIndex].velocity;
-					vel = vel + variation[v].velocityOffset[p];
-
-					if (vel > 127) vel = 127;
-					else if (vel < 0) vel = 0;
-					var->dataList[vIndex].velocity = vel;
-				}
-				if (variation[v].swing && variation[v].swingPool[p] && doNote)
-				{
+					}
+					if (variation[v].swing && variation[v].swingPool[p] && doNote)
+					{
 						// recalc the timestamp, based on the swing lookup table
 						//Logger::outputDebugString("Timestamp pre " + String(timestamp));
-					int base;
+						int base;
 
-					//double debugFirst;
-					//int debugSecond;
-					//int debugThird;
-					if (variation[v].swingQ == TopiaryBeatsModel::SwingQButtonIds::SwingQ8)
-					{
-						base = ((int)floor(timestamp / (Topiary::TicksPerQuarter / 2))) * (int)(Topiary::TicksPerQuarter / 2);
-						//debugFirst = floor(timestamp / (Topiary::TicksPerQuarter / 2));
-						//debugSecond = (int)(Topiary::TicksPerQuarter / 2);
-						//debugThird = (int)floor(timestamp / (Topiary::TicksPerQuarter / 2));
-
-					}
-					else
-						base = ((int)floor(timestamp / Topiary::TicksPerQuarter)) * Topiary::TicksPerQuarter;
-
-					//Logger::outputDebugString("Remainder pre " + String(timestamp-base));
-
-					int remainder = swing(timestamp - base, variation[v].swingValue, variation[v].swingQ);
-					var->dataList[vIndex].timestamp = base + remainder;
-
-					//Logger::outputDebugString("Remainder post" + String (remainder));
-					//Logger::outputDebugString("New Timestamp " + String(base + remainder) + " (DIFF: " + String (timestamp-base-remainder));
-
-					jassert((remainder) <= Topiary::TicksPerQuarter);
-					jassert((base + remainder) >= 0);
-						
-				} // swing
-
-				// we apply timing randomization AFTER possible swing !!!
-				if (doNote)
-					if (variation[v].randomizeTiming && (variation[v].timingPlus || variation[v].timingMin) && variation[v].timingPool[p])
-					{
-						timestamp = var->dataList[vIndex].timestamp;
-						float rnd;
-						int direction = -1;
-						if (variation[v].velocityPlus && variation[v].velocityMin)
+						//double debugFirst;
+						//int debugSecond;
+						//int debugThird;
+						if (variation[v].swingQ == Topiary::SwingQButtonIds::SwingQ8)
 						{
-							rnd = randomizer.nextFloat();
-							if (rnd > 0.5)
+							base = ((int)floor(timestamp / (Topiary::TicksPerQuarter / 2))) * (int)(Topiary::TicksPerQuarter / 2);
+							//debugFirst = floor(timestamp / (Topiary::TicksPerQuarter / 2));
+							//debugSecond = (int)(Topiary::TicksPerQuarter / 2);
+							//debugThird = (int)floor(timestamp / (Topiary::TicksPerQuarter / 2));
+
+						}
+						else
+							base = ((int)floor(timestamp / Topiary::TicksPerQuarter)) * Topiary::TicksPerQuarter;
+
+						//Logger::outputDebugString("Remainder pre " + String(timestamp-base));
+
+						int remainder = swing(timestamp - base, variation[v].swingValue, variation[v].swingQ);
+						var->dataList[vIndex].timestamp = base + remainder;
+
+						//Logger::outputDebugString("Remainder post" + String (remainder));
+						//Logger::outputDebugString("New Timestamp " + String(base + remainder) + " (DIFF: " + String (timestamp-base-remainder));
+
+						jassert((remainder) <= Topiary::TicksPerQuarter);
+						jassert((base + remainder) >= 0);
+
+					} // swing
+
+					// we apply timing randomization AFTER possible swing !!!
+					if (doNote)
+						if (variation[v].randomizeTiming && (variation[v].timingPlus || variation[v].timingMin) && variation[v].timingPool[p])
+						{
+							timestamp = var->dataList[vIndex].timestamp;
+							float rnd;
+							int direction = -1;
+							if (variation[v].velocityPlus && variation[v].velocityMin)
+							{
+								rnd = randomizer.nextFloat();
+								if (rnd > 0.5)
+									direction = 1;
+							}
+							else if (variation[v].velocityPlus)
 								direction = 1;
-						}
-						else if (variation[v].velocityPlus)
-							direction = 1;
-													
-						rnd = randomizer.nextFloat();
-						//int debug = direction * rnd * Topiary::TicksPerQuarter * variation[v].timingValue /100;
-						timestamp = timestamp + (int)(direction * rnd * Topiary::TicksPerQuarter * variation[v].timingValue / 800);
-						if (timestamp < 0) timestamp = 0;
 
-						if (timestamp > (var->patLenInTicks-1)) timestamp = var->patLenInTicks - 1; // lenInTicks -1 because we need time for the note off event
+							rnd = randomizer.nextFloat();
+							//int debug = direction * rnd * Topiary::TicksPerQuarter * variation[v].timingValue /100;
+							timestamp = timestamp + (int)(direction * rnd * Topiary::TicksPerQuarter * variation[v].timingValue / 800);
+							if (timestamp < 0) timestamp = 0;
 
-						// make sure we do not run over the patternlenght with note off
-						int length = var->dataList[vIndex].length;
-						if ((length + timestamp) >= var->patLenInTicks)
-						{
-							length = var->patLenInTicks - timestamp - 1;
-							var->dataList[vIndex].length = length;
-							jassert(length > 0);
-						}
-						var->dataList[vIndex].timestamp = timestamp;
+							if (timestamp > (var->patLenInTicks - 1)) timestamp = var->patLenInTicks - 1; // lenInTicks -1 because we need time for the note off event
 
-					} // end randomize timing
+							// make sure we do not run over the patternlenght with note off
+							int length = var->dataList[vIndex].length;
+							if ((length + timestamp) >= var->patLenInTicks)
+							{
+								length = var->patLenInTicks - timestamp - 1;
+								var->dataList[vIndex].length = length;
+								jassert(length > 0);
+							}
+							var->dataList[vIndex].timestamp = timestamp;
 
-				//Logger::outputDebugString("Generating Note " + String(var->dataList[vIndex].note) + " timestamp " + String(var->dataList[vIndex].timestamp));
-				//auto debug = 0;
-				
-			} // end if note in this pool
-		     } // end check for measureToGenerate
+						} // end randomize timing
+
+					//Logger::outputDebugString("Generating Note " + String(var->dataList[vIndex].note) + " timestamp " + String(var->dataList[vIndex].timestamp));
+					//auto debug = 0;
+
+				} // end if note in this pool
+			} // end check for measureToGenerate
 		}  // for children in original pattern
-		
+
 	} // generatePool
 
 	///////////////////////////////////////////////////////////////////////
-
+	/*
 	int swing(int value, int deviation, int q) 
 		// q indicates whetherwe are swinging quarter or eight based
 	{ 
@@ -985,7 +737,7 @@ private:
 
 		int maxMidiValue;
 		
-		if (q == TopiaryBeatsModel::SwingQButtonIds::SwingQ8)
+		if (q == Topiary::SwingQButtonIds::SwingQ8)
 			maxMidiValue = (int) (Topiary::TicksPerQuarter/2) - 1;
 		else
 			maxMidiValue = Topiary::TicksPerQuarter - 1;
@@ -1021,7 +773,7 @@ private:
 		return (value - delta) + value;
 	
 	} // swing
-
+	*/
 	
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsModel)

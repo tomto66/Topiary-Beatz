@@ -19,7 +19,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include"TopiaryBeatsModel.h"
-#include"../../Topiary/Source/TopiaryTable.h"  
+#include"../../Topiary/Source/Components/TopiaryTable.h"  
 #include "TopiaryBeatsPatternChildren.h"
 
 class TopiaryBeatsPatternComponent : public Component, ActionListener

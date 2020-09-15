@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-20.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,4 +19,4 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "TopiaryBeats.h"
-#include "../../Topiary/Source/TopiaryVariation.h"
+#include "../../Topiary/Source/Model/TopiaryVariation.h"

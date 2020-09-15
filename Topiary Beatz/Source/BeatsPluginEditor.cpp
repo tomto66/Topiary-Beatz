@@ -19,4 +19,4 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
 #include "BeatsPluginEditor.h"
-#include "../../Topiary/Source/PluginEditor.cpp.h"
+#include "../../Topiary/Source/Plugin/PluginEditor.cpp.h"

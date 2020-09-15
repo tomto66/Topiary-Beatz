@@ -18,5 +18,5 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #include "TopiaryBeatsUtilityComponent.h"
-#include "../../Topiary/Source/TopiaryUtilityComponent.cpp.h"
+#include "../../Topiary/Source/Components/TopiaryUtilityComponent.cpp.h"
 

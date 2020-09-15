@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2019.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2020.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 #define UNUSED(x) x;
 #define xstr(s) str(s)
 #define str(s) #s
+
+// max #patterns in the patternlist (Beats will auto-limit to 8)
+#define MAXNOPATTERNS 128
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -84,6 +87,8 @@ class Topiary
 		NoteOn = 1,
 		NoteOff = 2,
 		CC = 3,
+		AfterTouch = 4,
+		Pitch = 5,
 		NOP = 99
 	};
 
@@ -126,7 +131,7 @@ class Topiary
 		Transport = 4,	// msgs for transport events/buttons
 		Variations = 5,	// msgs vor variations events/buttons
 		Info = 6,		// general information e.g. "New pattern loaded with x notes"
-		License = 7		// License info
+		License = 7
 	};
 
 	enum HeaderType : int
@@ -141,7 +146,17 @@ class Topiary
 	{
 		variationSwitch = 0, // meaning any 0 <= ID < 8 is learn midi for variation switchers
 		presetMidiCin = 10,
+		keyrangeFrom = 20,
+		keyrangeTo = 21,
+		noteAssignment = 30, // going from 30 -- 37 for each variation
 		other = 20
+	};
+
+	enum SwingQButtonIds
+	{
+		SwingQ4 = 3004,
+		SwingQ8 = 3008,
+		SwingQRadioID = 3000
 	};
 
 	static const int TicksPerQuarter = 240;

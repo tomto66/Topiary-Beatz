@@ -455,7 +455,7 @@ void TopiaryBeatsVariationComponent::getSwingQ()
 {
 	int swingQ = beatsModel->getSwingQ(variationDefinitionComponent.variationCombo.getSelectedId() - 1);
 
-	if (swingQ == TopiaryBeatsModel::SwingQButtonIds::SwingQ8)
+	if (swingQ == Topiary::SwingQButtonIds::SwingQ8)
 		swingQComponent.eightButton.setToggleState(true, dontSendNotification);
 	else
 		swingQComponent.fourButton.setToggleState(true, dontSendNotification);

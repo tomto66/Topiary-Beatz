@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "../../Topiary/Source/TopiaryListModel.h"
+#include "../../Topiary/Source/Model/TopiaryListModel.h"
 
 class TopiaryBeatsModel;
 
@@ -75,6 +75,8 @@ private:
 	} // swap
 
 }; // TopiaryPoolList
+
+/*
 
 #undef TOPIARYLISTMODEL
 #undef TOPIARYTABLE
@@ -229,7 +231,7 @@ private:
 
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TOPIARYTABLE)
-};
+};*/
    //////////////////////////////////////////////////////////////////
 
 

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-20.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,9 +18,10 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #include "TopiaryBeatsModel.h"
-
+#include "Build.h"
 // following has std model code that can be included (cannot be in TopiaryModel because of variable definitions)
-#include"../../Topiary/Source/TopiaryModel.cpp.h"
+#include"../../Topiary/Source/Model/TopiaryModel.cpp.h"
+#include "../../Topiary/Source/Model/TopiaryPattern.cpp.h"
 
 void TopiaryBeatsModel::saveStateToMemoryBlock(MemoryBlock& destData)
 {
@@ -32,7 +33,7 @@ void TopiaryBeatsModel::saveStateToMemoryBlock(MemoryBlock& destData)
 
 void TopiaryBeatsModel::restoreStateFromMemoryBlock(const void* data, int sizeInBytes)
 {
-	model.reset(AudioProcessor::getXmlFromBinary(data, sizeInBytes));
+	model = AudioProcessor::getXmlFromBinary(data, sizeInBytes);
 	restoreParametersToModel();
 }
 
@@ -41,7 +42,14 @@ void TopiaryBeatsModel::restoreStateFromMemoryBlock(const void* data, int sizeIn
 TopiaryBeatsModel::TopiaryBeatsModel()
 {
 
-	Log(String("Topiary Beatz V ") + String(xstr(JucePlugin_Version)) + String(" (c) Tom Tollenaere 2018-2019."), Topiary::LogType::License);
+	//Log(String("Topiary Beatz V ") + String(xstr(JucePlugin_Version)) + String(" - ") + String(BUILD_DATE) + String("."), Topiary::LogType::License);
+	//Log(String("(C) Tom Tollenaere 2018-2020."), Topiary::LogType::License);
+	Log(String("Topiary Beatz V ") + String(xstr(JucePlugin_Version)) + String(" - ") + String(BUILD_DATE)
+#ifdef _DEBUG
+		+ String("D")
+#endif
+		+ String("."), Topiary::LogType::License);
+	Log(String("(C) Tom Tollenaere 2018-2020. "), Topiary::LogType::License);
 	Log(String(""), Topiary::LogType::License);
 	Log(String("Topiary Beatz is free software : you can redistribute it and/or modify"), Topiary::LogType::License);
 	Log(String("it under the terms of the GNU General Public License as published by"), Topiary::LogType::License);
@@ -59,10 +67,10 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	// give some of the children yourself as model
 	poolList.setBeatsModel(this);
 	for (int p = 0; p < 8; p++)
-		patternData[p].setBeatsModel(this);
+		patternData[p].setModel(this);
 
 	fixedOutputChannels = true;
-
+	name = "New Beatz";
 	/////////////////////////////////////
 	// variations initialisation
 	/////////////////////////////////////
@@ -93,7 +101,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 		variation[i].timingMin = true;
 
 		variation[i].offsetVelocity = false;
-		variation[i].swingQ = TopiaryBeatsModel::SwingQButtonIds::SwingQ4;
+		variation[i].swingQ = Topiary::SwingQButtonIds::SwingQ4;
 		for (int j = 0; j < 4; j++)
 		{
 			variation[i].enablePool[j] = true;
@@ -265,7 +273,7 @@ bool TopiaryBeatsModel::insertPatternFromFile(int patternIndex, bool overload)
 
 		int patternMeasures = 0;
 		int lenInTicks = 0;
-		success = loadMidiDrumPattern(f, patternIndex, patternMeasures, lenInTicks);
+		success = loadMidiPattern(f, patternIndex, patternMeasures, lenInTicks);
 
 		if (success)
 		{
@@ -1061,101 +1069,6 @@ void TopiaryBeatsModel::deleteAllNotes(int p, int n)  // delete all notes equal 
 
 } // deleteAllNotes
 
-////////////////////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::validateTableEdit(int p, XmlElement* child, String attribute)
-{
-	// called by TopiaryTable
-	// careful - can be called when editing patterns but also when editing note pool entries!!
-	// do processing of user edits to notes and make sure all is consistent
-	
-
-	int index = child->getIntAttribute("ID")-1;  // ID 1 is in position [0]
-	
-
-	if (attribute.compare("Label") == 0) 
-	{
-		// set the note value correctly
-		
-		child->setAttribute("Note", validNoteNumber(child->getStringAttribute("Label")));
-		child->setAttribute("Label", validateNote(child->getStringAttribute("Label")));
-		if (p != -1)
-		{
-			patternData[p].dataList[index].note = child->getIntAttribute("Note");
-			patternData[p].dataList[index].label = child->getStringAttribute("Label");
-		}
-		else
-		{
-			poolList.dataList[index].note = child->getIntAttribute("Note");
-			poolList.dataList[index].label = child->getStringAttribute("Label");
-			poolList.sortByNote();
-		}
-
-		
-
-	}
-	else if ((attribute.compare("Measure") == 0) || (attribute.compare("Beat") == 0) || (attribute.compare("Tick") == 0))
-	{
-		// recalculate timestamp
-
-		if (child->getIntAttribute("Beat") >= denominator)
-		{
-			child->setAttribute("Beat", 0);
-			Log("Beat should be between 0 and " + String(denominator) + ".", Topiary::LogType::Warning);
-		}
-
-
-		int timestamp = child->getIntAttribute("Tick") +
-			child->getIntAttribute("Beat")* Topiary::TicksPerQuarter +
-			child->getIntAttribute("Measure") * Topiary::TicksPerQuarter * denominator;
-
-		child->setAttribute("Timestamp", String(timestamp));
-
-		patternData[p].dataList[index].timestamp = timestamp;
-		patternData[p].dataList[index].measure = child->getIntAttribute("Measure");
-		patternData[p].dataList[index].beat = child->getIntAttribute("Beat");
-		patternData[p].dataList[index].tick = child->getIntAttribute("Tick");
-		patternData[p].sortByTimestamp();
-	}
-
-	// what follows detects what we are editing (pattern, notepool or patternlist)
-
-	if (child->hasAttribute("Timestamp"))
-	{
-
-		// check note does not run over pattern end
-		// make sure note lenght never runs over total patternlength
-		if ((child->getIntAttribute("Timestamp") + child->getIntAttribute("Length")) >= patternData[p].patLenInTicks)
-		{
-			child->setAttribute("Length", String(patternData[p].patLenInTicks - child->getIntAttribute("Timestamp") - 1));
-			patternData[p].dataList[index].length = child->getIntAttribute("Length");
-			Log("Note shortened so it does not run over pattern end.", Topiary::LogType::Warning);
-		}
-
-		patternData[p].sortByTimestamp();
-
-		// regenerate variations that depend on this one
-		for (int v = 0; v < 8; v++)
-		{
-			if (variation[v].patternToUse == p)
-				generateVariation(v, -1);
-		}
-		rebuildPool(false);
-		broadcaster.sendActionMessage(MsgPattern);
-	}
-	else if (child->hasAttribute("Note"))
-	{
-		// edited the note pool
-		broadcaster.sendActionMessage(MsgNotePool);
-	}
-	else if (child->hasAttribute("Measures"))
-	{
-		// edited the patternlist
-		broadcaster.sendActionMessage(MsgPatternList);
-	}
-	
-} // validateTableEdit
-
 ///////////////////////////////////////////////////////////////////////////////////////
 
 int TopiaryBeatsModel::getNumPatterns()
@@ -1583,4 +1496,4 @@ void TopiaryBeatsModel::outputNoteOff(int noteNumber)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include "../../Topiary/Source/TopiaryMidiLearnEditor.cpp.h"
+#include "../../Topiary/Source/Components/TopiaryMidiLearnEditor.cpp.h"

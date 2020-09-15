@@ -21,4 +21,4 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #include"TopiaryBeatsModel.h"
 #define TOPIARYMODEL TopiaryBeatsModel
 #define TOPIARYVARIATIONBUTTONSCOMPONENT TopiaryBeatsVariationButtonsComponent
-#include "../../Topiary/Source/TopiaryVariationButtonsComponent.h"
+#include "../../Topiary/Source/Components/TopiaryVariationButtonsComponent.h"

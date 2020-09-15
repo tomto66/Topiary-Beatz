@@ -19,5 +19,5 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "TopiaryBeatsTransportComponent.h"
-#include "../../Topiary/Source/TopiaryTransportComponent.cpp.h"
+#include "../../Topiary/Source/Components/TopiaryTransportComponent.cpp.h"
 

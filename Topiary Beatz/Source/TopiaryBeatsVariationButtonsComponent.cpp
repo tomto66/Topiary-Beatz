@@ -18,5 +18,5 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #include "TopiaryBeatsVariationButtonsComponent.h"
-#include "../../Topiary/Source/TopiaryVariationButtonsComponent.cpp.h"
+#include "../../Topiary/Source/Components/TopiaryVariationButtonsComponent.cpp.h"
 									
