@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2020.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2021. 
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 
 String validateNote(String newNote);
 int validNoteNumber(String note);
+String noteNumberToString(int n);
 void boolSwap(bool &a, bool &b);
 void intSwap(int &a, int &b);
 void stringSwap(String &a, String &b);
@@ -149,7 +150,8 @@ class Topiary
 		keyrangeFrom = 20,
 		keyrangeTo = 21,
 		noteAssignment = 30, // going from 30 -- 37 for each variation
-		other = 20
+		noteAssignmentNote = 40, //assignment of a note in noteAssignemnt component (RIIFZ)
+		
 	};
 
 	enum SwingQButtonIds
@@ -161,6 +163,7 @@ class Topiary
 
 	static const int TicksPerQuarter = 240;
 	static const int ToDeleteID = 999999999;
+	static const int NoNoteAssigned = -99999;
 private:
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Topiary)

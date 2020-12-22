@@ -134,7 +134,7 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 			this->setEnabled(true);
 			if (patternCombo.getNumItems() > rememberPatternComboSelection)
 			{
-				patternCombo.setSelectedItemIndex(rememberPatternComboSelection);
+				patternCombo.setSelectedItemIndex(rememberPatternComboSelection+1);
 			}
 			else
 			{
@@ -166,9 +166,12 @@ void TopiaryBeatsPatternComponent::setPatternLength()
 	}
 	else
 	{
+		int remember = patternCombo.getSelectedId();
 		beatsModel->setPatternLength(patternCombo.getSelectedId() - 1, len, patternLengthComponent.keepTail.getToggleState());
 		patternTable.updateContent();
+
 	}
+	
 
 } // setPatternLength
 

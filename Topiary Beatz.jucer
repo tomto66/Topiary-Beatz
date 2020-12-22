@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" version="1.0.0"
+<JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" version="1.1.0"
               companyName="Topiary" pluginManufacturer="Topiary" pluginVSTCategory="kPlugCategGenerator"
               pluginManufacturerCode="Beat" pluginCode="Beat" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               splashScreenColour="Light" pluginFormats="buildStandalone,buildVST"

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-21.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,54 +18,64 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 /////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "TopiaryListModel.h"
+#include "../../Topiary/Source/Model/TopiaryListModel.h"
 
-#ifdef TOPIARYMODEL
-class TOPIARYMODEL; // needs to be a defined model!
+class TopiaryBeatsModel;
 
-class TopiaryPatternList : public TopiaryListModel
-{ 
+class TopiaryPoolList : public TopiaryListModel
+{
 
 public:
-	TopiaryPatternList();
-	~TopiaryPatternList();
-
-	void setModel(TOPIARYMODEL* m);
-	void sortByID() override; // sort by index n (order in which the variables are in the struct
+	TopiaryPoolList();
+	~TopiaryPoolList();
+	
+	void sortByID() override; 
+	void sortByNote();
 	void del(int n) override;
 	void add() override;
-	void duplicate(int i);
 	void addToModel(XmlElement *model);
 	void getFromModel(XmlElement *model);
 	void validateTableEdit(int p, XmlElement* child, String attribute) override;
-	static const int maxItems = MAXNOPATTERNS;
-	
+	void setBeatsModel(TopiaryBeatsModel* m);
+
+	static const int maxItems = 128;
+
 	struct data // MUST match what has been defined in the headerlist data!!!
 	{
 		int ID;
-		String name;
-		int measures;
-	}; 
-	
+		int note;
+		String label;
+		String description;
+		int pool;
+	};
+
 	data dataList[maxItems];
-	 
+
 	void fillDataList(XmlElement* dList) override;
-	
+
 	void setIntByIndex(int row, int o, int newInt) override;
-	
+
 	void setStringByIndex(int row, int i, String newString) override;
-	
+
+	void renumber() override;
+
+	int isNoteInPool(int n);
 
 private:
-	TOPIARYMODEL* m;
+	TopiaryBeatsModel* beatsModel;
 
 	void swap(int from, int to)
-	{
+	{ 
 		intSwap(dataList[from].ID, dataList[to].ID);
-		intSwap(dataList[from].measures, dataList[to].measures);
-		stringSwap(dataList[from].name, dataList[to].name);
-	} // swap
-	
-}; // TopiaryPatternList
+		intSwap(dataList[from].pool, dataList[to].pool);
+		intSwap(dataList[from].note, dataList[to].note);
+		stringSwap(dataList[from].label, dataList[to].label);
+		stringSwap(dataList[from].description, dataList[to].description);
 
-#endif
+	} // swap
+
+}; // TopiaryPoolList
+
+//////////////////////////////////////////////////////////////////
+
+

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-21.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 // following has std model code that can be included (cannot be in TopiaryModel because of variable definitions)
 #include"../../Topiary/Source/Model/TopiaryModel.cpp.h"
 #include "../../Topiary/Source/Model/TopiaryPattern.cpp.h"
+#include "../../Topiary/Source/Model/TopiaryPatternList.cpp.h"
 
 void TopiaryBeatsModel::saveStateToMemoryBlock(MemoryBlock& destData)
 {
@@ -136,9 +137,10 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	}
 
 	ccVariationSwitching = true;
-	variationSwitchChannel = 0;
+	midiChannelListening = 0;
 
 	overrideHostTransport = true;
+
 
 } // TopiaryBeatsModel
 
@@ -832,20 +834,29 @@ TopiaryPoolList* TopiaryBeatsModel::getPoolList()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
+void TopiaryBeatsModel::generateVariation(int i, int eightToGenerate)
 {
 	// (re)generates variation[i].pattern 
+
+	int tickFrom = 0;
+	int tickTo = 0;
 
 	jassert((i < 8) && (i >= 0));
 
 	if (!variation[i].enabled)
 		return;
 
-	if (measureToGenerate == -1)
+	if (eightToGenerate == -1)
 	{
 		// meaning we regererate the lot
 		// reset numItems
 		variation[i].pattern.numItems = 0;
+	}
+	else
+	{
+		// set tickFrom and tickTo based on eightToGenerate
+		tickFrom = eightToGenerate * Topiary::TicksPerQuarter / 2;
+		tickTo = tickFrom + Topiary::TicksPerQuarter / 2;
 	}
 
 	int poolNote[128];  // will contain the pool number for the note
@@ -872,7 +883,7 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 
 	TopiaryVariation* var = &(variation[i].pattern);
 	TopiaryPattern* pat = &(patternData[variation[i].patternToUse]);
-	if (measureToGenerate == -1)
+	if (eightToGenerate == -1)
 	{
 		// make sure it's initialized properly - only done from editor or @ load
 		var->numItems = pat->numItems;
@@ -880,20 +891,15 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 		{
 			var->dataList[j].ID = j + 1;
 			var->dataList[j].timestamp = pat->dataList[j].timestamp;
-			int measre = pat->dataList[i].timestamp % (numerator * Topiary::TicksPerQuarter);
-			if ((measre == measureToGenerate) || (measureToGenerate == -1))
-				var->dataList[j].midiType = Topiary::MidiType::NOP;
+			//int measre = pat->dataList[i].timestamp % (numerator * Topiary::TicksPerQuarter);
+			var->dataList[j].midiType = Topiary::MidiType::NOP;
 		}
 
 	}
-	else if (measureToGenerate == patternList.dataList[variation[i].patternToUse].measures) // we ran over end of pattern
-		measureToGenerate = 0;
-
-	for (int j = 0; j < pat->numItems; j++)
+	else for (int j = 0; j < pat->numItems; j++)
 	{
-		//int measre = pat->dataList[i].timestamp % (numerator * Topiary::TicksPerQuarter);
-		int measre = (int) pat->dataList[j].timestamp / (numerator * Topiary::TicksPerQuarter);
-		if ((measre == measureToGenerate) || (measureToGenerate == -1))
+		//int measre = (int) pat->dataList[j].timestamp / (numerator * Topiary::TicksPerQuarter);
+		if (((var->dataList[j].timestamp >= tickFrom) && (var->dataList[j].timestamp < tickTo)) )
 			var->dataList[j].midiType = Topiary::MidiType::NOP;
 	}
 
@@ -904,11 +910,12 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 	for (int j = 0; j < 4; j++)
 	{
 		// only call generatePool if there are notes in the pool; otherwise generatePool will loop forever!!!) 
-		generatePool(i, j, poolNote, measureToGenerate);
+		generatePool(i, j, poolNote, eightToGenerate, tickFrom, tickTo);
 	}
 
 	//Logger::outputDebugString("SORTED ------------------------");
 	variation[i].pattern.sortByTimestamp();
+	
 	/*
 	Logger::outputDebugString("------------------------");
 	for (int j = 0; j < variation[i].pattern.numItems; j++)
@@ -917,6 +924,7 @@ void TopiaryBeatsModel::generateVariation(int i, int measureToGenerate)
 	}
 	Logger::outputDebugString("------------------------");
 	*/
+
 } // generateVariation
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1032,7 +1040,7 @@ void TopiaryBeatsModel::addNote(int p, int n, int v, int l, int timestamp)
 	int t = timestamp % (denominator*Topiary::TicksPerQuarter);
 	int beatt = (int)(t / Topiary::TicksPerQuarter);
 	t = t % Topiary::TicksPerQuarter;
-	patternData[p].add(measuree, beatt, t, timestamp, n, l, v);
+	patternData[p].addNote(measuree, beatt, t, timestamp, n, l, v);
 	patternData[p].sortByTimestamp(); // will create the ID
 	broadcaster.sendActionMessage(MsgPattern);
 	regenerateVariationsForPattern(p);
@@ -1056,7 +1064,7 @@ void TopiaryBeatsModel::getNote(int p, int ID, int& note, int &velocity, int &ti
 void TopiaryBeatsModel::deleteAllNotes(int p, int n)  // delete all notes equal to ID n from pattern
 {
 	// get note with id ID from pattern p
-	int note = patternData[p].dataList[n].note;
+	int note = patternData[p].dataList[n-1].note;
 
 	for (int i=0; i<patternData[p].numItems; i++)
 	{
@@ -1199,7 +1207,7 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 
 		variation[to].currentPatternChild = 0;
 		
-	} // end oif lock scope
+	} // end if lock scope
 
 	generateAllVariations(-1);
 	
@@ -1211,46 +1219,6 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-bool TopiaryBeatsModel::midiLearn(MidiMessage m)
-{
-	// called by processor; if midiLearn then learn based on what came in
-	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
-	bool remember = learningMidi;
-	if (learningMidi)
-	{
-		bool note = m.isNoteOn();
-		bool cc = m.isController();
-
-		if (note || cc)
-		{
-			// check the Id to learn; tells us what to set
-			if ((midiLearnID >= Topiary::LearnMidiId::variationSwitch) && (midiLearnID < (Topiary::LearnMidiId::variationSwitch + 8)))
-			{
-				// learning variation switch
-				if (note)
-				{
-					ccVariationSwitching = false;
-					variationSwitch[midiLearnID] = m.getNoteNumber();
-				}
-				else
-				{
-					ccVariationSwitching = true;
-					variationSwitch[midiLearnID] = m.getControllerNumber();
-				}
-				learningMidi = false;
-				Log("Midi learned", Topiary::LogType::Warning);
-				broadcaster.sendActionMessage(MsgVariationAutomation);	// update utility tab
-			}
-
-		}
-	}
-
-	return remember;
-
-} // midiLearn
-
-///////////////////////////////////////////////////////////////////////////////////////
-
 void TopiaryBeatsModel::record(bool b)
 {
 	// set the recording state (does not record = recording happens in the processor!
@@ -1258,7 +1226,8 @@ void TopiaryBeatsModel::record(bool b)
 	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
 	// check there are pool(s) enabled; otherwise we don't know the channel when recording
-	if (b) {
+	if (b) 
+	{
 		bool noNotes = true;
 
 		for (int p = 0; p < 4; p++)
@@ -1273,6 +1242,19 @@ void TopiaryBeatsModel::record(bool b)
 			Log("Can't know which channel to output to.", Topiary::LogType::Warning);
 			return;
 		}
+
+		if (patternList.numItems==0)
+		{
+			Log("No patterns loaded to record into.", Topiary::LogType::Warning);
+			return;
+		}
+
+		if (runState == Topiary::Running)
+		{
+			Log("Cannot start recording when running.", Topiary::LogType::Warning);
+			// should not really happen because when running the record button gets disabled
+			return;
+		}
 	}
 	else if (recordingMidi)
 		processMidiRecording();
@@ -1282,85 +1264,6 @@ void TopiaryBeatsModel::record(bool b)
 	broadcaster.sendActionMessage(MsgTransport);
 
 } // record
-
-///////////////////////////////////////////////////////////////////////////////////////
-
-void TopiaryBeatsModel::processMidiRecording()
-{
-	// process recorded events and add to pattern
-	
-	// loop over the variation and look for IDs == -1
-	
-	int loopLen = variation[variationSelected].pattern.numItems; 
-	int patPos; // where to inser the new events
-	TopiaryPattern* pat = &(patternData[variation[variationSelected].patternToUse]);
-	TopiaryVariation *var = &(variation[variationSelected].pattern);
-	for (int v=0; v < loopLen; v++)
-	{
-		if (variation[variationSelected].pattern.dataList[v].length == -1)
-		{
-			if (var->dataList[v].midiType == Topiary::MidiType::NoteOn)
-			{
-				patPos = pat->numItems;
-				pat->add();
-
-				//newChild = new XmlElement("INSERTED");  // the RECDATA elements will get inserted in the pattern when recording done; use tag insertes do we van find the note off for it
-				pat->dataList[patPos].ID = -1; // will be renumbered later
-				pat->dataList[patPos].note = var->dataList[v].note;
-				pat->dataList[patPos].label = MidiMessage::getMidiNoteName(var->dataList[v].note, true, true, 5);
-				pat->dataList[patPos].velocity = var->dataList[v].velocity;
-				pat->dataList[patPos].timestamp = var->dataList[v].timestamp;
-				pat->dataList[patPos].length = 0;
-				int measur = (int)floor(var->dataList[v].timestamp / (numerator * Topiary::TicksPerQuarter));
-				pat->dataList[patPos].measure = measur;
-				int timestamp = var->dataList[v].timestamp - measur * (numerator * Topiary::TicksPerQuarter);
-				int bea = (int)floor(timestamp / Topiary::TicksPerQuarter);
-				pat->dataList[patPos].beat = bea;
-				int tic = timestamp - bea * Topiary::TicksPerQuarter;
-				pat->dataList[patPos].tick = tic;
-			}
-			else if (var->dataList[v].midiType == Topiary::MidiType::NoteOff)
-			{
-				// find the note and set the length
-				int timestamp = var->dataList[v].timestamp; // timestamp of end of note
-				int note = var->dataList[v].note; 
-				bool cont = true;
-				int pIndex = 0;
-				int numPats = pat->numItems;
-
-				while (cont && (pIndex<numPats))
-				{
-					if ((pat->dataList[pIndex].ID == -1) && (pat->dataList[pIndex].note  == note))
-					{
-						// we found the note to end
-						pat->dataList[pIndex].length = timestamp - pat->dataList[pIndex].timestamp;
-						pat->dataList[pIndex].ID = -2; // so we don't cover it again
-						cont = false;
-					}
-					pIndex++;
-				}
-			}
-			else jassert(false); // should not happen; should be note on or note off event for now
-		}
-		
-	}
-	// resort 
-	pat->sortByTimestamp();
-
-	Logger::outputDebugString("------------------------");
-	for (int j = 0; j < pat->numItems; j++)
-	{
-		Logger::outputDebugString("<" + String(j) + "> <ID" + String(pat->dataList[j].ID) + "> Note: " + String(pat->dataList[j].note) + " timestamp " + String(pat->dataList[j].timestamp));
-	}
-	Logger::outputDebugString("------------------------");
-
-	// rebuild the pool list
-	rebuildPool(false);
-	generateAllVariations(-1);
-	// inform pattern tab
-	broadcaster.sendActionMessage(MsgPattern);
-	
-}  // processMidiRecording
 
 ///////////////////////////////////////////////////////////////////////////////////////
 

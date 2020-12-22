@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 TopiaryPattern::TopiaryPattern()
 {
 	// initialize the headerlist data
-	headerListItems = 8;
+	headerListItems = 9;
 	// headerlist IDs start at 1;
 	// datalist IDs start at 1;
 
@@ -95,11 +95,19 @@ TopiaryPattern::TopiaryPattern()
 	headerList[7].type = Topiary::HeaderType::Int;
 	headerList[7].editable = true;
 	headerList[7].min = 0;
-	headerList[7].max = 127;
+	headerList[7].max = 16383;
 	headerList[7].visible = true;
 
 	// timestamp not defined here because not in the table!!!
-	
+
+	headerList[8].columnID = 8;
+	headerList[8].name = "MidiType";
+	headerList[8].width = 50;
+	headerList[8].type = Topiary::HeaderType::Int;
+	headerList[8].editable = true;
+	headerList[8].min = 0;
+	headerList[8].max = 127;
+	headerList[8].visible = false;
 	numItems = 0; // empty list
 
 } // TopiaryPattern
@@ -184,13 +192,13 @@ void TopiaryPattern::del(int n)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void TopiaryPattern::add(int measure, int beat, int tick, int timestamp, int note, int length, int velocity)
+void TopiaryPattern::addNote(int measure, int beat, int tick, int timestamp, int note, int length, int velocity)
 {
 	jassert(numItems < (maxItems + 1));
 
 	// adds new one
 	dataList[numItems].note = note;
-	dataList[numItems].label = MidiMessage::getMidiNoteName(note, true, true, 5);
+	dataList[numItems].label = noteNumberToString(note);
 	dataList[numItems].ID = numItems + 1;
 	dataList[numItems].measure = measure;
 	dataList[numItems].beat = beat;
@@ -198,9 +206,75 @@ void TopiaryPattern::add(int measure, int beat, int tick, int timestamp, int not
 	dataList[numItems].timestamp = timestamp;
 	dataList[numItems].velocity = velocity;
 	dataList[numItems].length = length;
+	dataList[numItems].midiType = Topiary::NoteOn;
+	dataList[numItems].value = 0;
 	numItems++;
 
-} // add
+} // addNote
+
+void TopiaryPattern::addAT(int measure, int beat, int tick, int timestamp, int value)
+{
+	jassert(numItems < (maxItems + 1));
+
+	// adds new one
+	dataList[numItems].value = value;
+	dataList[numItems].note = 0;
+	dataList[numItems].label = "AT";
+	dataList[numItems].ID = numItems + 1;
+	dataList[numItems].measure = measure;
+	dataList[numItems].beat = beat;
+	dataList[numItems].tick = tick;
+	dataList[numItems].timestamp = timestamp;
+	dataList[numItems].velocity = 0;
+	dataList[numItems].length = 0;
+	dataList[numItems].midiType = Topiary::MidiType::AfterTouch;
+	dataList[numItems].note = -1;
+	numItems++;
+
+} // addAT
+
+
+void TopiaryPattern::addCC(int measure, int beat, int tick, int timestamp, int CC, int value)
+{
+	jassert(numItems < (maxItems + 1));
+	 
+	// adds new one
+	dataList[numItems].note = CC; // note AND length have CC number!
+	dataList[numItems].label = "CC";
+	dataList[numItems].value = value;
+	dataList[numItems].ID = numItems + 1;
+	dataList[numItems].measure = measure;
+	dataList[numItems].beat = beat;
+	dataList[numItems].tick = tick;
+	dataList[numItems].timestamp = timestamp;
+	dataList[numItems].velocity = 0;
+	dataList[numItems].length = CC;
+	dataList[numItems].midiType = Topiary::MidiType::CC;
+	dataList[numItems].note = CC;
+	numItems++;
+
+} // addCC
+
+
+void TopiaryPattern::addPitch(int measure, int beat, int tick, int timestamp, int value)
+{
+	jassert(numItems < (maxItems + 1));
+
+	// adds new one
+	dataList[numItems].value = value;
+	dataList[numItems].label = "Pitch";
+	dataList[numItems].ID = numItems + 1;
+	dataList[numItems].measure = measure;
+	dataList[numItems].beat = beat;
+	dataList[numItems].tick = tick;
+	dataList[numItems].timestamp = timestamp;
+	dataList[numItems].velocity = 0;
+	dataList[numItems].length = 0;
+	dataList[numItems].midiType = Topiary::MidiType::Pitch;
+	dataList[numItems].note = -1;
+	numItems++;
+
+} // addPitch
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -302,7 +376,7 @@ void TopiaryPattern::duplicate(TopiaryPattern* p)
 		dataList[i].midiType = p->dataList[i].midiType;
 		dataList[i].channel = p->dataList[i].channel;
 		dataList[i].value = p->dataList[i].value;
-		dataList[i].CC = p->dataList[i].CC;
+		//dataList[i].CC = p->dataList[i].CC;
 	}
 } // duplicate
 
@@ -332,8 +406,8 @@ void TopiaryPattern::fillDataList(XmlElement* dList)
 				child->setAttribute("Val-Vel", dataList[i].velocity);
 				break;
 			case Topiary::MidiType::CC:
-				child->setAttribute("Note", dataList[i].CC);
-				child->setAttribute("Length", 0);
+				child->setAttribute("Note", dataList[i].length);		// note and length have the CC number!!!
+				child->setAttribute("Length", dataList[i].length);
 				child->setAttribute("Label", "CC");
 				child->setAttribute("Val-Vel", dataList[i].value);
 				break;			
@@ -386,7 +460,7 @@ void TopiaryPattern::addToModel(XmlElement *m)
 			child->setAttribute("value", dataList[p].value);
 			child->setAttribute("timestamp", dataList[p].timestamp);
 			child->setAttribute("label", dataList[p].label);
-			child->setAttribute("cc", dataList[p].CC);
+			
 	}
 
 } // addToModel
@@ -413,10 +487,15 @@ void TopiaryPattern::getFromModel(XmlElement *m)
 		dataList[index].length = child->getIntAttribute("length");
 		dataList[index].velocity = child->getIntAttribute("velocity");
 		dataList[index].timestamp = child->getIntAttribute("timestamp");
-		dataList[index].label = child->getStringAttribute("label");
-		dataList[index].value = child->getIntAttribute("value");
-		dataList[index].CC = child->getIntAttribute("cc");
 		dataList[index].midiType = child->getIntAttribute("midiType");
+		
+		if (dataList[index].midiType == Topiary::NoteOn)
+			dataList[index].label = noteNumberToString(child->getIntAttribute("note"));
+		else
+			dataList[index].label = child->getStringAttribute("label");
+
+		dataList[index].value = child->getIntAttribute("value");
+		
 		index++;
 		child = child->getNextElement();
 	}

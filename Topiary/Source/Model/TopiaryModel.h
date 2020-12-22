@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2020.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2021.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ public:
 	void getTransportState(int& b, int& n, int& d, int& bs, bool& o, bool &waitFFN);
 	virtual void setOverrideHostTransport(bool o);
 	void removeRecordButton();
-	void setRunState(int n);
+	virtual void setRunState(int n);
 	int getRunState();
 	void processTransportControls(int buttonEnabled); // // buttonEnabled; 0=Stop; 1=start; 2=rec
 	
@@ -108,22 +108,25 @@ public:
 	ActionBroadcaster* getBroadcaster();
 
 	// broadcaster messages
-#define MsgTransport "t"
-#define MsgLog "l"
-#define MsgVariationEnables "e"
-#define MsgVariationAutomation "a"  // variationcontrol
-#define MsgVariationSelected "s"
-#define MsgWarning "w"
-#define MsgPattern "p"
-#define MsgTiming "T"
-#define MsgNotePool "n"
-#define MsgMaster "m"
-#define MsgPatternList "L"
-#define MsgLoad "i" //signal that new preset was loaded; e.g. to have the patternstab re-set the model
-#define MsgVariationDefinition "d" // 
-#define MsgRealTimeParameter "r" // signal that something in realtime needs updating in editor
-#define MsgSelectedNoteAssignmentRowsChanged "N"
-#define MsgNoteAssignment "A" // signal that note assignment table changed
+#define MsgTransport "a"
+#define MsgLog "b"
+#define MsgVariationEnables "c"
+#define MsgVariationAutomation "d"  // variationcontrol
+#define MsgVariationSelected "e"
+#define MsgWarning "f"
+#define MsgPattern "g"
+#define MsgTiming "h"
+#define MsgNotePool "i"
+#define MsgMaster "j"
+#define MsgPatternList "k"
+#define MsgLoad "l" //signal that new preset was loaded; e.g. to have the patternstab re-set the model
+#define MsgVariationDefinition "m" // 
+#define MsgRealTimeParameter "n" // signal that something in realtime needs updating in editor
+#define MsgSelectedNoteAssignmentRowsChanged "o"
+#define MsgNoteAssignment "p" // signal that note assignment table changed
+#define MsgLockState "p"
+#define MsgNoteAssignmentNote "r" 
+#define MsgKeyRangeAssignment "t" 
 
 	////////// Utility
 
@@ -147,13 +150,15 @@ public:
 
 	virtual void swapPattern(int from, int to);
 	virtual void copyPattern(int from, int to);
-	
+		
 	void setPatternSelectedInPatternEditor(int p);  // needed to that when setting "record" we can check whether the pattern being edited is actually going to run 
 
 	void timestampToMBT(int t, int& m, int& b, int& tck);
 	void MBTToTick(int& t, int m, int b, int tck);
 
 	void addToModelEventBuffer(MidiMessage* msg);
+
+	int midiChannelListening = 0;		// midi channel to listen to e.g. for variation switching; 0 == omni
 
 protected:
 
@@ -185,7 +190,6 @@ protected:
 	int BPM = 120;
 	int runState;
 	
-
 	/////////// Variations
 
 	int variationSelected = 0;
@@ -225,13 +229,14 @@ protected:
 
 	int variationSwitch[8];				// either notes for each variation, of CC numbers
 	bool ccVariationSwitching = true;	// if false then we're using notes
-	int variationSwitchChannel = 0;		// midi channel for variation switching; 0 == omni
 	bool learningMidi = false;
 	int midiLearnID = 0;
 	bool recordingMidi = false;
 	int patternSelectedInPatternEditor = -1; // needed to that when setting "record" we can check whether the pattern being edited is actually going to run 
 
 	String filePath;
+
+	bool lockState = false;
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 	// Generator stuff	

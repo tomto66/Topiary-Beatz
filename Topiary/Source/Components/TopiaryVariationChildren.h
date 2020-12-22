@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-21.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -430,6 +430,8 @@ public:
 
 	TopiaryButton onButton;
 	Slider	percentSlider;
+	TopiaryButton plusButton;
+	TopiaryButton minusButton;
 
 	int width = 85;
 	int heigth = 120;
@@ -450,6 +452,7 @@ private:
 	static const int sliderV = 65;
 	static const int sliderTW = 60;
 	static const int sliderTH = 15;
+	static const int plusminusSize = 12;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NoteLengthComponent)
 

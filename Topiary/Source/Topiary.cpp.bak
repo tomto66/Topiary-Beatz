@@ -176,22 +176,39 @@ void TopiaryLookAndFeel::drawRotarySlider(Graphics& g, int x, int y, int width, 
 String validateNote(String newNote)
 {
 	// see if this a valid note; if not return "C2"
-	
-	// only for midi notes 21-108 (88 key keyboard)
-	// So A1 -- C9
+	// this DOES allow things like E# (which is F) and B# (which is C) -- but B#4 == C4, not C5 !!!
 
 	String validatedNote;
-		
-	int noteNumber = validNoteNumber(newNote);
-	if (noteNumber == -1) validatedNote = "C2";
-	else if (noteNumber > 108) validatedNote = "C9";
-	else if (noteNumber < 21) validatedNote = "A1";
-	else validatedNote = newNote.toUpperCase();
+	auto c = static_cast<const char*> (newNote.toUTF8());
+	char note = ' ';
+	int number = -1;
+	char sharp = '!';
+
+	if (newNote.length() == 2)
+	{
+		sscanf((char*)c, "%1c%1d", &note, &number);
+	}
+	else
+	{
+		sscanf((char*)c, "%1c%1c%d", &note, &sharp, &number);
+	}
+	
+	if ((number < 0) || (number > 8))
+		return "C2";
+
+	note = (char) toupper(note);
+	if (((int)note < (int)'A') || ((int)note > (int)'G'))
+		return "C2";
+
+	if (sharp == '!')
+		validatedNote = String(&note,1).toUpperCase() + String(number);
+	else 
+		validatedNote = String(&note,1).toUpperCase() + String("#") + String(number);
+
+	//Logger::outputDebugString(String("input ") + String(newNote));
+	//Logger::outputDebugString(String("output ") + String(validatedNote));
 
 	return validatedNote;
-
-	
-	
 } // validateNote
 
 //////////////////////////////////////////////////////////////////////////
@@ -200,48 +217,51 @@ int validNoteNumber(String inNote)
 {
 	// returns the midi note number of a formatted note name; assume sharps and octaves 1-8
 	// assumes the note string has been validated !!!
+	auto c = static_cast<const char*> (inNote.toUTF8());
+	char note = ' ';
+	int octave = -1;
+	char sharp = '!';
+	int number=0;
 
-	String notes[12];
-	notes[0] = "C";
-	notes[1] = "C#";
-	notes[2] = "D";
-	notes[3] = "D#";
-	notes[4] = "E";
-	notes[5] = "F";
-	notes[6] = "F#";
-	notes[7] = "G";
-	notes[8] = "G#";
-	notes[9] = "A";
-	notes[10] = "A#";
-	notes[11] = "B";
-
-	int noteNumber=-1;
-	int noteFound = -1;
-
-	inNote = inNote.toUpperCase();
-
-	for (int i = 0; i < 12; i++)
+	if (inNote.length() == 2)
 	{
-		if (inNote.indexOfIgnoreCase(notes[i]) == 0)
-		{
-			noteFound = i;
-			String offsetS = inNote.replace(notes[i], "");
-
-			int offset = offsetS.getIntValue();
-			 
-			noteNumber = (offset * 12) + i;
-			i = 12;
-		}
+		sscanf((char*)c, "%1c%1d", &note, &octave);
+	}
+	else
+	{
+		sscanf((char*)c, "%1c%1c%d", &note, &sharp, &octave);
 	}
 
-	return noteNumber;
+	switch ((int)note)
+	{
+	case (int)'C': number = 0;
+		break;
+	case (int)'D': number = 2;
+		break;
+	case (int)'E': number = 4;
+		break;
+	case (int)'F': number = 5;
+		break;
+	case (int)'G': number = 7;
+		break;
+	case (int)'A': number = 9;
+		break;
+	case (int)'B': number = 11; 
+		break;
+		default: jassert(0);
+
+	}
+
+	if (sharp == '#') number++;
+	number = number + (12 * octave);
+
+	//Logger::outputDebugString(String("input ") + String(inNote));
+	//Logger::outputDebugString(String("output ") + String(number));
+
+	return number;
 
 }  // validNoteNumber
 
-String noteNumberToString(int n)
-{
-	return MidiMessage::getMidiNoteName(n, true, true, 5);
-}
 //////////////////////////////////////////////////////////////////////////
 
 void TopiaryButton::paintButton(Graphics& g, bool isMouseOverButton, bool isButtonDown)

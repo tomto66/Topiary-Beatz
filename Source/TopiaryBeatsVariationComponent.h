@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-21.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,6 +44,8 @@ public:
 	void getVelocityOffset();
 	void setSwingQ();
 	void getSwingQ();
+	void enable();
+	void disable();
 
 	void actionListenerCallback(const String &message) override;
 	TopiaryBeatsModel* beatsModel;

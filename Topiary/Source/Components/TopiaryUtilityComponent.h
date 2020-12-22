@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2019.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2021.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -65,6 +65,12 @@ private:
 	// swap variation objects
 	TextButton pSwapGoButton;
 	ComboBox pSwapFromCombo, pSwapToCombo;
+
+	// automation components
+	static const int stateButtonW = 63;
+	TextButton saveStateButton;
+	TopiaryButton lockStateButton;
+	TextButton restoreStateButton;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TOPIARYUTILITYCOMPONENT)
 };

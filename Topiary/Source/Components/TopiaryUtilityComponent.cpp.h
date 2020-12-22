@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2020.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2021.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -168,6 +168,35 @@ TOPIARYUTILITYCOMPONENT::TOPIARYUTILITYCOMPONENT()
 	pSwapToCombo.setSelectedId(2);
 #endif  // PRESETZ
 
+#if defined(BEATZ) ||  defined(RIFFZ)
+
+	addAndMakeVisible(lockStateButton);
+	lockStateButton.setButtonText("Lock");
+	lockStateButton.setToggleState(false, dontSendNotification);
+	lockStateButton.onClick = [this]
+	{
+		bool oldState = model->getLockState();
+		bool newState = !oldState;
+		lockStateButton.setToggleState(newState, dontSendNotification);
+		model->setLockState(lockStateButton.getToggleState());
+	};
+
+	addAndMakeVisible(saveStateButton);
+	saveStateButton.setButtonText("Save");
+	saveStateButton.onClick = [this]
+	{
+		model->saveState();  
+	};
+
+	addAndMakeVisible(restoreStateButton);
+	restoreStateButton.setButtonText("Restore");
+	restoreStateButton.onClick = [this]
+	{
+		model->restoreState();
+	};
+
+
+#endif
 
 
 } // TOPIARYUTILITYCOMPONENT
@@ -188,6 +217,7 @@ void TOPIARYUTILITYCOMPONENT::setModel(TOPIARYMODEL* m)
 	model = m;
 	model->setListener((ActionListener*)this);
 	actionListenerCallback(MsgVariationAutomation);  // find variation automation values
+	actionListenerCallback(MsgLockState);
 	for (int i = 0; i < 8; i++)
 		variationControlEditor[i].setModel(m, Topiary::LearnMidiId::variationSwitch+i);
 
@@ -322,6 +352,31 @@ void TOPIARYUTILITYCOMPONENT::paint(Graphics& g)
 	buttonBounds = inRecBounds.removeFromLeft(buttonW);
 	vSwapGoButton.setBounds(buttonBounds);
 
+#if defined(BEATZ) ||  defined(RIFFZ)
+	///////////////////////////////////
+	// Plugin state stuff
+	///////////////////////////////////
+
+	auto stateArea = Rectangle<int>(250, 200, 240, 48);
+	g.drawText("Preset State", 250 + lineWidth, 200 + lineWidth, 500, labelOffset, juce::Justification::centredLeft);
+	recBounds = stateArea.removeFromBottom(stateArea.getHeight() - labelOffset);
+	g.drawRoundedRectangle((float)recBounds.getX() + lineWidth, (float)recBounds.getY() + lineWidth, (float)recBounds.getWidth() - 2 * lineWidth, (float)recBounds.getHeight() - 2 * lineWidth, (float)lineWidth, (float)lineWidth);
+	inRecBounds = Rectangle<int>::Rectangle(recBounds.getX() + 3 * lineWidth, recBounds.getY() + 3 * lineWidth, recBounds.getWidth() - 6 * lineWidth, recBounds.getHeight() - 6 * lineWidth);
+
+	buttonBounds = inRecBounds.removeFromLeft(spacer);
+	buttonBounds = inRecBounds.removeFromLeft(stateButtonW);
+	lockStateButton.setBounds(buttonBounds);
+
+	buttonBounds = inRecBounds.removeFromLeft(spacer);
+	buttonBounds = inRecBounds.removeFromLeft(stateButtonW);
+	saveStateButton.setBounds(buttonBounds);
+
+	buttonBounds = inRecBounds.removeFromLeft(spacer);
+	buttonBounds = inRecBounds.removeFromLeft(stateButtonW);
+	restoreStateButton.setBounds(buttonBounds);
+
+#endif
+
 #ifdef PRESETZ
 	//////////////////////////////////////////
 	// Copy Presets
@@ -405,6 +460,23 @@ void TOPIARYUTILITYCOMPONENT::actionListenerCallback(const String &message)
 	{
 		getVariationControl();
 	}
+#if defined(RIFFZ) || defined(BEATZ)
+	else if (message.compare(MsgLockState) == 0)
+	{
+		if (model->getLockState())
+		{
+			lockStateButton.setToggleState(true, dontSendNotification);
+			restoreStateButton.setEnabled(true);
+			saveStateButton.setEnabled(true);
+		}
+		else
+		{
+			lockStateButton.setToggleState(false, dontSendNotification);
+			restoreStateButton.setEnabled(true);
+			saveStateButton.setEnabled(false);
+		}
+	}
+#endif
 } // actionListenerCallback
 
 /////////////////////////////////////////////////////////////////////////
@@ -433,7 +505,7 @@ void TOPIARYUTILITYCOMPONENT::getVariationControl()
 		}
 		else
 		{
-			variationControlEditor[i].setText(MidiMessage::getMidiNoteName(switches[i], true, true, 5), dontSendNotification);
+			variationControlEditor[i].setText(noteNumberToString(switches[i]), dontSendNotification);
 			//Logger::outputDebugString(String("input ") + String(switches[i]));
 			//Logger::outputDebugString(String("output ") + MidiMessage::getMidiNoteName(switches[i], true, true, 5));
 

@@ -20,6 +20,8 @@ along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 #include "TopiaryPatternList.h"
 
+#ifdef TOPIARYMODEL
+
 TopiaryPatternList::TopiaryPatternList()
 {
 	// initialize the headerlist data
@@ -206,8 +208,21 @@ void TopiaryPatternList::getFromModel(XmlElement *model)
 		child = child->getNextElement();
 	}
 
-	numItems = index;
+	numItems = index; 
 
 } // getFromModel
 
+/////////////////////////////////////////////////////////////////////////////
 
+void TopiaryPatternList::validateTableEdit(int p, XmlElement* child, String attribute)
+{
+	m->validateTableEdit(p, child, attribute);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+void TopiaryPatternList::setModel(TOPIARYMODEL* mod)
+{
+	m = mod;
+} // setModel
+#endif

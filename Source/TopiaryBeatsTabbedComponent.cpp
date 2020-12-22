@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-21.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -99,14 +99,14 @@ void TopiaryBeatsTabbedComponent::actionListenerCallback(const String &message)
 		if ((runState == Topiary::Running) || (runState == Topiary::Armed) || (runState == Topiary::Ending))
 		{
 			masterComponent.setEnabled(false);
-			variationComponent.setEnabled(false);
+			variationComponent.disable();
 			utilityComponent.setEnabled(false);
 			patternComponent.setEnabled(false);
 		}
 		else
 		{
 			masterComponent.setEnabled(true);
-			variationComponent.setEnabled(true);
+			variationComponent.enable();
 			utilityComponent.setEnabled(true);
 			patternComponent.setEnabled(true);
 		}

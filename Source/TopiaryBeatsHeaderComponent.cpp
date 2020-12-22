@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-21.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,6 +34,12 @@ TopiaryBeatsHeaderComponent::TopiaryBeatsHeaderComponent()
 	timeEditor.setVisible(false);
 	timeEditor.setEnabled(false);
 
+	addAndMakeVisible(lockedEditor);
+	lockedEditor.setText("PLUGIN STATE LOCKED");
+	lockedEditor.setReadOnly(true);
+	lockedEditor.setColour(TextEditor::backgroundColourId, TopiaryColour::orange);
+	lockedEditor.setColour(TextEditor::textColourId, Colours::lightyellow);
+	lockedEditor.setColour(TextEditor::outlineColourId, TopiaryColour::orange);
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -54,6 +60,11 @@ void TopiaryBeatsHeaderComponent::setModel(TopiaryBeatsModel* m)
 	variationButtonsComponent.checkModel();
 	transportComponent.checkModel();
 	warningEditor.setVisible(false);
+
+	if (m->getLockState())
+		lockedEditor.setVisible(true);
+	else
+		lockedEditor.setVisible(false);
 } // setModel
 
 /////////////////////////////////////////////////////////////////////////
@@ -76,6 +87,7 @@ void TopiaryBeatsHeaderComponent::paint(Graphics& g) {
 
 	warningEditor.setBounds(645, 5, 330, 18);
 	timeEditor.setBounds(402, 17, 70, 18);
+	lockedEditor.setBounds(295, 5, 150, 18);
 
 }
 
@@ -89,6 +101,13 @@ void TopiaryBeatsHeaderComponent::actionListenerCallback(const String &message)
 		warningEditor.setText(beatsModel->getLastWarning());
 		warningEditor.setVisible(true);
 		startTimer(3000);
+	}
+	else if (message.compare(MsgLockState) == 0)
+	{
+		if (beatsModel->getLockState())
+			lockedEditor.setVisible(true);
+		else
+			lockedEditor.setVisible(false);
 	}
 	else if (message.compare(MsgTiming) == 0) 
 	{
@@ -104,10 +123,9 @@ void TopiaryBeatsHeaderComponent::actionListenerCallback(const String &message)
 			transportComponent.checkModel();
 		else if (message.compare(MsgVariationEnables) == 0)
 			variationButtonsComponent.getEnabled();
-		//if (message.compare(MsgLog) == 0)
-		//	warningEditor.setVisible(false);
+		
 	}
-}
+} // actionListenerCallBack
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -117,6 +135,7 @@ void TopiaryBeatsHeaderComponent::timerCallback()
 		warningEditor.setVisible(false);
 	else if (timeEditor.isVisible())
 		timeEditor.setVisible(false);
+
 	stopTimer();
 }
 

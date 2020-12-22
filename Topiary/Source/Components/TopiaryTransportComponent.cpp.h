@@ -1,5 +1,5 @@
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2019.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2021.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -211,7 +211,7 @@ void TOPIARYTRANSPORTCOMPONENT:: setOverride(bool override)
 /////////////////////////////////////////////////////////////////////////
 
 void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d, int state, bool showRecordButton)
-// updates the whole state: value of override will enabele/disable buttons
+// updates the whole state: value of override will enabel/disable buttons
 // values of fields are simply set
 {
 	setOverride(override);

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-21.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -56,7 +56,6 @@ void TopiaryModel::savePreset(String msg, String extension)
 		filePath = f.getParentDirectory().getFullPathName();
 		f = myChooser.getResult();
 		addParametersToModel();  // this adds all data as XML elements to model
-		//String myXmlDoc = model->createDocument(String());
 		String myXmlDoc = model->toString();
 		f.replaceWithText(myXmlDoc);
 		//Logger::writeToLog(myXmlDoc);
@@ -295,9 +294,9 @@ void TopiaryModel::logMidi(bool in, MidiMessage &msg)
 			int  note = msg.getNoteNumber();
 
 			if (msg.isNoteOff())
-				Log(String("MIDI in ") + "Note off: "+ MidiMessage::getMidiNoteName(note, true, true, 5) + " velocity: " + String(velo)+"  channel: " + String(chan) + ".", Topiary::LogType::MidiIn);
+				Log(String("MIDI in ") + "Note off: "+ noteNumberToString(note) + " velocity: " + String(velo)+"  channel: " + String(chan) + ".", Topiary::LogType::MidiIn);
 			else
-				Log(String("MIDI in ") + "Note on: " + MidiMessage::getMidiNoteName(note, true, true, 5) + " velocity: " + String(velo) + " channel: " + String(chan) + ".", Topiary::LogType::MidiIn);
+				Log(String("MIDI in ") + "Note on: " + noteNumberToString(note) + " velocity: " + String(velo) + " channel: " + String(chan) + ".", Topiary::LogType::MidiIn);
 		}
 		else
 		{
@@ -316,9 +315,9 @@ void TopiaryModel::logMidi(bool in, MidiMessage &msg)
 			int  note = msg.getNoteNumber();
 
 			if (msg.isNoteOff())
-				Log(String("MIDI out ") + "Note off: " + MidiMessage::getMidiNoteName(note, true, true, 5) + " velocity: " + String(velo) + " channel: " + String(chan)+".", Topiary::LogType::MidiOut);
+				Log(String("MIDI out ") + "Note off: " + noteNumberToString(note)+ " velocity: " + String(velo) + " channel: " + String(chan)+".", Topiary::LogType::MidiOut);
 			else
-				Log(String("MIDI out ") + "Note on: " + MidiMessage::getMidiNoteName(note, true, true, 5) + " velocity: " + String(velo) + " channel: " + String(chan) + ".", Topiary::LogType::MidiOut);
+				Log(String("MIDI out ") + "Note on: " + noteNumberToString(note) + " velocity: " + String(velo) + " channel: " + String(chan) + ".", Topiary::LogType::MidiOut);
 		}
 		else
 		{
@@ -385,7 +384,7 @@ void TopiaryModel::setBPM(int n)
 
 void TopiaryModel::setRunState(int n)
 {
-	
+	jassert(false);
 	// only call with false when called from generateMidi - because there we already have the lock!
 
 	int remember;
@@ -625,10 +624,9 @@ void TopiaryModel::outputModelEvents(MidiBuffer& buffer)
 {	
 	// outputs what is in modelEventBuffer
 	MidiMessage msg;
+	
 	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 
-	//auto iterator = MidiBuffer::Iterator(modelEventBuffer);
-	//while (iterator.getNextEvent(msg, position))
 	for (const MidiMessageMetadata metadata : modelEventBuffer)
 	{
 		msg = metadata.getMessage();
@@ -860,7 +858,7 @@ void TopiaryModel::sendActionMessage(String s)
 void TopiaryModel::setVariationControl(bool ccSwitching, int channel, int switches[8])
 {
 	ccVariationSwitching = ccSwitching;
-	variationSwitchChannel = channel;
+	midiChannelListening = channel;
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -874,7 +872,7 @@ void TopiaryModel::setVariationControl(bool ccSwitching, int channel, int switch
 void TopiaryModel::getVariationControl(bool& ccSwitching, int& channel, int switches[8])
 {
 	ccSwitching = ccVariationSwitching;
-	channel = variationSwitchChannel;
+	channel = midiChannelListening;
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -924,7 +922,7 @@ void TopiaryModel::processAutomation(MidiMessage& msg)
 			controller = msg.getControllerNumber();
 			if (controller == variationSwitch[i])
 			{
-				if ((variationSwitchChannel == 0) || (variationSwitchChannel == channel))
+				if ((midiChannelListening == 0) || (midiChannelListening == channel))
 				{
 					setVariation(i); 
 					break;
@@ -940,7 +938,7 @@ void TopiaryModel::processAutomation(MidiMessage& msg)
 			note = msg.getNoteNumber();
 			if (note == variationSwitch[i])
 			{
-				if ((variationSwitchChannel == 0) || (variationSwitchChannel == channel))
+				if ((midiChannelListening == 0) || (midiChannelListening == channel))
 				{
 					setVariation(i); 
 					break;
@@ -1041,7 +1039,7 @@ void TopiaryModel::stopLearningMidi()
 
 void TopiaryModel::record(bool b)
 {
-	// carefulk - overridden in Riffza & friends
+	// careful - overridden in Riffz & friends
 	const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
 	
 	recordingMidi = b;
@@ -1182,3 +1180,6 @@ void TopiaryModel::addToModel(XmlElement *p, String value, char* sname, int inde
 		p->addChildElement(parameter);
 
 } // addStringToModel
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-21.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@ along with Topiary Beats. If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
 #include "TopiaryBeats.h"
-#include "../..//Topiary/Source/Model/TopiaryPatternList.h"
 #include "TopiaryPoolList.h"
 #include "../../Topiary/Source/Model/TopiaryPattern.h"
 #include "../../Topiary/Source/Model/TopiaryVariation.h"
 #include "../../Topiary/Source/Model/TopiaryNoteOffBuffer.h"
 #include "../../Topiary/Source/Components/TopiaryMidiLearnEditor.h"
+#include "../../Topiary/Source/Model/TopiaryPatternList.h"
 
 class TopiaryBeatsModel : public TopiaryModel
 {
@@ -72,6 +72,7 @@ public:
 	void initializeVariationsForRunning() override;
 	void initializePreviousSteadyVariation();
 	void generateMidi(MidiBuffer* midiBuffer, MidiBuffer* recBuffer) override;
+	void setRunState(int n) override;
 	
 	////// Variations
 
@@ -97,7 +98,7 @@ public:
 	void setSwingQ(int v, int q);
 	int getSwingQ(int v);
 
-	void generateVariation(int i, int measureToGenerate); // Generates the variation;
+	void generateVariation(int i, int eightToGenerate); // Generates the variation;
 	void generateAllVariations(int measureToGenerate);
 
 	void setOverrideHostTransport(bool o) override;
@@ -167,9 +168,25 @@ public:
 	void outputNoteOn(int noteNumber);
 	void outputNoteOff(int noteNumber);
 
+	void setLockState(bool state);
+	bool getLockState();
+	void saveState();
+	void restoreState();
+	void processPluginParameters();
+
 #define NUMBEROFQUANTIZERS 10
 
-	
+	juce::AudioParameterFloat* rndNoteOccurrence;
+	juce::AudioParameterBool* boolNoteOccurrence;
+
+	juce::AudioParameterFloat* swingAmount;
+	juce::AudioParameterBool* boolSwing;
+
+	juce::AudioParameterFloat* rndVelocity;
+	juce::AudioParameterBool* boolVelocity;
+
+	juce::AudioParameterFloat* rndTiming;
+	juce::AudioParameterBool* boolTiming;
 
 private:
 	TopiaryPatternList patternList;
@@ -179,6 +196,15 @@ private:
 	TopiaryNoteOffBuffer noteOffBuffer;
 	bool fixedOutputChannels; // force those the same for every variation
 	
+	float prevRndNoteOccurrence;
+	int prevBoolNoteOccurrence;
+	float prevSwingAmount;
+	int prevBoolSwing;
+	float prevRndVelocity;
+	int prevBoolVelocity;
+	float prevRndTiming;
+	int prevBoolTiming;
+
 	///////////////////////////////////////////////////////////////////////
 
 #include "..//..//Topiary/Source/Model/LoadMidiPattern.cpp.h"	
@@ -231,8 +257,9 @@ private:
 
 		addToModel(parameters, poolList.getNumItems(), "numPoolNotes");
 		
-		addToModel(parameters, variationSwitchChannel, "variationSwitchChannel");
+		addToModel(parameters, midiChannelListening, "variationSwitchChannel");
 		addToModel(parameters, ccVariationSwitching, "ccVariationSwitching");
+		addToModel(parameters, lockState, "lockState");
 
 		for (int i = 0; i < 8; i++) {
 			
@@ -353,6 +380,7 @@ private:
 						if (parameterName.compare("runStopQ") == 0) runStopQ = parameter->getIntAttribute("Value");
 						if (parameterName.compare("variationStartQ") == 0) variationStartQ = parameter->getIntAttribute("Value");
 						if (parameterName.compare("name") == 0) name = parameter->getStringAttribute("Value");
+						if (parameterName.compare("lockState") == 0) lockState = parameter->getBoolAttribute("Value");
 
 						if (parameterName.compare("WFFN") == 0)	WFFN = parameter->getBoolAttribute("Value");
 						if (parameterName.compare("notePassThrough") == 0) 	notePassThrough = parameter->getBoolAttribute("Value");
@@ -426,7 +454,7 @@ private:
 						// automation
 						if (parameterName.compare("variationSwitch") == 0)  variationSwitch[parameter->getIntAttribute("Index")] = parameter->getIntAttribute("Value");
 						if (parameterName.compare("ccVariationSwitching") == 0)  ccVariationSwitching = (bool)parameter->getIntAttribute("Value");
-						if (parameterName.compare("variationSwitchChannel") == 0)  variationSwitchChannel = parameter->getIntAttribute("Value");
+						if (parameterName.compare("variationSwitchChannel") == 0)  midiChannelListening = parameter->getIntAttribute("Value");
 
 						parameter = parameter->getNextElement();
 					}
@@ -475,6 +503,7 @@ private:
 		broadcaster.sendActionMessage(MsgVariationEnables);		// so that if needed variationbuttons are disabled/enabled
 		broadcaster.sendActionMessage(MsgVariationDefinition);	// inform editor of variation settings;
 		broadcaster.sendActionMessage(MsgVariationAutomation);	// inform editor of variation automation settings;	
+		broadcaster.sendActionMessage(MsgLockState);	// inform editor of variation automation settings;	
 		
 	} // restoreParametersToModel
 
@@ -550,13 +579,13 @@ private:
 
 	///////////////////////////////////////////////////////////////////////
 
-	void generatePool(int v, int p, int poolNote[128], int measureToGenerate)
+	void generatePool(int v, int p, int poolNote[128], int eightToGenerate, int tickFrom, int tickTo)  
 	{
 		// generates the pool notes in pool p for variation v
 		// v is variation to generate
 		// p is poolnumber
-		// if measureToGenerate == -1 it regenerates for all measures
-		// if not it generates for measureToGenerate - but if measure too long it resets to 0
+		// if eightToGenerate == -1 it regenerates for all measures
+		// if not it generates eight' measure "eighttoGenerate" 
 
 		Logger::outputDebugString("Generating pool");
 
@@ -575,7 +604,8 @@ private:
 
 		for (int pIndex = 0; pIndex < pat->numItems; pIndex++)
 		{
-			if (((*pat).dataList[pIndex].measure == measureToGenerate) || (measureToGenerate == -1))
+			// if (((*pat).dataList[pIndex].measure == measureToGenerate) || (measureToGenerate == -1))
+			if ((((*pat).dataList[pIndex].timestamp >= tickFrom) && ((*pat).dataList[pIndex].timestamp < tickTo)) || (eightToGenerate == -1))
 			{
 				note = (*pat).dataList[pIndex].note;
 
@@ -726,54 +756,6 @@ private:
 	} // generatePool
 
 	///////////////////////////////////////////////////////////////////////
-	/*
-	int swing(int value, int deviation, int q) 
-		// q indicates whetherwe are swinging quarter or eight based
-	{ 
-		// value between 0 - ticksPerBeat; deviation -100 to 100
-		jassert(deviation < 101);
-		jassert(deviation > -101);
-		jassert(value >= 0);
-
-		int maxMidiValue;
-		
-		if (q == Topiary::SwingQButtonIds::SwingQ8)
-			maxMidiValue = (int) (Topiary::TicksPerQuarter/2) - 1;
-		else
-			maxMidiValue = Topiary::TicksPerQuarter - 1;
-
-		jassert(value <= maxMidiValue);
-
-		int midMidiValue = (int) (maxMidiValue / 2);
-
-		// This is our control point for the quadratic bezier curve
-		// We want this to be between 0 (min) and 63.5 (max)
-		double dev = (double)deviation;
-		double controlPointX = (double) midMidiValue + ((dev / 100) * midMidiValue);
-
-		// Get the percent position of the incoming value in relation to the max
-		double t = (double)value / maxMidiValue;
-
-		// The quadratic bezier curve formula
-		// B(t) = ((1 - t) * (1 - t) * p0) + (2 * (1 - t) * t * p1) + (t * t * p2)
-
-		// t  = the position on the curve between (0 and 1)
-		// p0 = minMidiValue (0)
-		// p1 = controlPointX (the bezier control point)
-		// p2 = maxMidiValue (127)
-
-		// Formula can now be simplified as:
-		// B(t) = ((1 - t) * (1 - t) * minMidiValue) + (2 * (1 - t) * t * controlPointX) + (t * t * maxMidiValue)
-
-		// What is the deviation from our value?
-		
-		int delta = (int) round((2.0 * (1 - t) * t * controlPointX) + (t * t * (double)maxMidiValue));
-
-		//Logger::outputDebugString("swing delta: " + String(delta));
-		return (value - delta) + value;
-	
-	} // swing
-	*/
 	
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopiaryBeatsModel)

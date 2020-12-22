@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2020.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2021.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,6 +46,59 @@ TopiaryAudioProcessor::TopiaryAudioProcessor()
 #endif
 {
 	processedMidi.ensureSize(50000);
+#if defined(RIFFZ) 
+	
+	addParameter(model.boolNoteLength = new juce::AudioParameterBool("noteLenght", // parameterID
+		"Randomize Note Length", // parameter name
+		false)); // default value
+
+	addParameter(model.rndNoteLength = new juce::AudioParameterFloat("rndNoteLength", // parameterID
+		"Randomize Note Length Amount", // parameter name
+		juce::NormalisableRange<float>(0.0f, 100.0f),
+		0.0f)); // default value
+#endif 
+
+#if defined(RIFFZ) || defined(BEATZ)
+	addParameter(model.boolNoteOccurrence = new juce::AudioParameterBool("rndNote", // parameterID
+		"Randomize Note Occurrence", // parameter name
+		false)); // default value
+
+	addParameter(model.rndNoteOccurrence = new juce::AudioParameterFloat("rndNoteOccurrence", // parameterID
+		"Randomize Note Occurrence Amount", // parameter name
+		juce::NormalisableRange<float>(0.0f, 100.0f),
+		0.0f)); // default value
+
+
+	addParameter(model.boolSwing = new juce::AudioParameterBool("swing", // parameterID
+		"Swing", // parameter name
+		false)); // default value
+
+	addParameter(model.swingAmount = new juce::AudioParameterFloat("swingAmount", // parameterID
+		"Swing Amount", // parameter name
+		juce::NormalisableRange<float>(-100.0f, 100.0f),
+		0.0f)); // default value
+
+
+	addParameter(model.boolTiming = new juce::AudioParameterBool("timing", // parameterID
+		"Randomize Note Timing", // parameter name
+		false)); // default value
+
+	addParameter(model.rndTiming = new juce::AudioParameterFloat("rndTiming", // parameterID
+		"Randomize Note Timing Amount", // parameter name
+		juce::NormalisableRange<float>(0.0f, 100.0f),
+		0.0f)); // default value
+
+
+	addParameter(model.boolVelocity = new juce::AudioParameterBool("velocity", // parameterID
+		"Randomize Velocity", // parameter name
+		false)); // default value
+
+	addParameter(model.rndVelocity = new juce::AudioParameterFloat("rndVelocity", // parameterID
+		"Randomize Velocity Amount", // parameter name
+		juce::NormalisableRange<float>(0.0f, 100.0f),
+		0.0f)); // default value
+		
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -186,10 +239,15 @@ bool TopiaryAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) c
 
 void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
+
+#if defined(BEATZ) ||  defined(RIFFZ)
+	model.processPluginParameters();
+#endif
+
 	// the audio buffer in a midi effect will have zero channels!
 	jassert(buffer.getNumChannels() == 0);
 
-	// processedMidi is declared as a member - because we preallocate plenty of space to avoid a mallo should it run out of space!!!
+	// processedMidi is declared as a member - because we preallocate plenty of space to avoid a malloc should it run out of space!!!
 	// midibuffer object to hold what we generate
 	// at the end of the processorblock we will swap &midiMessages (that came in) by processedMidi (what goes out)
 	// but we need to clear it because it may still have data in it from previous run
@@ -254,91 +312,97 @@ void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer&
 	// first see if there are (CC) messages to be output by the model
 	model.outputModelEvents(processedMidi);
 
-	//for (MidiBuffer::Iterator it(midiMessages); it.getNextEvent(msg, ignore);)
 	for (const MidiMessageMetadata metadata : midiMessages)
 	{
 		msg = metadata.getMessage();
-#ifdef Riffz
-		if (msg.isNoteOn() || msg.isNoteOff())
-			model.processNote(msg);
-			
-#endif
-		if (msg.isNoteOn())
+		if ((model.midiChannelListening == 0) || (model.midiChannelListening == msg.getChannel()))
 		{
-			if (!model.midiLearn(msg)) {
-				// if we are ready to play and waiting for first note in, start playing
-				if (waitFFN && (runState == Topiary::Armed))
-				{
-					tellModelToRun();
-					runState = Topiary::Running;
-				}
-
-				model.processAutomation(msg); // because we may have switching by notes
-			}
-		}
-		else
-		{
-			if (msg.isController())
+			if (msg.isNoteOn())
 			{
-				model.processAutomation(msg);  // automation by cc messages
-				if (!model.midiLearn(msg))
-					model.processCC(msg, &processedMidi);
+				if (!model.midiLearn(msg)) {
+					// if we are ready to play and waiting for first note in, start playing
+					if (waitFFN && (runState == Topiary::Armed))
+					{
+						tellModelToRun();
+							runState = Topiary::Running;
+					}
+
+					model.processAutomation(msg); // because we may have switching by notes
+
+#ifdef RIFFZ
+					model.keytrack(msg.getNoteNumber());
+#endif
+				}
 			}
+#ifdef RIFFZ
+			else if (msg.isNoteOff())
+				model.keytracker.pop(msg.getNoteNumber());
+#endif
 			else
 			{
-				if (msg.isMidiMachineControlMessage() && !override)
-				{   // only respond to this if not overridden
-					auto command = msg.getMidiMachineControlCommand();
-					switch (command)
-					{
-					case juce::MidiMessage::mmc_stop:
-						model.setRunState(Topiary::Ending);
-						runState = Topiary::Ending;
-						break;
-					case juce::MidiMessage::mmc_play:
-						if (waitFFN)
+				if (msg.isController())
+				{
+					model.processAutomation(msg);  // automation by cc messages
+					if (!model.midiLearn(msg))
+						model.processCC(msg, &processedMidi);
+				}
+				else
+				{
+					if (msg.isMidiMachineControlMessage() && !override)
+					{   // only respond to this if not overridden
+						auto command = msg.getMidiMachineControlCommand();
+						switch (command)
 						{
-							model.setRunState(Topiary::Armed);
-							runState = Topiary::Armed;
-						}
-						else
-						{
-							model.setRunState(Topiary::Running);
-							runState = Topiary::Running;
-						}
-						break;
-					case juce::MidiMessage::mmc_deferredplay:
-						break;
-					case juce::MidiMessage::mmc_fastforward:
-						break;
-					case juce::MidiMessage::mmc_rewind:
-						break;
-					case juce::MidiMessage::mmc_recordStart:
-						model.Log("Host sent Record - only works in editor mode.", Topiary::LogType::Warning);
-						break;
-					case juce::MidiMessage::mmc_recordStop:
-						break;
-					case juce::MidiMessage::mmc_pause:
-						break;
-					default:
-						break;
-					} // switch MMC command				
-				} // incoming MCC commands
+						case juce::MidiMessage::mmc_stop:
+							model.setRunState(Topiary::Ending);
+							runState = Topiary::Ending;
+							break;
+						case juce::MidiMessage::mmc_play:
+							if (waitFFN)
+							{
+								model.setRunState(Topiary::Armed);
+								runState = Topiary::Armed;
+							}
+							else
+							{
+								model.setRunState(Topiary::Running);
+								runState = Topiary::Running;
+							}
+							break;
+						case juce::MidiMessage::mmc_deferredplay:
+							break;
+						case juce::MidiMessage::mmc_fastforward:
+							break;
+						case juce::MidiMessage::mmc_rewind:
+							break;
+						case juce::MidiMessage::mmc_recordStart:
+							model.Log("Host sent Record - only works in editor mode.", Topiary::LogType::Warning);
+							break;
+						case juce::MidiMessage::mmc_recordStop:
+							break;
+						case juce::MidiMessage::mmc_pause:
+							break;
+						default:
+							break;
+						} // switch MMC command				
+					} // incoming MCC commands
+				}
+
 			}
-			
-		}
 
-		if (notePassThrough)
-		{
-			// pass through anything that came in
-			processedMidi.addEvent(msg, (int)msg.getTimeStamp());
-			if (logMidiOut) 
-				model.logMidi(false, msg);
-			
-		}
+			if (notePassThrough)
+			{
+				// pass through anything that came in
+				processedMidi.addEvent(msg, (int)msg.getTimeStamp());
+				if (logMidiOut)
+					model.logMidi(false, msg);
 
-		if (logMidiIn)
-			model.logMidi(true, msg);
+			}
+
+			if (logMidiIn)
+				model.logMidi(true, msg);
+
+		} // if msg on the channel(s) we are listening to
 
 	} // for loop over incoming midiBuffer 
 

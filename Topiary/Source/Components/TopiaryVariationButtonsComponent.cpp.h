@@ -1,5 +1,5 @@
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2019.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2020.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -83,7 +83,6 @@ void TOPIARYVARIATIONBUTTONSCOMPONENT::paint(Graphics& g) {
 	int buttonseparator = 4;
 
 	g.fillAll(TopiaryColour::background);
-	//g.fillAll(Colours::antiquewhite);
 	g.setColour(TopiaryColour::foreground);
 	g.setFont(12.0f);
 	g.drawText("Variations", 0, 0, 200, labeloffset, juce::Justification::centredLeft);

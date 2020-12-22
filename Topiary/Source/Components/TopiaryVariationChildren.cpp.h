@@ -2,12 +2,12 @@
 /*
 This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
 
-Topiary Beats is free software: you can redistribute it and/or modify
+Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Topiary Beats is distributed in the hope that it will be useful,
+Topiary is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
@@ -738,6 +738,10 @@ void  SwingComponent::paint(Graphics& g)
 		plusButton.setButtonText("+");
 		plusButton.onClick = [this]
 		{
+			// do not allow both + and - buttons to be off at the same time
+			if ((plusButton.getToggleState() == false) && (minusButton.getToggleState() == false))
+				minusButton.setToggleState(true, dontSendNotification);
+			
 			parent->setVelocity();
 		};
 
@@ -748,6 +752,10 @@ void  SwingComponent::paint(Graphics& g)
 		minusButton.setButtonText("-");
 		minusButton.onClick = [this]
 		{
+			// do not allow both + and - buttons to be off at the same time
+			if ((plusButton.getToggleState() == false) && (minusButton.getToggleState() == false))
+				plusButton.setToggleState(true, dontSendNotification);
+			
 			parent->setVelocity();
 		};
 
@@ -915,6 +923,9 @@ void  SwingComponent::paint(Graphics& g)
 		plusButton.setButtonText("+");
 		plusButton.onClick = [this]
 		{
+			if ((plusButton.getToggleState() == false) && (minusButton.getToggleState() == false))
+				minusButton.setToggleState(true, dontSendNotification);
+
 			parent->setTiming();
 		};
 
@@ -925,6 +936,9 @@ void  SwingComponent::paint(Graphics& g)
 		minusButton.setButtonText("-");
 		minusButton.onClick = [this]
 		{
+			if ((plusButton.getToggleState() == false) && (minusButton.getToggleState() == false))
+				plusButton.setToggleState(true, dontSendNotification);
+
 			parent->setTiming();
 		};
 
@@ -1394,6 +1408,33 @@ void  SwingComponent::paint(Graphics& g)
 			parent->setNoteLength();
 		};
 
+		plusButton.setClickingTogglesState(true);
+		plusButton.setLookAndFeel(&rndLookAndFeel);
+		plusButton.setSize(plusminusSize, plusminusSize);
+		addAndMakeVisible(plusButton);
+		plusButton.setButtonText("+");
+		plusButton.onClick = [this]
+		{
+			// do not allow both + and - buttons to be off at the same time
+			if ((plusButton.getToggleState() == false) && (minusButton.getToggleState() == false))
+				minusButton.setToggleState(true, dontSendNotification);
+
+			parent->setNoteLength();
+		};
+
+		minusButton.setClickingTogglesState(true);
+		minusButton.setLookAndFeel(&rndLookAndFeel);
+		minusButton.setSize(plusminusSize, plusminusSize);
+		addAndMakeVisible(minusButton);
+		minusButton.setButtonText("-");
+		minusButton.onClick = [this]
+		{
+			// do not allow both + and - buttons to be off at the same time
+			if ((plusButton.getToggleState() == false) && (minusButton.getToggleState() == false))
+				plusButton.setToggleState(true, dontSendNotification);
+			parent->setNoteLength();
+		};
+
 	} // NoteLenghtComponent
 
 	///////////////////////////////////////////////////////////////////////////////////
@@ -1412,7 +1453,7 @@ void  SwingComponent::paint(Graphics& g)
 	void  NoteLengthComponent::resized()
 	{
 
-	} // resized
+	} // resized 
 
 	///////////////////////////////////////////////////////////////////////////////////
 
@@ -1426,7 +1467,7 @@ void  SwingComponent::paint(Graphics& g)
 		g.setColour(TopiaryColour::foreground);
 		g.setFont(12.0f);
 
-		g.drawText("Random Notes", (int) lineWidth, (int) lineWidth, 200, (int) labelOffset, juce::Justification::centredLeft);
+		g.drawText("Note Length", (int) lineWidth, (int) lineWidth, 200, (int) labelOffset, juce::Justification::centredLeft);
 		auto recBounds = area.removeFromBottom(area.getHeight()-labelOffset);
 		g.drawRoundedRectangle((float) recBounds.getX()+lineWidth, (float) recBounds.getY()+lineWidth, (float) recBounds.getWidth()-2*lineWidth, (float) recBounds.getHeight()-2*lineWidth, (float) lineWidth, (float) lineWidth);
 	
@@ -1447,6 +1488,17 @@ void  SwingComponent::paint(Graphics& g)
 		percentSlider.setBounds(inRecBounds);
 		percentSlider.setSize(inRecBounds.getWidth(), inRecBounds.getHeight());
 		percentSlider.setLookAndFeel(&rndLookAndFeel);
+
+		// plusbutton top right
+		auto pBounds = inRecBounds.removeFromRight(plusminusSize);
+		pBounds.removeFromBottom(pBounds.getHeight() - plusminusSize);
+		plusButton.setBounds(pBounds);
+
+		// minus bottom top left
+		pBounds = inRecBounds.removeFromLeft(plusminusSize);
+		pBounds.removeFromBottom(pBounds.getHeight() - plusminusSize);
+		minusButton.setBounds(pBounds);
+
 			
 	} // paint
 #endif  // ifndef BEATZ

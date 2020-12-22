@@ -33,7 +33,11 @@ public:
 	void sortByID() override; 
 	void sortByTimestamp(bool keepIDs=false);
 	void del(int n) override;
-	void add(int measure, int beat, int tick, int timestamp, int note, int length, int velocity);
+	void addNote(int measure, int beat, int tick, int timestamp, int note, int length, int velocity);
+	void addAT(int measure, int beat, int tick, int timestamp, int value);
+	void addCC(int measure, int beat, int tick, int timestamp, int CC, int value);
+	void addPitch(int measure, int beat, int tick, int timestamp, int value);
+	 
 	void add();
 	void addToModel(XmlElement *m);
 	void getFromModel(XmlElement *m);
@@ -59,7 +63,7 @@ public:
 		int midiType;   // not in header
 		int channel;	// not in header
 		int value;		// not in header - either the pitch or the CC or AT value
-		int CC;			// not in header
+		//int CC;			// not in header
 		
 	};
 
@@ -87,7 +91,7 @@ private:
 		intSwap(dataList[from].length, dataList[to].length);
 		intSwap(dataList[from].midiType, dataList[to].midiType);
 		intSwap(dataList[from].channel, dataList[to].channel);
-		intSwap(dataList[from].CC, dataList[to].CC);
+		//intSwap(dataList[from].CC, dataList[to].CC);
 		intSwap(dataList[from].value, dataList[to].value);
 		stringSwap(dataList[from].label, dataList[to].label);
 
