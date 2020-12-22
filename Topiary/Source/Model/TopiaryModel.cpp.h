@@ -1431,7 +1431,7 @@ void TOPIARYMODEL::validateTableEdit(int p, XmlElement* child, String attribute)
 	else if (child->hasAttribute("Measures"))
 	{
 		// edited the patternlist
-		broadcaster.sendActionMessage(MsgPatternList);
+			broadcaster.sendActionMessage(MsgPatternList);
 #ifdef RIFFZ
 		// in case we change pattern name, rename in the note assignments
 		if (p>-1)

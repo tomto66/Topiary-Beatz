@@ -66,6 +66,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 	Log(String(""), Topiary::LogType::License);
 
 	// give some of the children yourself as model
+	patternList.setModel(this);
 	poolList.setBeatsModel(this);
 	for (int p = 0; p < 8; p++)
 		patternData[p].setModel(this);
