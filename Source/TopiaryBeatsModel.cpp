@@ -50,7 +50,7 @@ TopiaryBeatsModel::TopiaryBeatsModel()
 		+ String("D")
 #endif
 		+ String("."), Topiary::LogType::License);
-	Log(String("(C) Tom Tollenaere 2018-2020. "), Topiary::LogType::License);
+	Log(String("(C) Tom Tollenaere 2018-2021. "), Topiary::LogType::License);
 	Log(String(""), Topiary::LogType::License);
 	Log(String("Topiary Beatz is free software : you can redistribute it and/or modify"), Topiary::LogType::License);
 	Log(String("it under the terms of the GNU General Public License as published by"), Topiary::LogType::License);
@@ -505,7 +505,7 @@ void TopiaryBeatsModel::initializeVariationsForRunning()
 	for (int v = 0; v < 8; v++)
 	{
 		variation[v].ended = false;
-		variation[v].currentPatternChild = 0;
+		//variation[v].currentPatternChild = 0;
 	}
 } // initializeVariationsForRunning
 
@@ -917,14 +917,14 @@ void TopiaryBeatsModel::generateVariation(int i, int eightToGenerate)
 	//Logger::outputDebugString("SORTED ------------------------");
 	variation[i].pattern.sortByTimestamp();
 	
-	/*
+	
 	Logger::outputDebugString("------------------------");
 	for (int j = 0; j < variation[i].pattern.numItems; j++)
 	{
 		Logger::outputDebugString("<" + String(j) + "> <ID" + String(variation[i].pattern.dataList[j].ID)+"> Note: " + String(variation[i].pattern.dataList[j].note) + " timestamp " + String(variation[i].pattern.dataList[j].timestamp) + " midiType " + String(variation[i].pattern.dataList[j].midiType));
 	}
 	Logger::outputDebugString("------------------------");
-	*/
+	
 
 } // generateVariation
 
@@ -1206,7 +1206,7 @@ void TopiaryBeatsModel::copyVariation(int from, int to)
 			variation[to].velocityOffset[i] = variation[from].velocityOffset[i];
 		}
 
-		variation[to].currentPatternChild = 0;
+		//variation[to].currentPatternChild = 0;
 		
 	} // end if lock scope
 

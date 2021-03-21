@@ -11,7 +11,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
+You should have received a copy of the GNU General Public License///
 along with Topiary. If not, see <https://www.gnu.org/licenses/>.
 
 /////////////////////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ CAREFUL: needs symbols:
 - TOPIARYTRANSPORTCOMPONENT e.g. TopiaryPresetzTransportComponent (a class definition)
 
 */
-/////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
 #ifdef TOPIARYTRANSPORTCOMPONENT
 
@@ -182,10 +182,10 @@ void TOPIARYTRANSPORTCOMPONENT::setModel(TOPIARYMODEL *m)
 {
 	model = m;
 }
+
 /////////////////////////////////////////////////////////////////////////
 
 void TOPIARYTRANSPORTCOMPONENT:: setOverride(bool override)
-
 { // disable components when host is overridden and vice versa
   // does not call the model; is called from the derived class instead! - do not call directly!! (should be private, really ?) 
 	if (!override) {
@@ -211,7 +211,7 @@ void TOPIARYTRANSPORTCOMPONENT:: setOverride(bool override)
 /////////////////////////////////////////////////////////////////////////
 
 void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d, int state, bool showRecordButton)
-// updates the whole state: value of override will enabel/disable buttons
+// updates the whole state: value of override will enable/disable buttons
 // values of fields are simply set
 {
 	setOverride(override);
@@ -256,17 +256,21 @@ void TOPIARYTRANSPORTCOMPONENT::updateState(bool override, int bpm, int n, int d
 		startButton.specialState = Topiary::TopiaryButtonSpecialState::waitToApply;
 		stopButton.specialState = 0;
 		startButton.setToggleState(true, dontSendNotification);
+		// does not always repaint? - magic below to force it
+		startButton.setVisible(false);
+		startButton.setVisible(true);
 		overrideButton.setEnabled(false);
 		recButton.setEnabled(false);
 		break;
 
-		case Topiary::TransportRunState::Recording:
+	case Topiary::TransportRunState::Recording:
 		recButton.setToggleState(true, sendNotification);
 		break;
 	default: break;
 	}
 	if (!showRecordButton)
 		recButton.setEnabled(false);
+	
 	
 }  // updateState
 
@@ -285,8 +289,7 @@ void TOPIARYTRANSPORTCOMPONENT::processUIChanges(bool override, int& n, int& d, 
 	if (override) {
 		model->processTransportControls(buttonEnabled);
 	}
-	//checkModel(); // to catch e.g. bad tempo input - will be done by means of messagelistener!
-
+	
 } // processUIChanges
 
 /////////////////////////////////////////////////////////////////////////

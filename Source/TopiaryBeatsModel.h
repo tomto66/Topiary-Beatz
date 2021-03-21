@@ -109,7 +109,7 @@ public:
 		int patternToUse;					// index in patterndata
 		int lenInMeasures;
 		TopiaryVariation pattern;			// pattern  events in the variation
-		int currentPatternChild;			// where we are in generation 
+		//int currentPatternChild;			// where we are in generation 
 		
 		int type;
 		bool ended;
@@ -189,6 +189,9 @@ public:
 	juce::AudioParameterBool* boolTiming;
 
 private:
+	int rememberNoteDebug = -1;
+	int rememberTimeDebug = -1;
+
 	TopiaryPatternList patternList;
 	TopiaryPoolList poolList;
 	TopiaryPattern patternData[8];
@@ -587,7 +590,7 @@ private:
 		// if eightToGenerate == -1 it regenerates for all measures
 		// if not it generates eight' measure "eighttoGenerate" 
 
-		Logger::outputDebugString("Generating pool");
+		//Logger::outputDebugString("Generating pool");
 
 		Random randomizer;
 		TopiaryVariation* var = &(variation[v].pattern);

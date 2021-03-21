@@ -7,7 +7,7 @@ it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Topiary Beats is distributed in the hope that it will be useful,
+Topiary is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU General Public License for more details.
@@ -46,30 +46,6 @@ private:
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(EnablePoolComponent)
 };
 
-
-/*********
-////////////////////////////////////////////////////////////////////////////////
-// PoolLengthComponent
-////////////////////////////////////////////////////////////////////////////////
-
-class PoolLengthComponent : public Component
-{
-public:
-	PoolLengthComponent();
-	~PoolLengthComponent();
-	void paint(Graphics&) override;
-	void resized() override;
-	void setParent(TOPIARYVARIATIONCOMPONENT* p);
-
-	
-	int width = 168;
-	int heigth = 215;
-
-private:
-	TOPIARYVARIATIONCOMPONENT* parent;
-	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PoolLengthComponent)
-};
-****************/
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,6 +102,9 @@ public:
 	TopiaryButton enableButton;
 #ifdef BEATZ
 	ComboBox patternCombo;
+#endif
+#ifdef PADZ
+	ComboBox strumCombo;
 #endif
 
 	int width = 140;

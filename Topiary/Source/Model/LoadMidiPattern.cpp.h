@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-2020.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-2021.
 
-Topiary Riffz is free software: you can redistribute it and/or modify
+Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
@@ -76,7 +76,7 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 		}
 
 		//Logger::writeToLog(String("Tracks:" + String(numTracks)));
-		// careful: if the file contains more than 1 midi track the result will be undefined!!!
+		//careful: if the file contains more than 1 midi track the result will be undefined!!!
 
 		if (numTracks >1)
 			Log("Multiple tracks ("+String(numTracks)+") in input file; result may be unexpected!" , Topiary::LogType::Warning);
@@ -122,7 +122,7 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 					noteCounter++;
 					
 				}
-				if (message.isNoteOff())
+				else if (message.isNoteOff())
 				{
 					// find the note that is off and set the length
 					int oldNote = message.getNoteNumber();
@@ -143,7 +143,82 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 						patternData[patternIndex].dataList[index].length = (int)floor(timeStamp) - patternData[patternIndex].dataList[index].timestamp;
 
 				}
-				if (message.isMetaEvent())
+#ifdef RIFFZ
+				else if (message.isController())
+				{
+					patternData[patternIndex].add();
+
+					index = patternData[patternIndex].numItems - 1;
+					patternData[patternIndex].dataList[index].ID = noteCounter + 1;
+					patternData[patternIndex].dataList[index].midiType = Topiary::CC;
+					patternData[patternIndex].dataList[index].value = message.getControllerValue();
+					patternData[patternIndex].dataList[index].note = message.getControllerNumber();
+					patternData[patternIndex].dataList[index].label = String("CC");
+					double timeStamp = message.getTimeStamp();
+					// recalculate timeStamp to our reference range
+					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;
+					lenInTicks = (int)timeStamp; // passed on to caller
+					patternData[patternIndex].dataList[index].timestamp = (int)floor(timeStamp);
+					timeStampMeasure = (int)floor(timeStamp / (num * Topiary::TicksPerQuarter));
+					timeStamp = timeStamp - (timeStampMeasure * num * Topiary::TicksPerQuarter);
+					int timeStampBeat = (int)floor(timeStamp / Topiary::TicksPerQuarter);
+					timeStamp = timeStamp - (timeStampBeat * Topiary::TicksPerQuarter);
+					int timeStampTicks = (int)timeStamp;
+					patternData[patternIndex].dataList[index].measure = timeStampMeasure;
+					patternData[patternIndex].dataList[index].beat = timeStampBeat;
+					patternData[patternIndex].dataList[index].tick = timeStampTicks;
+					noteCounter++;
+				}
+				else if (message.isChannelPressure())
+				{
+					patternData[patternIndex].add();
+					
+					index = patternData[patternIndex].numItems - 1;
+					patternData[patternIndex].dataList[index].ID = noteCounter + 1;
+					patternData[patternIndex].dataList[index].midiType = Topiary::AfterTouch;
+					patternData[patternIndex].dataList[index].value = message.getChannelPressureValue();
+					patternData[patternIndex].dataList[index].label = String("AT");
+					double timeStamp = message.getTimeStamp();
+					// recalculate timeStamp to our reference range
+					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;
+					lenInTicks = (int)timeStamp; // passed on to caller
+					patternData[patternIndex].dataList[index].timestamp = (int)floor(timeStamp);
+					timeStampMeasure = (int)floor(timeStamp / (num * Topiary::TicksPerQuarter));
+					timeStamp = timeStamp - (timeStampMeasure * num * Topiary::TicksPerQuarter);
+					int timeStampBeat = (int)floor(timeStamp / Topiary::TicksPerQuarter);
+					timeStamp = timeStamp - (timeStampBeat * Topiary::TicksPerQuarter);
+					int timeStampTicks = (int)timeStamp;
+					patternData[patternIndex].dataList[index].measure = timeStampMeasure;
+					patternData[patternIndex].dataList[index].beat = timeStampBeat;
+					patternData[patternIndex].dataList[index].tick = timeStampTicks;
+					noteCounter++;
+				}
+				else if (message.isPitchWheel())
+				{
+					patternData[patternIndex].add();
+
+					index = patternData[patternIndex].numItems - 1;
+					patternData[patternIndex].dataList[index].ID = noteCounter + 1;
+					patternData[patternIndex].dataList[index].midiType = Topiary::Pitch;
+					patternData[patternIndex].dataList[index].value = message.getPitchWheelValue();
+					patternData[patternIndex].dataList[index].label = String("Pitch");
+					double timeStamp = message.getTimeStamp();
+					// recalculate timeStamp to our reference range
+					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;
+					lenInTicks = (int)timeStamp; // passed on to caller
+					patternData[patternIndex].dataList[index].timestamp = (int)floor(timeStamp);
+					timeStampMeasure = (int)floor(timeStamp / (num * Topiary::TicksPerQuarter));
+					timeStamp = timeStamp - (timeStampMeasure * num * Topiary::TicksPerQuarter);
+					int timeStampBeat = (int)floor(timeStamp / Topiary::TicksPerQuarter);
+					timeStamp = timeStamp - (timeStampBeat * Topiary::TicksPerQuarter);
+					int timeStampTicks = (int)timeStamp;
+					patternData[patternIndex].dataList[index].measure = timeStampMeasure;
+					patternData[patternIndex].dataList[index].beat = timeStampBeat;
+					patternData[patternIndex].dataList[index].tick = timeStampTicks;
+					noteCounter++;
+				}
+#endif
+				else if (message.isMetaEvent())
 				{
 					if (message.isTempoMetaEvent())
 					{
@@ -160,7 +235,7 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 				}
 			} // loop over events
 
-			// careful - we may have empty tracks11
+			// careful - we may have empty tracks
 			if (timeStampMeasure > (measures))
 			{
 				measures = timeStampMeasure; // because that gets passed on to  caller !! and we do +1 at the end!
@@ -169,6 +244,21 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 			int finalLength = measures * num * Topiary::TicksPerQuarter;
 			lenInTicks = finalLength;
 			patternData[patternIndex].sortByTimestamp(); // this one renumbers!
+
+#ifdef PADZ
+			// need to make sure lenght is 1 measure
+			// delete everything above measure 0 and warn
+			if (patternData[patternIndex].patLenInTicks > (num * Topiary::TicksPerQuarter))
+			{
+				Log("Midi file longer than one measure; truncated", Topiary::LogType::Warning);
+
+				patternData[patternIndex].patLenInTicks = num * Topiary::TicksPerQuarter;
+				for (int i = (patternData[patternIndex].numItems-1); i <= 0; i--)
+					if (patternData[patternIndex].dataList[i].measure>0)
+						patternData[patternIndex].numItems--;
+			}
+
+#endif
 				
 		} // loop over tracks
 
@@ -178,4 +268,4 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 			Log("Time signature in file is different from plugin timesignature; results may be unexpected!", Topiary::LogType::Warning);
 
 		return true;
-	}; // loadMidiDrumPattern
+	}; // loadMidiPattern

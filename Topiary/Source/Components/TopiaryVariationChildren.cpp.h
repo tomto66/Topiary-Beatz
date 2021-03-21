@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-21.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -266,6 +266,8 @@ void  RandomNoteComponent::paint(Graphics& g)
 // SwingComponent
 /////////////////////////////////////////////////////////////////////////
 
+#if defined(RIFFZ) ||defined(BEATZ)
+
 SwingComponent::SwingComponent()
 {
 	pool1Button.setClickingTogglesState(true);
@@ -408,6 +410,8 @@ void  SwingComponent::paint(Graphics& g)
 
 } // paint
 
+#endif 
+
 /////////////////////////////////////////////////////////////////////////
 // VariationDefinitionComponent
 /////////////////////////////////////////////////////////////////////////
@@ -454,6 +458,17 @@ void  SwingComponent::paint(Graphics& g)
 		addAndMakeVisible(patternCombo);
 		
 		patternCombo.onChange = [this]
+		{
+			parent->setVariationDefinition();
+		};
+#endif
+#ifdef PADZ
+		addAndMakeVisible(strumCombo);
+		strumCombo.addItem("As Is", Topiary::StrumType::AsIs);
+		strumCombo.addItem("Up", Topiary::StrumType::Up);
+		strumCombo.addItem("Down", Topiary::StrumType::Down);
+
+		strumCombo.onChange = [this]
 		{
 			parent->setVariationDefinition();
 		};
@@ -529,6 +544,12 @@ void  SwingComponent::paint(Graphics& g)
 #ifdef BEATZ
 		patternCombo.setBounds(topBounds);
 		patternCombo.setSize(topBounds.getWidth(), topBounds.getHeight());
+#endif
+#ifdef PADZ
+		topBounds.removeFromLeft(40);
+		strumCombo.setBounds(topBounds);
+		strumCombo.setSize(topBounds.getWidth(), topBounds.getHeight());
+		g.drawText("Order", lineWidth+10, 95, 35, labelOffset, juce::Justification::centredLeft);
 #endif
 
 	} // paint
@@ -1297,6 +1318,8 @@ void  SwingComponent::paint(Graphics& g)
 // SwingQComponent
 /////////////////////////////////////////////////////////////////////////
 
+#if defined(RIFFZ) || defined(BEATZ) 
+
 	SwingQComponent::SwingQComponent()
 	{
 		setSize(width, heigth);
@@ -1375,8 +1398,9 @@ void  SwingComponent::paint(Graphics& g)
 		eightButton.setBounds(eBounds);
 
 	} // paint
+#endif
 
-#ifndef BEATZ
+#ifdef RIFFZ
 
 	/////////////////////////////////////////////////////////////////////////
 	// NoteLengthComponent

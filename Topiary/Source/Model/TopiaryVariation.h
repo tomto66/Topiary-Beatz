@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-21.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ public:
 
 	void sortByID() override; 
 	void sortByTimestamp(bool keepIDs=false);
+	void sortByNote(bool keepIDs, bool up);
 	void del(int n) override;
 	void add();
 	int findID(int ID); // returns index of the ID; creates new record with that ID if not found

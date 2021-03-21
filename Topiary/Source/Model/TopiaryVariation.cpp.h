@@ -163,10 +163,63 @@ void TopiaryVariation::sortByTimestamp(bool keepIDs)
 	if (!keepIDs)
 		renumber();
 
-} // sortByID
+} // sortByTimestamp
 
 /////////////////////////////////////////////////////////////////////////////
 
+void TopiaryVariation::sortByNote(bool keepIDs, bool up)
+{
+	// sorts and then renumbers by ID (one might have been deleted)
+	// IDs to delete are set to Topiary::ToDeleteID
+
+	bool done = true;
+
+	for (int i = 0; i < (numItems - 1); i++)
+	{
+		done = true;
+		for (int j = i + 1; j < numItems; j++)
+		{
+			if (up)
+			{
+				if (dataList[i].note > dataList[j].note)
+				{
+					swap(i, j);
+					done = false;
+				}
+
+				if ((dataList[j].note > dataList[j + 1].note) && (j < (numItems - 1)))
+				{
+					swap(j + 1, j);
+					j--; // because j+1 might also be smaller than i !!!!
+					done = false;
+				}
+			}
+			else
+			{
+				if (dataList[i].note < dataList[j].note)
+				{
+					swap(i, j);
+					done = false;
+				}
+
+				if ((dataList[j].note < dataList[j + 1].note) && (j < (numItems - 1)))
+				{
+					swap(j + 1, j);
+					j--; // because j+1 might also be smaller than i !!!!
+					done = false;
+				}
+			}
+			if (done)
+				i = numItems;
+		}
+	};
+
+	if (!keepIDs)
+		renumber();
+
+} // sortByNote
+
+/////////////////////////////////////////////////////////////////////////////
 
 void TopiaryVariation::renumber()
 {

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-21.
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
@@ -32,6 +32,7 @@ public:
 
 	void sortByID() override; 
 	void sortByTimestamp(bool keepIDs=false);
+	void sortByNote(bool keepIds, bool up);
 	void del(int n) override;
 	void addNote(int measure, int beat, int tick, int timestamp, int note, int length, int velocity);
 	void addAT(int measure, int beat, int tick, int timestamp, int value);

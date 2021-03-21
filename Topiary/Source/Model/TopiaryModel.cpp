@@ -384,112 +384,8 @@ void TopiaryModel::setBPM(int n)
 
 void TopiaryModel::setRunState(int n)
 {
-	jassert(false);
-	// only call with false when called from generateMidi - because there we already have the lock!
-
-	int remember;
-	remember = runState;  // needed because in 1 case setting to Armed should fail!!!
-	bool varEnabled = false;
-	int enabledVariation = -1;
-	bool changeSetVariation = false;
-
-	if (runState != n)
-	{
-		const GenericScopedLock<CriticalSection> myScopedLock(lockModel);
-		
-		switch (n)
-		{
-		case  Topiary::Running:
-			Log("Start running.", Topiary::LogType::Transport);
-			//Logger::outputDebugString("RTcur to 0");
-			// initialize the patterncursor
-			patternCursor = 0;
-			blockCursor = 0;
-			cursorToStop = (int64)-1;
-			runState = Topiary::Running;
-			broadcaster.sendActionMessage(MsgTransport);
-			break;
-
-		case Topiary::Stopped:
-
-			// reset stuff
-			cursorToStop = (int64)-1;
-			
-			Log("Stopped.", Topiary::LogType::Transport);
-			broadcaster.sendActionMessage(MsgTransport);
-
-			// if there is a variation waiting - do that outside this scoped lock otherwise we'll lock -- see below
-			runState = Topiary::Stopped;
-			break;
-
-		case Topiary::Ending:
-			Log("Ending, cleaning up.", Topiary::LogType::Transport);
-			runState = Topiary::Ending;
-			broadcaster.sendActionMessage(MsgTransport);
-			break;
-		case Topiary::Armed:
-			
-				// make sure there are variations enbabled
-				// and that we selected an enabled variation
-				blockCursor = 0;
-				patternCursor = 0;
-
-				for (int i = 0; i < 8; i++)
-				{
-					if (getVariationEnabled(i))
-					{
-						varEnabled = true;
-						if (enabledVariation == -1)
-						{
-							enabledVariation = i;
-						}
-					}
-				}
-				if (varEnabled)
-				{
-					if (!getVariationEnabled(variationSelected))
-					{
-						changeSetVariation = true;
-						// we need to call setVariation but that one also needs the lock - do that when lock has been released
-					}
-
-					if (runState != Topiary::Ending)
-					{
-						runState = Topiary::Armed;
-						Log("Armed, waiting for first note.", Topiary::LogType::Transport);
-						broadcaster.sendActionMessage(MsgTransport);
-					}
-				}
-				else
-				{
-					Log("Cannot run because there is no variation enabled.", Topiary::LogType::Warning);
-					runState = Topiary::Stopped;
-				}
-			
-			break;
-		default:
-			break;
-
-		}
-		
-		broadcaster.sendActionMessage(MsgTransport);
-		
-	}
-
-	if (changeSetVariation)
-	{
-		// if the currently selected variation is disabled switch to one that has been selected!
-		// we do that here because setVariation needs the model lock!
-		setVariation(enabledVariation);
-	}
-	else
-	{
-		setVariation(variationSelected);	// so that if the button was orange, it becomes blue again
-	}
-
-	// now the first waiting variation might stil be orange; fix that below
-	if (remember == Topiary::Armed)
-		setVariation(variationSelected);
+	jassert(false); // virtual
+	UNUSED(n)
 
 } // setRunState
 
@@ -498,6 +394,7 @@ void TopiaryModel::setRunState(int n)
 int TopiaryModel::getRunState()
 {
 	return runState;
+
 } // getRunState
 
 ///////////////////////////////////////////////////////////////////////
@@ -516,7 +413,7 @@ void TopiaryModel::processTransportControls(int buttonEnabled)  // buttonEnabled
 		{
 			setRunState(Topiary::Armed);  // if override then either processblock will switch it to Running asap, or processblock will set it to Running at first note 
 			// else do nothing otherwise it would restart!	
-			broadcaster.sendActionMessage(MsgTransport);
+			//broadcaster.sendActionMessage(MsgTransport);
 		}
 	}
 	else
@@ -526,7 +423,7 @@ void TopiaryModel::processTransportControls(int buttonEnabled)  // buttonEnabled
 			if (runState == Topiary::Armed)
 			{
 				setRunState(Topiary::Stopped);  // because then it never got started in the first place
-				broadcaster.sendActionMessage(MsgTransport);
+				//broadcaster.sendActionMessage(MsgTransport);
 				return;
 			}
 			else
@@ -534,12 +431,12 @@ void TopiaryModel::processTransportControls(int buttonEnabled)  // buttonEnabled
 				if (runState == Topiary::Running)
 				{
 					setRunState(Topiary::Ending);  // it will go to Stopped in processblock, when the time has come (depending on runStopQ)
-					broadcaster.sendActionMessage(MsgTransport);
+					//broadcaster.sendActionMessage(MsgTransport);
 				}
 				else
 				{
 					setRunState(Topiary::Stopped);
-					broadcaster.sendActionMessage(MsgTransport);
+					//broadcaster.sendActionMessage(MsgTransport);
 				}
 				return;
 			}
@@ -578,7 +475,8 @@ void TopiaryModel::setStartTimes()
 { // time in samples when running really starts + other housekeeping
 	//rtCursor = 0;
 	blockCursor = 0;
-	variationRunning = variationSelected;
+
+	//variationRunning = variationSelected;
 	//for (int i = 0; i < 4; i++)
 	//	for (int j = 0; j < 8; j++)
 	//	{
@@ -616,6 +514,7 @@ bool TopiaryModel::processVariationSwitch() // called just before generateMidi -
 	// virtual, but standard code that is in TopiaryIncludes.h
 	jassert(false);
 	return true;
+
 } // processVariationSwitch
 
 ///////////////////////////////////////////////////////////////////////

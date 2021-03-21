@@ -202,6 +202,7 @@ protected:
 	int64 nextRTGenerationCursor;		// real time cursor of next event to generate
 	int blockSize;						// size of block to generate 
 	int patternCursor;					// patternCursor  to disappear in the future
+	int lastTimestampGenerated;			// needed for walkToTick
 	
 	int variationStartQ = Topiary::Quantization::Immediate;			// when to switch variations
 	int runStopQ = Topiary::Quantization::Immediate;				// when to stop running
@@ -250,7 +251,7 @@ protected:
 		if (denominator == 0) return;
 		ticksPerBeat = Topiary::TicksPerQuarter * 4 / denominator;
 		samplesPerTick = (double)sampleRate / ((double)ticksPerBeat * BPM / 60.0);
-		Log("Samples per tick" + String(samplesPerTick), Topiary::LogType::Info);
+		Log("Samples per tick: " + String(samplesPerTick), Topiary::LogType::Info);
 
 	} // recalcRealTime
 

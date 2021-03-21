@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" version="1.1.0"
+<JUCERPROJECT id="so1YrE" name="Topiary Beatz" projectType="audioplug" version="1.1.1"
               companyName="Topiary" pluginManufacturer="Topiary" pluginVSTCategory="kPlugCategGenerator"
-              pluginManufacturerCode="Beat" pluginCode="Beat" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
+              pluginManufacturerCode="Tpry" pluginCode="Beat" pluginCharacteristicsValue="pluginIsMidiEffectPlugin,pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               splashScreenColour="Light" pluginFormats="buildStandalone,buildVST"
-              jucerFormatVersion="1">
+              jucerFormatVersion="1" pluginAUMainType="'aufx'" pluginVST3Category="Fx">
   <MAINGROUP id="MiVGXn" name="Topiary Beatz">
+    <FILE id="qhJgPn" name="TopiaryVariationComponent.cpp.h" compile="1"
+          resource="0" file="../Topiary/Source/Components/TopiaryVariationComponent.cpp.h"/>
+    <FILE id="RAIbi9" name="TopiaryVariationComponent.h" compile="0" resource="0"
+          file="../Topiary/Source/Components/TopiaryVariationComponent.h"/>
     <FILE id="cYNQOz" name="Swing.cpp.h" compile="0" resource="0" file="../Topiary/Source/Model/Swing.cpp.h"/>
     <FILE id="Nw2WmL" name="TopiaryVariationChildren.cpp.h" compile="0"
           resource="0" file="../Topiary/Source/Components/TopiaryVariationChildren.cpp.h"/>
@@ -37,8 +41,6 @@
           file="../Topiary/Source/Model/TopiaryNoteOffBuffer.h"/>
     <FILE id="i215KP" name="TopiaryPattern.h" compile="0" resource="0"
           file="../Topiary/Source/Model/TopiaryPattern.h"/>
-    <FILE id="xPDcEm" name="TopiaryPatternList.cpp" compile="1" resource="0"
-          file="../Topiary/Source/Model/TopiaryPatternList.cpp"/>
     <FILE id="Ioohq4" name="TopiaryPatternList.h" compile="0" resource="0"
           file="../Topiary/Source/Model/TopiaryPatternList.h"/>
     <FILE id="Y2kqwc" name="TopiaryVariation.cpp.h" compile="0" resource="0"

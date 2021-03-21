@@ -58,7 +58,7 @@ TopiaryAudioProcessor::TopiaryAudioProcessor()
 		0.0f)); // default value
 #endif 
 
-#if defined(RIFFZ) || defined(BEATZ)
+#if defined(RIFFZ) || defined(BEATZ)  || defined(PADZ)
 	addParameter(model.boolNoteOccurrence = new juce::AudioParameterBool("rndNote", // parameterID
 		"Randomize Note Occurrence", // parameter name
 		false)); // default value
@@ -68,7 +68,7 @@ TopiaryAudioProcessor::TopiaryAudioProcessor()
 		juce::NormalisableRange<float>(0.0f, 100.0f),
 		0.0f)); // default value
 
-
+#ifndef PADZ
 	addParameter(model.boolSwing = new juce::AudioParameterBool("swing", // parameterID
 		"Swing", // parameter name
 		false)); // default value
@@ -77,7 +77,7 @@ TopiaryAudioProcessor::TopiaryAudioProcessor()
 		"Swing Amount", // parameter name
 		juce::NormalisableRange<float>(-100.0f, 100.0f),
 		0.0f)); // default value
-
+#endif
 
 	addParameter(model.boolTiming = new juce::AudioParameterBool("timing", // parameterID
 		"Randomize Note Timing", // parameter name
@@ -281,8 +281,13 @@ void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer&
 			if (!lastPosInfo.isPlaying && ((runState == Topiary::Running) || (runState == Topiary::Armed)))
 			{
 				// we'll set model to Stopping; it will then decide to really stop when needed
-				model.setRunState(Topiary::Ending);
-				runState = Topiary::Ending;
+#ifdef PRESETZ
+				if (!model.fakeRun)  // if transport NOT running but fakeRun == true then we do NOT stop (yet)
+#endif
+				{
+					model.setRunState(Topiary::Ending);
+					runState = Topiary::Ending;
+				}
 			}
 			if (lastPosInfo.bpm != BPM)
 			{
@@ -296,9 +301,13 @@ void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer&
 	}
 	else model.Log("ERROR>>>> No playhead provided!", Topiary::LogType::Warning);
 
+#ifndef PRESETZ
 	if (!waitFFN && (runState == Topiary::Armed))
-	{
-		
+#endif
+#ifdef PRESETZ
+		if ((!waitFFN||model.fakeRun) && (runState == Topiary::Armed))
+#endif
+	{	
 		tellModelToRun();
 		runState = Topiary::Running;
 	}
@@ -324,7 +333,7 @@ void TopiaryAudioProcessor::processBlock(AudioBuffer<float>& buffer, MidiBuffer&
 					if (waitFFN && (runState == Topiary::Armed))
 					{
 						tellModelToRun();
-							runState = Topiary::Running;
+						runState = Topiary::Running;
 					}
 
 					model.processAutomation(msg); // because we may have switching by notes

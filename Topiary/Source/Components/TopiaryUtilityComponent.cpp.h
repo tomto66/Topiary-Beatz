@@ -168,7 +168,7 @@ TOPIARYUTILITYCOMPONENT::TOPIARYUTILITYCOMPONENT()
 	pSwapToCombo.setSelectedId(2);
 #endif  // PRESETZ
 
-#if defined(BEATZ) ||  defined(RIFFZ)
+#if defined(BEATZ) ||  defined(RIFFZ) || defined(PADZ)
 
 	addAndMakeVisible(lockStateButton);
 	lockStateButton.setButtonText("Lock");
@@ -352,7 +352,7 @@ void TOPIARYUTILITYCOMPONENT::paint(Graphics& g)
 	buttonBounds = inRecBounds.removeFromLeft(buttonW);
 	vSwapGoButton.setBounds(buttonBounds);
 
-#if defined(BEATZ) ||  defined(RIFFZ)
+#if defined(BEATZ) ||  defined(RIFFZ) || defined(PADZ)
 	///////////////////////////////////
 	// Plugin state stuff
 	///////////////////////////////////

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary, Copyright Tom Tollenaere 2018-20.
+This file is part of Topiary, Copyright Tom Tollenaere 2018-21.
 
 Topiary is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -345,6 +345,45 @@ void TopiaryPattern::sortByTimestamp(bool keepIDs)
 		renumber();
 
 } // sortByID
+
+#ifdef PADZ
+void TopiaryPattern::sortByNote(bool keepIDs, bool up)
+{
+	// sorts and then renumbers by ID (one might have been deleted)
+	// IDs to delete are set to Topiary::ToDeleteID
+
+	//bool done;
+
+	for (int i = 0; i <= numItems; i++)
+	{
+		//done = true;
+		for (int j = i + 1; j < numItems; j++)
+		{
+			if (up)
+			{
+				if (dataList[i].note > dataList[j].note)
+				{
+					swap(i, j);
+					//done = false;
+				}
+			}
+				else if (dataList[i].note < dataList[j].note)
+				{
+					swap(i, j);
+					//done = false;
+				}
+		}
+        //if (done)
+		//	i = numItems;
+	};
+
+	if (!keepIDs)
+		renumber();
+
+} // sortByNote
+
+#endif // PADZ
+
 
 /////////////////////////////////////////////////////////////////////////////
 

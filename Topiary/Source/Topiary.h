@@ -161,6 +161,13 @@ class Topiary
 		SwingQRadioID = 3000
 	};
 
+	enum StrumType
+	{
+		Up = 4002,
+		Down = 4001,
+		AsIs = 4000
+	};
+
 	static const int TicksPerQuarter = 240;
 	static const int ToDeleteID = 999999999;
 	static const int NoNoteAssigned = -99999;

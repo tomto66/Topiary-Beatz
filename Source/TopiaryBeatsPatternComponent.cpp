@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 /*
-This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-19.
+This file is part of Topiary Beatz, Copyright Tom Tollenaere 2018-21.
 
 Topiary Beats is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -108,6 +108,8 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 		patternTable.updateContent();
 		patternTable.selectRow(rememberSelectedRow);
 		setButtonStates(); // is in include file
+		// also regenerate the variations
+		beatsModel->generateAllVariations(-1);
 	}
 	else if (message.compare(MsgPatternList) == 0)
 	{
@@ -134,11 +136,11 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 			this->setEnabled(true);
 			if (patternCombo.getNumItems() > rememberPatternComboSelection)
 			{
-				patternCombo.setSelectedItemIndex(rememberPatternComboSelection+1);
+				patternCombo.setSelectedId(rememberPatternComboSelection+1);
 			}
 			else
 			{
-				patternCombo.setSelectedItemIndex(0);
+				patternCombo.setSelectedId(1);
 			}
 
 			//actionListenerCallback(MsgPattern);  // force reload of patterndata
@@ -149,7 +151,7 @@ void TopiaryBeatsPatternComponent::actionListenerCallback(const String &message)
 			patternCombo.setSelectedItemIndex(0, dontSendNotification);
 		}
 		// fill the combobox with the pattern names
-	}
+	} // msgPatternList
 
 } // actionListenerCallback
 
@@ -166,13 +168,11 @@ void TopiaryBeatsPatternComponent::setPatternLength()
 	}
 	else
 	{
-		int remember = patternCombo.getSelectedId();
 		beatsModel->setPatternLength(patternCombo.getSelectedId() - 1, len, patternLengthComponent.keepTail.getToggleState());
 		patternTable.updateContent();
 
 	}
 	
-
 } // setPatternLength
 
 /////////////////////////////////////////////////////////////////////////
