@@ -1725,7 +1725,7 @@ void TOPIARYMODEL::processPluginParameters()
 		broadcaster.sendActionMessage(MsgVariationDefinition);
 
 	}
-#endif // not define PADS
+#endif // not defined PADZ for swing
 
 	///////////////////////////////
 	// TIMING
@@ -1833,6 +1833,65 @@ void TOPIARYMODEL::processPluginParameters()
 		broadcaster.sendActionMessage(MsgVariationDefinition);
 
 	}
+
+	// end velocity
+
+#ifdef PADZ
+
+	///////////////////////////////
+	// SPREAD
+	///////////////////////////////
+
+	auto currentRndSpread = rndSpread->get();  // between 0 and 100
+
+	if (prevRndSpread != -1)
+	{
+		if (abs(prevRndSpread - currentRndSpread) > 0.99)
+		{
+			if (variation[var].spreadValue != (int)currentRndSpread)
+			{
+				variation[var].spreadValue = (int)currentRndSpread;
+				prevRndSpread = currentRndSpread;
+				//Log("UPDATING VARIATION " + String(var), Topiary::LogType::Info);
+				broadcaster.sendActionMessage(MsgVariationDefinition);
+			}
+		}
+	}
+	else
+	{
+		prevRndSpread = currentRndSpready; // init
+		//Log("INIT value not processed: " + String(currentRndNoteLen), Topiary::LogType::Info);
+		broadcaster.sendActionMessage(MsgVariationDefinition);
+
+	}
+
+	int currentBoolSpread = (int)boolSpread->get();  // between 0 and 127
+
+	if (prevBoolSpread != -1)
+	{
+		if (prevBoolSpread != currentBoolSpread)
+		{
+
+			if (variation[var].randomizeSpread != (bool)currentBoolSpread)
+			{
+				//Log("Currentbool " + String(currentBoolNoteLen), Topiary::LogType::Info);
+				variation[var].randomizeSpread = (bool)currentBoolSpread;
+				prevBoolSpread = currentBoolSpread;
+				//Log("UPDATING VARIATION " + String(var), Topiary::LogType::Info);
+				broadcaster.sendActionMessage(MsgVariationDefinition);
+			}
+		}
+
+	}
+	else
+	{
+		prevBoolSpread = currentBoolSpread; // init
+		//Log("INIT value not processed: " + String(currentBoolNoteLen), Topiary::LogType::Info);
+		broadcaster.sendActionMessage(MsgVariationDefinition);
+
+	}
+#endif // spread
+
 } // processPluginParameters
 
 ///////////////////////////////////////////////////////////////////////////////////////

@@ -660,11 +660,14 @@ private:
 							else direction = -1;
 
 							rnd = randomizer.nextFloat();
-							//int debug = direction * rnd * 128 * variation[v].velocityValue /100;
-							vel = vel + (int)(direction * rnd * 128 * variation[v].velocityValue / 50);   // originally / 100 but I want more of an effect
+							
+							//vel = vel + (int)(direction * rnd * 128 * variation[v].velocityValue / 50);   // originally / 100 but I want more of an effect
+							vel = (int)(direction * rnd * 128 * variation[v].velocityValue / 50);   // originally / 100 but I want more of an effect
 
 							if (variation[v].offsetVelocity)
 								vel = vel + variation[v].velocityOffset[p];
+							
+							vel = vel + var->dataList[vIndex].velocity;
 
 							if (vel > 127) vel = 127;
 							else if (vel < 0) vel = 0;
@@ -721,13 +724,13 @@ private:
 							timestamp = var->dataList[vIndex].timestamp;
 							float rnd;
 							int direction = -1;
-							if (variation[v].velocityPlus && variation[v].velocityMin)
+							if (variation[v].timingPlus && variation[v].timingMin)
 							{
 								rnd = randomizer.nextFloat();
 								if (rnd > 0.5)
 									direction = 1;
 							}
-							else if (variation[v].velocityPlus)
+							else if (variation[v].timingPlus)
 								direction = 1;
 
 							rnd = randomizer.nextFloat();

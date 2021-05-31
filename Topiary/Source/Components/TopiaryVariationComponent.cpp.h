@@ -59,7 +59,7 @@ void TOPIARYVARIATIONCOMPONENT::setTiming()
 
 /////////////////////////////////////////////////////////////////////////
 
-void TopiaryPadzVariationComponent::getTiming()
+void TOPIARYVARIATIONCOMPONENT::getTiming()
 {
 	// get note randomisation from model
 	bool enable;

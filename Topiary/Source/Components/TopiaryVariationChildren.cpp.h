@@ -467,6 +467,7 @@ void  SwingComponent::paint(Graphics& g)
 		strumCombo.addItem("As Is", Topiary::StrumType::AsIs);
 		strumCombo.addItem("Up", Topiary::StrumType::Up);
 		strumCombo.addItem("Down", Topiary::StrumType::Down);
+		strumCombo.addItem("Random", Topiary::StrumType::Random);
 
 		strumCombo.onChange = [this]
 		{

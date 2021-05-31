@@ -165,7 +165,8 @@ class Topiary
 	{
 		Up = 4002,
 		Down = 4001,
-		AsIs = 4000
+		AsIs = 4000,
+		Random = 4003
 	};
 
 	static const int TicksPerQuarter = 240;

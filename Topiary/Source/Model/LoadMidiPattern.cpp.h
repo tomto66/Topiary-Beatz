@@ -144,7 +144,7 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 
 				}
 #ifdef RIFFZ
-				else if (message.isController())
+				else if (message.isController() && (message.getControllerNumber()!=123)  ) // we do not take 123 (all notes off) into account	
 				{
 					patternData[patternIndex].add();
 
@@ -154,6 +154,7 @@ bool loadMidiPattern(const File& fileToRead, int patternIndex, int& measures, in
 					patternData[patternIndex].dataList[index].value = message.getControllerValue();
 					patternData[patternIndex].dataList[index].note = message.getControllerNumber();
 					patternData[patternIndex].dataList[index].label = String("CC");
+					patternData[patternIndex].dataList[index].length = 0;
 					double timeStamp = message.getTimeStamp();
 					// recalculate timeStamp to our reference range
 					timeStamp = timeStamp * Topiary::TicksPerQuarter / ticksPerQuarter;

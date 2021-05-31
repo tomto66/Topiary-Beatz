@@ -921,7 +921,7 @@ void TopiaryBeatsModel::generateVariation(int i, int eightToGenerate)
 	Logger::outputDebugString("------------------------");
 	for (int j = 0; j < variation[i].pattern.numItems; j++)
 	{
-		Logger::outputDebugString("<" + String(j) + "> <ID" + String(variation[i].pattern.dataList[j].ID)+"> Note: " + String(variation[i].pattern.dataList[j].note) + " timestamp " + String(variation[i].pattern.dataList[j].timestamp) + " midiType " + String(variation[i].pattern.dataList[j].midiType));
+		Logger::outputDebugString("<" + String(j) + "> <ID" + String(variation[i].pattern.dataList[j].ID)+"> Note: " + String(variation[i].pattern.dataList[j].note) + " timestamp " + String(variation[i].pattern.dataList[j].timestamp) + " midiType " + String(variation[i].pattern.dataList[j].midiType) + " velocity " + String(variation[i].pattern.dataList[j].velocity));
 	}
 	Logger::outputDebugString("------------------------");
 	
