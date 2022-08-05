@@ -3,7 +3,7 @@
 
 Topiary Beatz is a plugin for beats & drums.
 
-* Topiary Beatz folder contains the code and a projucer file
+* Topiary Beatz folder contains the code and a projucer file.
 * Topiary folder contains code used by other Topiary modules; code is duplicated to make it easy for you :)
 
 ## Compile yourself
